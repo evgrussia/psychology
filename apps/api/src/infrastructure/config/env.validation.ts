@@ -21,6 +21,15 @@ class EnvironmentVariables {
   @IsString()
   JWT_SECRET: string;
 
+  @IsString()
+  MEDIA_STORAGE_PATH: string;
+
+  @IsString()
+  MEDIA_PUBLIC_URL_BASE: string;
+
+  @IsString()
+  MEDIA_UPLOAD_ENABLED?: string; // 'true' or 'false' as string
+
   @IsNumber()
   HTTP_TIMEOUT_MS?: number;
 

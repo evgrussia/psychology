@@ -8,6 +8,9 @@ import { EventBusService } from './infrastructure/events/event-bus.service';
 import { HttpClientConfig } from './infrastructure/config/http-client.config';
 import { PrismaService } from './infrastructure/database/prisma.service';
 import { IdentityModule } from './infrastructure/identity/identity.module';
+import { MediaModule } from './infrastructure/media/media.module';
+import { EventsModule } from './infrastructure/events/events.module';
+import { DatabaseModule } from './infrastructure/database/database.module';
 
 import { validate } from './infrastructure/config/env.validation';
 
@@ -27,18 +30,15 @@ import { validate } from './infrastructure/config/env.validation';
         },
       ],
     }),
+    DatabaseModule,
+    EventsModule,
     IdentityModule,
+    MediaModule,
   ],
   controllers: [HealthController, AdminController, ClientController],
   providers: [
-    EventBusService,
-    {
-      provide: 'IEventBus',
-      useExisting: EventBusService,
-    },
     HttpClientConfig,
-    PrismaService,
   ],
-  exports: [EventBusService, 'IEventBus', HttpClientConfig, PrismaService],
+  exports: [HttpClientConfig],
 })
 export class AppModule {}
