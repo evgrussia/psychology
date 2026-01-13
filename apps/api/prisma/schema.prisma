@@ -10,13 +10,924 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Placeholder schema - will be extended in FEAT-PLT-02
-// This ensures migrations infrastructure is ready
+// --- Enums ---
 
-model _Migration {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  appliedAt DateTime @default(now())
-  
-  @@map("_migrations")
+enum UserStatus {
+  active
+  blocked
+  deleted
+}
+
+enum RoleScope {
+  admin
+  product
+}
+
+enum ConsentType {
+  personal_data
+  communications
+  telegram
+  review_publication
+}
+
+enum ContentType {
+  article
+  note
+  resource
+  landing
+  page
+}
+
+enum ContentStatus {
+  draft
+  review
+  published
+  archived
+}
+
+enum ContentFormat {
+  article
+  note
+  resource
+  audio
+  checklist
+}
+
+enum SupportLevel {
+  self_help
+  micro_support
+  consultation
+}
+
+enum TimeToBenefit {
+  min_1_3
+  min_7_10
+  min_20_30
+  series
+}
+
+enum MediaStorageProvider {
+  local_fs
+}
+
+enum MediaType {
+  image
+  audio
+  pdf
+}
+
+enum MediaUsage {
+  cover
+  inline
+  attachment
+  audio
+}
+
+enum CollectionType {
+  problem
+  format
+  goal
+  context
+}
+
+enum CuratedItemType {
+  content
+  interactive
+}
+
+enum GlossaryTermCategory {
+  approach
+  state
+  concept
+}
+
+enum InteractiveType {
+  quiz
+  navigator
+  thermometer
+  boundaries
+  prep
+  ritual
+}
+
+enum InteractiveStatus {
+  draft
+  published
+  archived
+}
+
+enum RunStatus {
+  in_progress
+  completed
+  abandoned
+}
+
+enum ResultLevel {
+  low
+  moderate
+  high
+}
+
+enum ServiceFormat {
+  online
+  offline
+  hybrid
+}
+
+enum ServiceStatus {
+  draft
+  published
+  archived
+}
+
+enum SlotStatus {
+  available
+  reserved
+  blocked
+}
+
+enum SlotSource {
+  product
+  google_calendar
+}
+
+enum AppointmentStatus {
+  pending_payment
+  paid
+  confirmed
+  canceled
+  rescheduled
+  completed
+}
+
+enum PaymentProvider {
+  yookassa
+}
+
+enum PaymentStatus {
+  pending
+  succeeded
+  canceled
+  failed
+}
+
+enum WaitlistStatus {
+  new
+  contacted
+  closed
+}
+
+enum DiaryType {
+  emotions
+  abc
+  sleep_energy
+  gratitude
+}
+
+enum ExportType {
+  user_data
+  diary_pdf
+}
+
+enum ExportStatus {
+  requested
+  processing
+  ready
+  failed
+}
+
+enum LeadStatus {
+  new
+  engaged
+  booking_started
+  booked_confirmed
+  paid
+  completed_session
+  follow_up_needed
+  inactive
+}
+
+enum LeadSource {
+  quiz
+  telegram
+  waitlist
+  question
+  booking
+}
+
+enum UGCStatus {
+  pending
+  flagged
+  approved
+  answered
+  rejected
+}
+
+enum UGCTriggerFlag {
+  crisis
+  pii
+  medical
+  spam
+}
+
+enum ModerationActionType {
+  approve
+  reject
+  flag
+  mask_pii
+  publish
+  unpublish
+  escalate
+}
+
+enum ModerationReasonCategory {
+  crisis
+  medical
+  out_of_scope
+  therapy_request
+  spam
+  pii
+  other
+}
+
+enum MessageChannel {
+  email
+  telegram
+}
+
+enum MessageCategory {
+  booking
+  waitlist
+  event
+  moderation
+}
+
+enum AdminAction {
+  admin_price_changed
+  admin_data_exported
+  admin_content_published
+  // ... more can be added later
+}
+
+// --- Models ---
+
+// 2.1 Identity & Access
+
+model User {
+  id                String       @id @default(uuid()) @db.Uuid
+  email             String?      @unique
+  phone             String?      @unique
+  telegram_user_id  String?      @unique
+  telegram_username String?
+  display_name      String?
+  password_hash     String?
+  status            UserStatus   @default(active)
+  created_at        DateTime     @default(now())
+  updated_at        DateTime     @updatedAt
+  deleted_at        DateTime?
+
+  roles              UserRole[]
+  sessions           Session[]
+  consents           Consent[]
+  authored_content   ContentItem[]
+  uploaded_media     MediaAsset[]
+  interactive_runs   InteractiveRun[]
+  appointments       Appointment[]
+  waitlist_requests  WaitlistRequest[]
+  diary_entries      DiaryEntry[]
+  export_requests    DataExportRequest[]
+  leads              LeadIdentity[]
+  ugc_questions      AnonymousQuestion[]
+  ugc_answers        QuestionAnswer[]
+  ugc_moderations    UgcModerationAction[]
+  ugc_reviews        Review[]
+  review_consents    ReviewPublicationConsent[]
+  audit_logs         AuditLogEntry[]
+  template_updates   MessageTemplateVersion[]
+
+  @@map("users")
+}
+
+model Role {
+  code  String    @id
+  scope RoleScope
+
+  user_roles    UserRole[]
+  admin_invites AdminInvite[]
+
+  @@map("roles")
+}
+
+model UserRole {
+  user_id    String   @db.Uuid
+  role_code  String
+  granted_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id])
+  role Role @relation(fields: [role_code], references: [code])
+
+  @@id([user_id, role_code])
+  @@map("user_roles")
+}
+
+model Consent {
+  id           String      @id @default(uuid()) @db.Uuid
+  user_id      String      @db.Uuid
+  consent_type ConsentType
+  granted      Boolean     @default(true)
+  version      String
+  source       String
+  granted_at   DateTime    @default(now())
+  revoked_at   DateTime?
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@map("consents")
+}
+
+model Session {
+  id           String    @id @default(uuid()) @db.Uuid
+  user_id      String    @db.Uuid
+  user_agent   String?
+  ip_address   String?
+  expires_at   DateTime
+  created_at   DateTime  @default(now())
+  revoked_at   DateTime?
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@map("sessions")
+}
+
+model AdminInvite {
+  id         String    @id @default(uuid()) @db.Uuid
+  email      String    @unique
+  role_code  String
+  token      String    @unique
+  expires_at DateTime
+  created_at DateTime  @default(now())
+  used_at    DateTime?
+
+  role Role @relation(fields: [role_code], references: [code])
+
+  @@map("admin_invites")
+}
+
+// 2.2 Content
+
+model ContentItem {
+  id              String         @id @default(uuid()) @db.Uuid
+  content_type    ContentType
+  slug            String
+  title           String
+  excerpt         String?
+  body_markdown   String
+  status          ContentStatus  @default(draft)
+  published_at    DateTime?
+  author_user_id  String         @db.Uuid
+  time_to_benefit TimeToBenefit?
+  format          ContentFormat?
+  support_level   SupportLevel?
+  created_at      DateTime       @default(now())
+  updated_at      DateTime       @updatedAt
+
+  author   User                 @relation(fields: [author_user_id], references: [id])
+  topics   ContentItemTopic[]
+  tags     ContentItemTag[]
+  media    ContentMedia[]
+  in_collections CuratedItem[]
+  glossary_links GlossaryTermLink[]
+
+  @@unique([content_type, slug])
+  @@index([status, content_type, slug])
+  @@map("content_items")
+}
+
+model Topic {
+  code      String  @id
+  title     String
+  is_active Boolean @default(true)
+
+  content_items ContentItemTopic[]
+  interactives  InteractiveDefinition[]
+  leads         Lead[]
+
+  @@map("topics")
+}
+
+model Tag {
+  id    String @id @default(uuid()) @db.Uuid
+  slug  String @unique
+  title String
+
+  content_items ContentItemTag[]
+
+  @@map("tags")
+}
+
+model ContentItemTopic {
+  content_item_id String @db.Uuid
+  topic_code      String
+
+  content_item ContentItem @relation(fields: [content_item_id], references: [id])
+  topic        Topic       @relation(fields: [topic_code], references: [code])
+
+  @@id([content_item_id, topic_code])
+  @@map("content_item_topics")
+}
+
+model ContentItemTag {
+  content_item_id String @db.Uuid
+  tag_id          String @db.Uuid
+
+  content_item ContentItem @relation(fields: [content_item_id], references: [id])
+  tag          Tag         @relation(fields: [tag_id], references: [id])
+
+  @@id([content_item_id, tag_id])
+  @@map("content_item_tags")
+}
+
+model MediaAsset {
+  id               String               @id @default(uuid()) @db.Uuid
+  storage_provider MediaStorageProvider @default(local_fs)
+  object_key       String               @unique
+  public_url       String
+  media_type       MediaType
+  mime_type        String
+  size_bytes       BigInt
+  title            String?
+  alt_text         String?
+  uploaded_by_user_id String            @db.Uuid
+  created_at       DateTime             @default(now())
+
+  uploaded_by User           @relation(fields: [uploaded_by_user_id], references: [id])
+  usages      ContentMedia[]
+
+  @@map("media_assets")
+}
+
+model ContentMedia {
+  content_item_id String     @db.Uuid
+  media_asset_id  String     @db.Uuid
+  usage           MediaUsage
+
+  content_item ContentItem @relation(fields: [content_item_id], references: [id])
+  media_asset  MediaAsset  @relation(fields: [media_asset_id], references: [id])
+
+  @@id([content_item_id, media_asset_id, usage])
+  @@map("content_media")
+}
+
+model CuratedCollection {
+  id              String         @id @default(uuid()) @db.Uuid
+  slug            String         @unique
+  title           String
+  collection_type CollectionType
+  status          ContentStatus  @default(draft)
+  topic_code      String?
+  published_at    DateTime?
+
+  items CuratedItem[]
+
+  @@map("curated_collections")
+}
+
+model CuratedItem {
+  id                        String          @id @default(uuid()) @db.Uuid
+  collection_id             String          @db.Uuid
+  item_type                 CuratedItemType
+  content_item_id           String?         @db.Uuid
+  interactive_definition_id String?         @db.Uuid
+  position                  Int
+  note                      String?
+
+  collection             CuratedCollection      @relation(fields: [collection_id], references: [id])
+  content_item           ContentItem?           @relation(fields: [content_item_id], references: [id])
+  interactive_definition InteractiveDefinition? @relation(fields: [interactive_definition_id], references: [id])
+
+  @@map("curated_items")
+}
+
+model GlossaryTerm {
+  id               String               @id @default(uuid()) @db.Uuid
+  slug             String               @unique
+  title            String
+  category         GlossaryTermCategory
+  short_definition String
+  body_markdown    String
+  status           ContentStatus        @default(draft)
+  published_at     DateTime?
+
+  synonyms GlossaryTermSynonym[]
+  links    GlossaryTermLink[]
+
+  @@map("glossary_terms")
+}
+
+model GlossaryTermSynonym {
+  id      String @id @default(uuid()) @db.Uuid
+  term_id String @db.Uuid
+  synonym String
+
+  term GlossaryTerm @relation(fields: [term_id], references: [id])
+
+  @@map("glossary_term_synonyms")
+}
+
+model GlossaryTermLink {
+  id              String      @id @default(uuid()) @db.Uuid
+  term_id         String      @db.Uuid
+  content_item_id String      @db.Uuid
+  link_type       String
+
+  term         GlossaryTerm @relation(fields: [term_id], references: [id])
+  content_item ContentItem  @relation(fields: [content_item_id], references: [id])
+
+  @@map("glossary_term_links")
+}
+
+// 2.3 Interactive
+
+model InteractiveDefinition {
+  id               String            @id @default(uuid()) @db.Uuid
+  interactive_type InteractiveType
+  slug             String
+  title            String
+  topic_code       String?
+  status           InteractiveStatus @default(draft)
+  published_at     DateTime?
+
+  topic Topic?           @relation(fields: [topic_code], references: [code])
+  runs  InteractiveRun[]
+  curated_items CuratedItem[]
+
+  @@unique([interactive_type, slug])
+  @@map("interactive_definitions")
+}
+
+model InteractiveRun {
+  id                        String      @id @default(uuid()) @db.Uuid
+  interactive_definition_id String      @db.Uuid
+  user_id                   String?     @db.Uuid
+  anonymous_id              String?
+  started_at                DateTime    @default(now())
+  completed_at              DateTime?
+  result_level              ResultLevel?
+  result_profile            String?
+  duration_ms               Int?
+  deep_link_id              String?
+
+  definition InteractiveDefinition @relation(fields: [interactive_definition_id], references: [id])
+  user       User?                 @relation(fields: [user_id], references: [id])
+  deep_link  DeepLink?             @relation(fields: [deep_link_id], references: [deep_link_id])
+
+  @@map("interactive_runs")
+}
+
+// 2.4 Booking & Payments
+
+model Service {
+  id                   String        @id @default(uuid()) @db.Uuid
+  slug                 String        @unique
+  title                String
+  description_markdown String
+  format               ServiceFormat
+  duration_minutes     Int
+  price_amount         Int
+  deposit_amount       Int?
+  cancel_free_hours    Int?
+  status               ServiceStatus @default(draft)
+  created_at           DateTime      @default(now())
+  updated_at           DateTime      @updatedAt
+
+  slots             AvailabilitySlot[]
+  appointments      Appointment[]
+  waitlist_requests WaitlistRequest[]
+
+  @@map("services")
+}
+
+model AvailabilitySlot {
+  id               String     @id @default(uuid()) @db.Uuid
+  service_id       String?    @db.Uuid
+  start_at_utc     DateTime
+  end_at_utc       DateTime
+  status           SlotStatus @default(available)
+  source           SlotSource @default(product)
+  external_event_id String?
+  created_at       DateTime   @default(now())
+
+  service     Service?      @relation(fields: [service_id], references: [id])
+  appointment Appointment?
+
+  @@index([start_at_utc, end_at_utc, status])
+  @@index([source])
+  @@map("availability_slots")
+}
+
+model Appointment {
+  id                         String            @id @default(uuid()) @db.Uuid
+  service_id                 String            @db.Uuid
+  client_user_id             String?           @db.Uuid
+  lead_id                    String?           @db.Uuid
+  start_at_utc               DateTime
+  end_at_utc                 DateTime
+  timezone                   String
+  format                     ServiceFormat
+  status                     AppointmentStatus @default(pending_payment)
+  meeting_url                String?
+  location_text              String?
+  slot_id                    String?           @unique @db.Uuid
+  external_calendar_event_id String?
+  created_at                 DateTime          @default(now())
+  updated_at                 DateTime          @updatedAt
+
+  service     Service           @relation(fields: [service_id], references: [id])
+  client      User?             @relation(fields: [client_user_id], references: [id])
+  lead        Lead?             @relation(fields: [lead_id], references: [id])
+  slot        AvailabilitySlot? @relation(fields: [slot_id], references: [id])
+  payments    Payment[]
+  intake_form IntakeForm?
+
+  @@index([start_at_utc, end_at_utc, status])
+  @@index([start_at_utc])
+  @@index([status])
+  @@map("appointments")
+}
+
+model Payment {
+  id                   String          @id @default(uuid()) @db.Uuid
+  appointment_id       String          @db.Uuid
+  provider             PaymentProvider @default(yookassa)
+  provider_payment_id  String          @unique
+  amount               Int
+  currency             String          @default("RUB")
+  status               PaymentStatus   @default(pending)
+  failure_category     String?
+  created_at           DateTime        @default(now())
+  confirmed_at         DateTime?
+
+  appointment Appointment @relation(fields: [appointment_id], references: [id])
+
+  @@index([provider, provider_payment_id])
+  @@map("payments")
+}
+
+model IntakeForm {
+  id                String   @id @default(uuid()) @db.Uuid
+  appointment_id    String   @unique @db.Uuid
+  status            String   @default("draft")
+  payload_encrypted String
+  submitted_at      DateTime?
+
+  appointment Appointment @relation(fields: [appointment_id], references: [id])
+
+  @@map("intake_forms")
+}
+
+model WaitlistRequest {
+  id                      String         @id @default(uuid()) @db.Uuid
+  user_id                 String?        @db.Uuid
+  service_id              String         @db.Uuid
+  preferred_contact       String
+  contact_value_encrypted String
+  preferred_time_window   String?
+  status                  WaitlistStatus @default(new)
+  created_at              DateTime       @default(now())
+
+  user    User?   @relation(fields: [user_id], references: [id])
+  service Service @relation(fields: [service_id], references: [id])
+
+  @@map("waitlist_requests")
+}
+
+// 2.5 Client Cabinet
+
+model DiaryEntry {
+  id                String    @id @default(uuid()) @db.Uuid
+  user_id           String    @db.Uuid
+  diary_type        DiaryType
+  entry_date        DateTime  @db.Date
+  payload_encrypted String
+  created_at        DateTime  @default(now())
+  deleted_at        DateTime?
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@map("diary_entries")
+}
+
+model DataExportRequest {
+  id           String       @id @default(uuid()) @db.Uuid
+  user_id      String       @db.Uuid
+  export_type  ExportType
+  status       ExportStatus @default(requested)
+  file_url     String?
+  created_at   DateTime     @default(now())
+  completed_at DateTime?
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@map("data_export_requests")
+}
+
+// 2.6 Telegram & deep links
+
+model DeepLink {
+  deep_link_id String    @id
+  flow         String
+  topic_code   String?
+  entity_ref   String?
+  source_page  String?
+  anonymous_id String?
+  lead_id      String?   @db.Uuid
+  created_at   DateTime  @default(now())
+  expires_at   DateTime
+
+  lead             Lead?                @relation(fields: [lead_id], references: [id])
+  timeline_events  LeadTimelineEvent[]
+  interactive_runs InteractiveRun[]
+
+  @@index([created_at])
+  @@map("deep_links")
+}
+
+// 2.7 CRM & Analytics
+
+model Lead {
+  id         String     @id @default(uuid()) @db.Uuid
+  status     LeadStatus @default(new)
+  source     LeadSource
+  topic_code String?
+  utm        Json?
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+
+  topic           Topic?              @relation(fields: [topic_code], references: [code])
+  identities      LeadIdentity[]
+  timeline_events LeadTimelineEvent[]
+  deep_links      DeepLink[]
+  appointments    Appointment[]
+
+  @@map("leads")
+}
+
+model LeadIdentity {
+  id                String   @id @default(uuid()) @db.Uuid
+  lead_id           String   @db.Uuid
+  user_id           String?  @db.Uuid
+  anonymous_id      String?
+  email_encrypted   String?
+  phone_encrypted   String?
+  telegram_user_id  String?
+  is_primary        Boolean  @default(false)
+  created_at        DateTime @default(now())
+
+  lead Lead  @relation(fields: [lead_id], references: [id])
+  user User? @relation(fields: [user_id], references: [id])
+
+  @@map("lead_identities")
+}
+
+model LeadTimelineEvent {
+  id           String   @id @default(uuid()) @db.Uuid
+  lead_id      String   @db.Uuid
+  event_name   String
+  source       String
+  occurred_at  DateTime @default(now())
+  deep_link_id String?
+  properties   Json
+
+  lead      Lead      @relation(fields: [lead_id], references: [id])
+  deep_link DeepLink? @relation(fields: [deep_link_id], references: [deep_link_id])
+
+  @@index([lead_id, occurred_at])
+  @@map("lead_timeline_events")
+}
+
+// 2.8 UGC Moderation
+
+model AnonymousQuestion {
+  id                      String    @id @default(uuid()) @db.Uuid
+  user_id                 String?   @db.Uuid
+  status                  UGCStatus @default(pending)
+  trigger_flags           Json?     // Array of UGCTriggerFlag enum values: ["crisis", "pii", "medical", "spam"]
+  question_text_encrypted String
+  contact_value_encrypted String?
+  publish_allowed         Boolean   @default(false)
+  submitted_at            DateTime  @default(now())
+  answered_at             DateTime?
+
+  user      User?                 @relation(fields: [user_id], references: [id])
+  answers   QuestionAnswer[]
+  moderations UgcModerationAction[]
+
+  @@index([status, submitted_at])
+  @@map("anonymous_questions")
+}
+
+model QuestionAnswer {
+  id                   String   @id @default(uuid()) @db.Uuid
+  question_id          String   @db.Uuid
+  answered_by_user_id  String   @db.Uuid
+  answer_text_encrypted String
+  published_at         DateTime @default(now())
+
+  question    AnonymousQuestion @relation(fields: [question_id], references: [id])
+  answered_by User              @relation(fields: [answered_by_user_id], references: [id])
+
+  @@map("question_answers")
+}
+
+model UgcModerationAction {
+  id                String               @id @default(uuid()) @db.Uuid
+  ugc_type          String
+  ugc_id            String               @db.Uuid
+  moderator_user_id String               @db.Uuid
+  action            ModerationActionType
+  reason_category   ModerationReasonCategory?
+  created_at        DateTime             @default(now())
+
+  moderator User              @relation(fields: [moderator_user_id], references: [id])
+  question  AnonymousQuestion? @relation(fields: [ugc_id], references: [id])
+
+  @@map("ugc_moderation_actions")
+}
+
+model Review {
+  id                    String    @id @default(uuid()) @db.Uuid
+  user_id               String?   @db.Uuid
+  status                String    @default("draft")
+  review_text_encrypted String
+  anonymity_level       String    @default("full")
+  submitted_at          DateTime  @default(now())
+  published_at          DateTime?
+
+  user     User?                      @relation(fields: [user_id], references: [id])
+  consents ReviewPublicationConsent[]
+
+  @@map("reviews")
+}
+
+model ReviewPublicationConsent {
+  id         String    @id @default(uuid()) @db.Uuid
+  review_id  String    @db.Uuid
+  user_id    String?   @db.Uuid
+  granted    Boolean   @default(false)
+  version    String
+  granted_at DateTime  @default(now())
+  revoked_at DateTime?
+
+  review Review @relation(fields: [review_id], references: [id])
+  user   User?  @relation(fields: [user_id], references: [id])
+
+  @@map("review_publication_consents")
+}
+
+// 2.9 Admin & Audit
+
+model AuditLogEntry {
+  id             String      @id @default(uuid()) @db.Uuid
+  actor_user_id  String?     @db.Uuid
+  actor_role     String?
+  action         String
+  entity_type    String
+  entity_id      String?     @db.Uuid
+  old_value      Json?
+  new_value      Json?
+  ip_address     String?
+  user_agent     String?
+  created_at     DateTime    @default(now())
+
+  actor User? @relation(fields: [actor_user_id], references: [id])
+
+  @@map("audit_log_entries")
+}
+
+model MessageTemplate {
+  id         String          @id @default(uuid()) @db.Uuid
+  channel    MessageChannel
+  category   MessageCategory
+  name       String
+  status     String          @default("draft")
+  created_at DateTime        @default(now())
+
+  versions MessageTemplateVersion[]
+
+  @@map("message_templates")
+}
+
+model MessageTemplateVersion {
+  id                  String   @id @default(uuid()) @db.Uuid
+  template_id         String   @db.Uuid
+  version             Int
+  subject             String?
+  body_markdown       String
+  updated_by_user_id  String   @db.Uuid
+  created_at          DateTime @default(now())
+
+  template   MessageTemplate @relation(fields: [template_id], references: [id])
+  updated_by User            @relation(fields: [updated_by_user_id], references: [id])
+
+  @@map("message_template_versions")
 }

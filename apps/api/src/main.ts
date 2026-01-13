@@ -2,12 +2,15 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { AppLogger } from './infrastructure/logging/logger.service';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const logger = new AppLogger('Bootstrap');
   const app = await NestFactory.create(AppModule, {
     logger: logger,
   });
+
+  app.use(cookieParser());
 
   const config = new DocumentBuilder()
     .setTitle('Psychology Platform API')
