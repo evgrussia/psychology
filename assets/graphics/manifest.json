@@ -1,0 +1,256 @@
+{
+  "version": "1.0",
+  "updatedAt": "2026-01-07",
+  "sourcePrompts": "docs/design-system/Image-Generation-Prompts.md",
+  "notes": [
+    "Файлы должны лежать в assets/graphics/* по типам.",
+    "Имена файлов желательно приводить к формату: [type]-[section]-[variant]-[size].[format].",
+    "Если у вас другие имена — сначала поместите всё в assets/graphics/incoming/ и я разложу/переименую.",
+    "Важно: icons/spot сконвертированы в SVG как SVG-обёртки со встроенным растром (потому что исходники были PNG/JPG). Для настоящего вектора (outline paths) потребуется автотрейс (например, Inkscape) или ручная отрисовка."
+  ],
+  "assets": {
+    "hero": [
+      {
+        "id": "hero-homepage-calm",
+        "description": "Hero: Спокойствие и поддержка (человек у окна)",
+        "expected": ["hero-homepage-calm-1376x768.webp"],
+        "path": "assets/graphics/hero/"
+      },
+      {
+        "id": "hero-journey",
+        "description": "Hero: Путь к себе (абстрактная дорожка)",
+        "expected": ["hero-journey-1376x768.webp"],
+        "path": "assets/graphics/hero/"
+      },
+      {
+        "id": "hero-trust-office",
+        "description": "Hero: Доверие и профессионализм (кабинет, без людей)",
+        "expected": ["hero-trust-office-1376x768.webp"],
+        "path": "assets/graphics/hero/"
+      },
+      {
+        "id": "hero-balance-pebbles",
+        "description": "Hero: Внутренний баланс (камни/баланс)",
+        "expected": ["hero-balance-pebbles-1376x768.webp"],
+        "path": "assets/graphics/hero/"
+      },
+      {
+        "id": "hero-homepage-meditation",
+        "description": "Hero (секция 9.1): Главная страница (медитация у окна)",
+        "expected": ["hero-homepage-meditation-1376x768.webp"],
+        "path": "assets/graphics/hero/"
+      },
+      {
+        "id": "hero-about-office",
+        "description": "Hero (секция 9.2): О психологе (кабинет/пространство)",
+        "expected": ["hero-about-office-1376x768.webp"],
+        "path": "assets/graphics/hero/"
+      }
+    ],
+    "spot": [
+      {
+        "id": "spot-anxiety-waves",
+        "description": "Spot: Тревога и спокойствие (волны)",
+        "expected": ["spot-anxiety-waves-1024x1024.svg"],
+        "path": "assets/graphics/spot/"
+      },
+      {
+        "id": "spot-growth-sprout",
+        "description": "Spot: Рост и развитие (росток)",
+        "expected": ["spot-growth-sprout-1024x1024.svg"],
+        "path": "assets/graphics/spot/"
+      },
+      {
+        "id": "spot-support-connection",
+        "description": "Spot: Поддержка и связь (две формы)",
+        "expected": ["spot-support-connection-1024x1024.svg"],
+        "path": "assets/graphics/spot/"
+      },
+      {
+        "id": "spot-dialog-bubbles",
+        "description": "Spot: Внутренний диалог (облачка/диалог)",
+        "expected": ["spot-dialog-bubbles-1024x1024.svg"],
+        "path": "assets/graphics/spot/"
+      },
+      {
+        "id": "spot-emotional-palette",
+        "description": "Spot: Эмоциональная палитра (свотчи)",
+        "expected": ["spot-emotional-palette-1024x1024.svg"],
+        "path": "assets/graphics/spot/"
+      },
+      {
+        "id": "spot-journal-reflection",
+        "description": "Spot: Дневник и рефлексия (открытый дневник)",
+        "expected": ["spot-journal-reflection-1024x1024.svg"],
+        "path": "assets/graphics/spot/"
+      },
+      {
+        "id": "spot-hopeful-progression",
+        "description": "Spot: Путь к цели (ступени/камни)",
+        "expected": ["spot-hopeful-progression-1024x1024.svg"],
+        "path": "assets/graphics/spot/"
+      },
+      {
+        "id": "spot-safe-space",
+        "description": "Spot: Безопасное пространство (обнимающие формы)",
+        "expected": ["spot-safe-space-1024x1024.svg"],
+        "path": "assets/graphics/spot/"
+      },
+      {
+        "id": "spot-education",
+        "description": "Spot (секция 9.2): Образование и опыт (книги/сертификаты)",
+        "expected": ["spot-education-1024x1024.svg"],
+        "path": "assets/graphics/spot/"
+      }
+    ],
+    "icons": [
+      {
+        "id": "icon-heart-outline",
+        "description": "Иконка: сердце (поддержка)",
+        "expected": ["icon-heart-outline-1024x1024.svg"],
+        "path": "assets/graphics/icons/"
+      },
+      {
+        "id": "icon-calendar-outline",
+        "description": "Иконка: календарь (запись)",
+        "expected": ["icon-calendar-outline-1024x1024.svg"],
+        "path": "assets/graphics/icons/"
+      },
+      {
+        "id": "icon-chat-outline",
+        "description": "Иконка: сообщение/чат",
+        "expected": ["icon-chat-outline-1024x1024.svg"],
+        "path": "assets/graphics/icons/"
+      }
+    ],
+    "patterns": [
+      {
+        "id": "pattern-waves-subtle",
+        "description": "Паттерн: тонкие волны (seamless)",
+        "expected": ["pattern-waves-subtle-1024x1024.png"],
+        "path": "assets/graphics/patterns/"
+      },
+      {
+        "id": "pattern-circles-soft",
+        "description": "Паттерн: мягкие круги (seamless)",
+        "expected": ["pattern-circles-soft-1024x1024.png"],
+        "path": "assets/graphics/patterns/"
+      },
+      {
+        "id": "pattern-lines-organic",
+        "description": "Паттерн: органические линии (seamless)",
+        "expected": ["pattern-lines-organic-1024x1024.png"],
+        "path": "assets/graphics/patterns/"
+      }
+    ],
+    "photos": [
+      {
+        "id": "photo-person-journal",
+        "description": "Фото: человек с дневником",
+        "expected": ["photo-person-journal-1264x848.webp"],
+        "path": "assets/graphics/photos/"
+      },
+      {
+        "id": "photo-hands-mug",
+        "description": "Фото: руки с чашкой",
+        "expected": ["photo-hands-mug-1264x848.webp"],
+        "path": "assets/graphics/photos/"
+      },
+      {
+        "id": "photo-nature-calm",
+        "description": "Фото: природа и спокойствие",
+        "expected": ["photo-nature-calm-1264x848.webp"],
+        "path": "assets/graphics/photos/"
+      },
+      {
+        "id": "photo-desk-journal",
+        "description": "Фото: рабочее место/дневник (flat lay)",
+        "expected": ["photo-desk-journal-1264x848.webp", "photo-desk-journal-1376x768.webp"],
+        "path": "assets/graphics/photos/"
+      }
+    ],
+    "abstract": [
+      {
+        "id": "abstract-emotional-waves",
+        "description": "Абстракция: эмоциональные волны",
+        "expected": ["abstract-emotional-waves-1376x768.webp"],
+        "path": "assets/graphics/abstract/"
+      },
+      {
+        "id": "abstract-inner-landscape",
+        "description": "Абстракция: внутренний ландшафт",
+        "expected": ["abstract-inner-landscape-1376x768.webp"],
+        "path": "assets/graphics/abstract/"
+      },
+      {
+        "id": "abstract-balance-forms",
+        "description": "Абстракция: баланс форм",
+        "expected": ["abstract-balance-forms-1376x768.webp"],
+        "path": "assets/graphics/abstract/"
+      }
+    ],
+    "sections": [
+      {
+        "id": "section-homepage-how-i-work",
+        "description": "Секция 9.1: «Как я работаю»",
+        "expected": ["section-homepage-how-i-work-1376x768.png"],
+        "path": "assets/graphics/sections/"
+      },
+      {
+        "id": "section-homepage-reviews",
+        "description": "Секция 9.1: «Отзывы»",
+        "expected": ["section-homepage-reviews-1376x768.png"],
+        "path": "assets/graphics/sections/"
+      }
+    ],
+    "services": [
+      {
+        "id": "service-individual-therapy",
+        "description": "Секция 9.3: Индивидуальная терапия",
+        "expected": ["service-individual-therapy-1264x848.png"],
+        "path": "assets/graphics/services/"
+      },
+      {
+        "id": "service-couples-therapy",
+        "description": "Секция 9.3: Парная терапия",
+        "expected": ["service-couples-therapy-1264x848.jpg"],
+        "path": "assets/graphics/services/"
+      },
+      {
+        "id": "service-group-therapy",
+        "description": "Секция 9.3: Групповая терапия",
+        "expected": ["service-group-therapy-1264x848.jpg"],
+        "path": "assets/graphics/services/"
+      }
+    ],
+    "modules": [
+      {
+        "id": "module-anxiety-test",
+        "description": "Секция 9.4: Тест на тревогу",
+        "expected": ["module-anxiety-test-1264x848.jpg"],
+        "path": "assets/graphics/modules/"
+      },
+      {
+        "id": "module-emotions-journal",
+        "description": "Секция 9.4: Дневник эмоций",
+        "expected": ["module-emotions-journal-1264x848.png"],
+        "path": "assets/graphics/modules/"
+      },
+      {
+        "id": "module-exercises",
+        "description": "Секция 9.4: Упражнения",
+        "expected": ["module-exercises-1264x848.png"],
+        "path": "assets/graphics/modules/"
+      }
+    ],
+    "brand": [
+      {
+        "id": "brand-logo",
+        "description": "Логотип (временный/черновой, как сгенерирован)",
+        "expected": ["logo-1408x768.png"],
+        "path": "assets/graphics/brand/"
+      }
+    ]
+  }
+}
+

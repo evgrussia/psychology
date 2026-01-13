@@ -1,0 +1,50 @@
+---
+alwaysApply: true
+---
+# Testing Rules
+
+## General Test Organization Principles
+
+### Domain Isolation
+- When implementing tests, always create separate fixtures, dependencies, and variables for each domain, taking into account its specific features and dependencies
+- Tests from different domains must never conflict with each other
+- Each domain should have its own isolated test environment
+
+### Local Environment
+- Always consider that locally the following may be running:
+  - Backend server
+  - Frontend server
+  - Test database in Docker, similar to the production database
+- Tests must work correctly in this environment
+
+### Test Data Management
+- If test data is needed for test execution, create scripts to populate the database with the necessary data
+- Run these scripts before tests
+- After test execution, always roll back the database to its initial state
+- Use transactions or rollback mechanisms to restore the database state
+
+### Integration Tests
+- For implementing integration tests, create a separate test layer
+- Integration tests must not overlap with other tests (unit tests, functional tests)
+- Use separate configurations, databases, and environments for integration tests
+
+### External Integrations
+- Always perform live verification of external integrations after mocks or instead of mocks
+- Don't limit yourself to mocks only - verify real interaction with external services
+- If test execution with external integrations requires:
+  - Authentication credentials
+  - API keys
+  - Other unknown environment variables
+- Then always ask the user for them - they will be provided
+
+### Test Structure
+- Organize tests by domains/modules
+- Use clear names for test files and functions
+- Document the purpose of tests and the data used
+- Ensure the ability to run tests from different domains in parallel
+
+### Cleanup After Tests
+- Always clean up created test data
+- Close open connections and resources
+- Restore the original environment state
+- Use teardown methods to guarantee cleanup

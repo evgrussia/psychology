@@ -1,0 +1,88 @@
+name: Deploy to Stage
+
+on:
+  push:
+    branches: [ develop ]
+  workflow_dispatch:
+
+env:
+  ENVIRONMENT: stage
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: stage
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8
+
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20.x'
+        cache: 'pnpm'
+
+    - name: Install dependencies
+      run: pnpm install
+
+    - name: Build applications
+      run: pnpm build
+
+    - name: Run database migrations
+      env:
+        DATABASE_URL: ${{ secrets.STAGE_DATABASE_URL }}
+      run: |
+        cd apps/api
+        pnpm migrate:deploy
+
+    - name: Deploy API
+      env:
+        DEPLOY_HOST: ${{ secrets.STAGE_API_HOST }}
+        DEPLOY_USER: ${{ secrets.STAGE_DEPLOY_USER }}
+        DEPLOY_KEY: ${{ secrets.STAGE_DEPLOY_SSH_KEY }}
+      run: |
+        # Placeholder for actual deployment logic
+        # This should deploy to your stage environment
+        echo "Deploying API to stage..."
+
+    - name: Deploy Web
+      env:
+        DEPLOY_HOST: ${{ secrets.STAGE_WEB_HOST }}
+        DEPLOY_USER: ${{ secrets.STAGE_DEPLOY_USER }}
+        DEPLOY_KEY: ${{ secrets.STAGE_DEPLOY_SSH_KEY }}
+      run: |
+        # Placeholder for actual deployment logic
+        echo "Deploying Web to stage..."
+
+    - name: Deploy Bot
+      env:
+        DEPLOY_HOST: ${{ secrets.STAGE_BOT_HOST }}
+        DEPLOY_USER: ${{ secrets.STAGE_DEPLOY_USER }}
+        DEPLOY_KEY: ${{ secrets.STAGE_DEPLOY_SSH_KEY }}
+      run: |
+        # Placeholder for actual deployment logic
+        echo "Deploying Bot to stage..."
+
+    - name: Healthcheck API
+      run: |
+        sleep 10
+        API_URL=${{ secrets.STAGE_API_URL || 'http://stage-api.example.com' }}
+        curl -f "$API_URL/api/health" || exit 1
+        curl -f "$API_URL/api/ready" || exit 1
+
+    - name: Healthcheck Web
+      run: |
+        WEB_URL=${{ secrets.STAGE_WEB_URL || 'http://stage-web.example.com' }}
+        curl -f "$WEB_URL" || exit 1
+
+    - name: Rollback on failure
+      if: failure()
+      run: |
+        echo "Deployment failed, initiating rollback..."
+        # Placeholder for rollback logic
+        # This should rollback migrations and previous version

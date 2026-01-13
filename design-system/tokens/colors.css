@@ -1,0 +1,61 @@
+/**
+ * Design Tokens: Colors (CSS)
+ * 
+ * Цветовая палитра проекта «Эмоциональный баланс»
+ * Источник: Figma Design System
+ * 
+ * Использование: @import './design-system/tokens/colors.css';
+ */
+
+:root {
+  /* Brand Colors */
+  --color-brand-primary: #7A9B7E;
+  --color-brand-primary-dark: #5A7A5E;
+  --color-brand-primary-light: #9AB89E;
+  
+  --color-brand-secondary: #D4C5A9;
+  --color-brand-secondary-dark: #B8A68A;
+  --color-brand-secondary-light: #E8DBC5;
+  
+  --color-brand-accent: #E8A87C;
+  --color-brand-accent-dark: #D18A5F;
+  --color-brand-accent-light: #F5C4A0;
+
+  /* Semantic Colors */
+  --color-success: #5A9B5E;
+  --color-success-light: #E8F5E9;
+  --color-success-dark: #3A7A3E;
+  
+  --color-warning: #E8A87C;
+  --color-warning-light: #FFF4E8;
+  --color-warning-dark: #D18A5F;
+  
+  --color-error: #C85A5A;
+  --color-error-light: #FFEBEE;
+  --color-error-dark: #A83A3A;
+  
+  --color-info: #5A8A9B;
+  --color-info-light: #E8F4F8;
+  --color-info-dark: #3A6A7A;
+
+  /* Background Colors */
+  --color-bg-primary: #FAF8F4;
+  --color-bg-secondary: #F5F2ED;
+  --color-bg-tertiary: #EFEBE5;
+  --color-bg-dark: #5A7A5E;
+  --color-bg-overlay: rgba(90, 122, 94, 0.85);
+
+  /* Text Colors */
+  --color-text-primary: #2A3A2E;
+  --color-text-secondary: #5A6A5E;
+  --color-text-tertiary: #8A9A8E;
+  --color-text-on-dark: #FAF8F4;
+  --color-text-muted: #AABAAE;
+  --color-text-disabled: #CACACA;
+
+  /* Border Colors */
+  --color-border-primary: #E5E0D8;
+  --color-border-secondary: #D8D0C5;
+  --color-border-focus: #7A9B7E;
+  --color-border-error: #C85A5A;
+}

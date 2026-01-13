@@ -1,0 +1,22 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Placeholder schema - will be extended in FEAT-PLT-02
+// This ensures migrations infrastructure is ready
+
+model _Migration {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  appliedAt DateTime @default(now())
+  
+  @@map("_migrations")
+}
