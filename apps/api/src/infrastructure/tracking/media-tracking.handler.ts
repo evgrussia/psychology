@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit, Inject, Scope } from '@nestjs/common';
 import { IEventBus } from '../../domain/events/event-bus.interface';
 import { MediaAssetUploadedEvent } from '../../domain/media/events/MediaAssetUploadedEvent';
 import { TrackingService } from './tracking.service';
@@ -7,9 +7,10 @@ import { TrackingService } from './tracking.service';
  * Event handler for MediaAssetUploadedEvent
  * Sends tracking event to analytics according to Tracking Plan
  */
-@Injectable()
+@Injectable({ scope: Scope.DEFAULT })
 export class MediaTrackingHandler implements OnModuleInit {
   constructor(
+    @Inject('IEventBus')
     private readonly eventBus: IEventBus,
     private readonly trackingService: TrackingService,
   ) {}

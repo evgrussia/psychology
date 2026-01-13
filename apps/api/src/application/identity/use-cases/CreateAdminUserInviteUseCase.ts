@@ -1,10 +1,12 @@
-import { Injectable, Inject, ConflictException, BadRequestException } from '@nestjs/common';
+import { Injectable, Inject, ConflictException, BadRequestException, Optional } from '@nestjs/common';
 import { IAdminInviteRepository } from '../../../domain/identity/repositories/IAdminInviteRepository';
 import { IUserRepository } from '../../../domain/identity/repositories/IUserRepository';
 import { AdminInvite } from '../../../domain/identity/aggregates/AdminInvite';
 import { CreateAdminInviteDto, AdminInviteResponseDto } from '../dto/invite.dto';
 import { Email } from '../../../domain/identity/value-objects/Email';
 import { Role } from '../../../domain/identity/value-objects/Role';
+import { AuditLogHelper } from '../../audit/helpers/audit-log.helper';
+import { AuditLogAction } from '../../audit/dto/audit-log.dto';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -14,9 +16,12 @@ export class CreateAdminUserInviteUseCase {
     private readonly adminInviteRepository: IAdminInviteRepository,
     @Inject('IUserRepository')
     private readonly userRepository: IUserRepository,
+    @Optional()
+    @Inject('AuditLogHelper')
+    private readonly auditLogHelper?: AuditLogHelper,
   ) {}
 
-  async execute(dto: CreateAdminInviteDto): Promise<AdminInviteResponseDto> {
+  async execute(dto: CreateAdminInviteDto, actorUserId?: string, actorRole?: string): Promise<AdminInviteResponseDto> {
     const email = Email.create(dto.email);
     
     // Check if user already exists
@@ -47,6 +52,26 @@ export class CreateAdminUserInviteUseCase {
     );
 
     await this.adminInviteRepository.save(invite);
+
+    // Log to audit log
+    if (this.auditLogHelper && actorUserId) {
+      try {
+        await this.auditLogHelper.logAction(
+          actorUserId,
+          actorRole || 'owner',
+          AuditLogAction.ADMIN_ROLE_CHANGED,
+          'UserInvite',
+          inviteId,
+          null,
+          {
+            email: email.value,
+            invitedRole: role.code,
+          }
+        );
+      } catch (error) {
+        console.error('Failed to write audit log for admin invite:', error);
+      }
+    }
 
     return {
       id: invite.id,

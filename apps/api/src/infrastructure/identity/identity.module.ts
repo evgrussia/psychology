@@ -1,4 +1,4 @@
-import { Module, Global } from '@nestjs/common';
+import { Module, Global, forwardRef } from '@nestjs/common';
 import { BcryptHasher } from '../../infrastructure/auth/bcrypt-hasher';
 import { PrismaUserRepository } from '../../infrastructure/persistence/prisma/identity/prisma-user.repository';
 import { PrismaSessionRepository } from '../../infrastructure/persistence/prisma/identity/prisma-session.repository';
@@ -11,9 +11,11 @@ import { GetCurrentUserUseCase } from '../../application/identity/use-cases/GetC
 import { AuthController } from '../../presentation/controllers/auth.controller';
 import { AuthGuard } from '../../presentation/guards/auth.guard';
 import { RolesGuard } from '../../presentation/guards/roles.guard';
+import { AuditModule } from '../audit/audit.module';
 
 @Global()
 @Module({
+  imports: [forwardRef(() => AuditModule)],
   controllers: [AuthController],
   providers: [
     {

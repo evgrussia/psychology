@@ -6,10 +6,12 @@ describe('env.validation', () => {
     PORT: 3000,
     DATABASE_URL: 'postgresql://user:password@localhost:5432/db',
     JWT_SECRET: 'test-secret',
+    MEDIA_STORAGE_PATH: './media',
+    MEDIA_PUBLIC_URL_BASE: 'http://localhost:3000/media',
+    MEDIA_UPLOAD_ENABLED: 'true',
   };
 
   it('should validate correct configuration', () => {
-    expect(() => validate(validConfig)).not.toThrow();
     const result = validate(validConfig);
     expect(result.NODE_ENV).toBe('development');
     expect(result.PORT).toBe(3000);
@@ -40,11 +42,13 @@ describe('env.validation', () => {
 
   it('should accept optional HTTP_TIMEOUT_MS', () => {
     const configWithTimeout = { ...validConfig, HTTP_TIMEOUT_MS: 5000 };
-    expect(() => validate(configWithTimeout)).not.toThrow();
+    const result = validate(configWithTimeout);
+    expect(result.HTTP_TIMEOUT_MS).toBe(5000);
   });
 
   it('should accept optional HTTP_RETRY_ATTEMPTS', () => {
     const configWithRetry = { ...validConfig, HTTP_RETRY_ATTEMPTS: 5 };
-    expect(() => validate(configWithRetry)).not.toThrow();
+    const result = validate(configWithRetry);
+    expect(result.HTTP_RETRY_ATTEMPTS).toBe(5);
   });
 });

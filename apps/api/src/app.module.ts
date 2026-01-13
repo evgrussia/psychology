@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { HealthController } from './presentation/controllers/health.controller';
 import { AdminController } from './presentation/controllers/admin.controller';
+import { AdminAuditLogController } from './presentation/controllers/admin-audit-log.controller';
 import { ClientController } from './presentation/controllers/client.controller';
 import { EventBusService } from './infrastructure/events/event-bus.service';
 import { HttpClientConfig } from './infrastructure/config/http-client.config';
@@ -11,8 +12,13 @@ import { IdentityModule } from './infrastructure/identity/identity.module';
 import { MediaModule } from './infrastructure/media/media.module';
 import { EventsModule } from './infrastructure/events/events.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
+import { AuditModule } from './infrastructure/audit/audit.module';
 
 import { validate } from './infrastructure/config/env.validation';
+
+import { AdminModule } from './infrastructure/admin/admin.module';
+import { PublicModule } from './infrastructure/public/public.module';
+import { InteractiveModule } from './infrastructure/interactive/interactive.module';
 
 @Module({
   imports: [
@@ -34,8 +40,12 @@ import { validate } from './infrastructure/config/env.validation';
     EventsModule,
     IdentityModule,
     MediaModule,
+    AuditModule,
+    AdminModule,
+    PublicModule,
+    InteractiveModule,
   ],
-  controllers: [HealthController, AdminController, ClientController],
+  controllers: [HealthController, AdminAuditLogController, ClientController],
   providers: [
     HttpClientConfig,
   ],

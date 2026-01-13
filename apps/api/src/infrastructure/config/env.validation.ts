@@ -1,5 +1,5 @@
 import { plainToInstance } from 'class-transformer';
-import { IsEnum, IsNumber, IsString, validateSync } from 'class-validator';
+import { IsEnum, IsNumber, IsString, IsOptional, validateSync } from 'class-validator';
 
 enum Environment {
   Development = 'development',
@@ -30,9 +30,11 @@ class EnvironmentVariables {
   @IsString()
   MEDIA_UPLOAD_ENABLED?: string; // 'true' or 'false' as string
 
+  @IsOptional()
   @IsNumber()
   HTTP_TIMEOUT_MS?: number;
 
+  @IsOptional()
   @IsNumber()
   HTTP_RETRY_ATTEMPTS?: number;
 }

@@ -17,6 +17,7 @@ describe('Auth (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.setGlobalPrefix('api');
     app.use(cookieParser());
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
@@ -227,7 +228,7 @@ describe('Auth (e2e)', () => {
         .expect(401);
 
       // Even if session somehow exists, AuthGuard/GetCurrentUserUseCase should block it
-      const sessionId = 'fake-session-for-blocked-user';
+      const sessionId = '00000000-0000-0000-0000-000000000000';
       await prisma.session.create({
         data: {
           id: sessionId,

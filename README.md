@@ -98,22 +98,37 @@ cd apps/api
 
 ## Тестирование
 
-### Unit тесты
+Проект использует комплексную систему тестирования с изоляцией в Docker. Подробности см. в [docs/generated/testing/README.md](./docs/generated/testing/README.md).
+
+### Быстрый запуск всех тестов
+```bash
+pnpm test:full
+```
+Эта команда: поднимет Docker -> запустит все тесты (Unit, E2E, Web) -> остановит Docker.
+
+### Покомпонентный запуск
+| Команда | Описание |
+|---------|----------|
+| `pnpm test:infra:up` | Поднять тестовую инфраструктуру (PostgreSQL, Redis) |
+| `pnpm test:infra:down` | Остановить тестовую инфраструктуру |
+| `pnpm test:api` | Unit-тесты бэкенда |
+| `pnpm test:api:e2e` | E2E-тесты бэкенда (требует infra:up) |
+| `pnpm test:web` | Unit-тесты фронтенда (Vitest) |
+| `pnpm test:web:e2e` | E2E-тесты фронтенда (Playwright) |
+
+### Backend (`apps/api`)
 ```bash
 cd apps/api
-pnpm test
+pnpm test:unit    # Unit тесты
+pnpm test:e2e     # E2E тесты (требует тестовой БД)
+pnpm test:smoke   # Дымовые тесты
 ```
 
-### Integration тесты
+### Frontend (`apps/web`)
 ```bash
-cd apps/api
-pnpm test test/app.e2e-spec.ts
-```
-
-### Покрытие кода
-```bash
-cd apps/api
-pnpm test:cov
+cd apps/web
+pnpm test         # Vitest (Unit/Component)
+pnpm e2e          # Playwright (E2E)
 ```
 
 ## CI/CD

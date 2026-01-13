@@ -1,5 +1,5 @@
 import { AdminInvite as PrismaAdminInvite } from '@prisma/client';
-import { AdminInvite } from '../../../../domain/identity/aggregates/AdminInvite';
+import { AdminInvite } from '@domain/identity/aggregates/AdminInvite';
 
 export class AdminInviteMapper {
   static toDomain(prismaInvite: PrismaAdminInvite): AdminInvite {

@@ -52,6 +52,68 @@ export const typography = {
   },
 } as const;
 
+// Combined styles for convenience
+export const textStyles = {
+  hero: {
+    fontFamily: typography.fontFamily.serif,
+    fontSize: typography.fontSize.hero,
+    fontWeight: typography.fontWeight.bold,
+    lineHeight: typography.lineHeight.tight,
+    letterSpacing: typography.letterSpacing.tight,
+  },
+  h1: {
+    fontFamily: typography.fontFamily.serif,
+    fontSize: typography.fontSize.h1,
+    fontWeight: typography.fontWeight.bold,
+    lineHeight: typography.lineHeight.snug,
+    letterSpacing: typography.letterSpacing.tight,
+  },
+  h2: {
+    fontFamily: typography.fontFamily.sans,
+    fontSize: typography.fontSize.h2,
+    fontWeight: typography.fontWeight.semibold,
+    lineHeight: typography.lineHeight.snug,
+  },
+  h3: {
+    fontFamily: typography.fontFamily.sans,
+    fontSize: typography.fontSize.h3,
+    fontWeight: typography.fontWeight.semibold,
+    lineHeight: typography.lineHeight.snug,
+  },
+  h4: {
+    fontFamily: typography.fontFamily.sans,
+    fontSize: typography.fontSize.h4,
+    fontWeight: typography.fontWeight.medium,
+    lineHeight: typography.lineHeight.normal,
+  },
+  bodyLg: {
+    fontFamily: typography.fontFamily.sans,
+    fontSize: typography.fontSize['body-lg'],
+    fontWeight: typography.fontWeight.regular,
+    lineHeight: typography.lineHeight.relaxed,
+  },
+  body: {
+    fontFamily: typography.fontFamily.sans,
+    fontSize: typography.fontSize.body,
+    fontWeight: typography.fontWeight.regular,
+    lineHeight: typography.lineHeight.normal,
+  },
+  bodySm: {
+    fontFamily: typography.fontFamily.sans,
+    fontSize: typography.fontSize['body-sm'],
+    fontWeight: typography.fontWeight.regular,
+    lineHeight: typography.lineHeight.normal,
+  },
+  caption: {
+    fontFamily: typography.fontFamily.sans,
+    fontSize: typography.fontSize.caption,
+    fontWeight: typography.fontWeight.regular,
+    lineHeight: typography.lineHeight.normal,
+    textTransform: 'uppercase' as const,
+    letterSpacing: typography.letterSpacing.wider,
+  },
+} as const;
+
 /**
  * CSS Custom Properties для использования в CSS
  */

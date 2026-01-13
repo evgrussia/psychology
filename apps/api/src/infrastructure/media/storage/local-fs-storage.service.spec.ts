@@ -5,9 +5,13 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 
 jest.mock('fs/promises');
-jest.mock('crypto', () => ({
-  randomUUID: jest.fn(() => 'test-uuid-123'),
-}));
+jest.mock('crypto', () => {
+  const actual = jest.requireActual('crypto');
+  return {
+    ...actual,
+    randomUUID: jest.fn(() => 'test-uuid-123'),
+  };
+});
 
 describe('LocalFsStorageService', () => {
   let service: LocalFsStorageService;

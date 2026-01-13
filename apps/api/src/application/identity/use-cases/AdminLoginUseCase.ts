@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, Inject } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Inject, Optional } from '@nestjs/common';
 import { IUserRepository } from '../../../domain/identity/repositories/IUserRepository';
 import { ISessionRepository } from '../../../domain/identity/repositories/ISessionRepository';
 import { IPasswordHasher } from '../../../infrastructure/auth/bcrypt-hasher';
@@ -7,6 +7,8 @@ import { Email } from '../../../domain/identity/value-objects/Email';
 import { Session } from '../../../domain/identity/aggregates/Session';
 import { AdminLoggedInEvent } from '../../../domain/identity/events/AdminLoggedInEvent';
 import { AdminLoginDto, LoginResponseDto } from '../dto/login.dto';
+import { AuditLogHelper } from '../../audit/helpers/audit-log.helper';
+import { AuditLogAction } from '../../audit/dto/audit-log.dto';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -20,6 +22,9 @@ export class AdminLoginUseCase {
     private readonly passwordHasher: IPasswordHasher,
     @Inject('IEventBus')
     private readonly eventBus: IEventBus,
+    @Optional()
+    @Inject('AuditLogHelper')
+    private readonly auditLogHelper?: AuditLogHelper,
   ) {}
 
   async execute(dto: AdminLoginDto): Promise<LoginResponseDto> {
@@ -70,9 +75,10 @@ export class AdminLoginUseCase {
         user.id,
         user.roles.map((r) => r.code),
         dto.ipAddress || null,
+        dto.userAgent || null,
       ),
     );
-    
+
     return {
       sessionId: session.id,
       user: {

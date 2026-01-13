@@ -84,6 +84,7 @@ export class AdminMediaController {
   @ApiResponse({ status: 400, description: 'Cannot delete (in use)' })
   @ApiResponse({ status: 404, description: 'Media not found' })
   async deleteMedia(@Param('id') id: string, @Request() req: any): Promise<void> {
-    return this.deleteMediaUseCase.execute(id, req.user.id);
+    const userRole = req.user.roles?.[0] || 'admin';
+    return this.deleteMediaUseCase.execute(id, req.user.id, userRole);
   }
 }

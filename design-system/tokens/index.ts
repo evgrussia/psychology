@@ -8,6 +8,7 @@ export { colors, colorsCSS, type Colors } from './colors';
 export { typography, typographyCSS, type Typography } from './typography';
 export { spacing, spacingCSS, type Spacing } from './spacing';
 export { effects, effectsCSS, type Effects } from './effects';
+export { a11yStyles, addFocusVisibleHandlers } from './a11y';
 
 /**
  * Все CSS Custom Properties в одном объекте

@@ -6,6 +6,13 @@
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
+    "test:api": "cd apps/api && pnpm test",
+    "test:api:e2e": "cd apps/api && pnpm test:e2e",
+    "test:web": "cd apps/web && pnpm test",
+    "test:web:e2e": "cd apps/web && pnpm e2e",
+    "test:infra:up": "docker-compose -f docker-compose.test.yml up -d",
+    "test:infra:down": "docker-compose -f docker-compose.test.yml down",
+    "test:full": "pnpm test:infra:up && pnpm test && pnpm test:api:e2e && pnpm test:infra:down",
     "typecheck": "pnpm -r typecheck"
   },
   "devDependencies": {

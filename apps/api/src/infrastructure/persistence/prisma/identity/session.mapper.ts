@@ -1,5 +1,5 @@
 import { Session as PrismaSession } from '@prisma/client';
-import { Session } from '../../../../domain/identity/aggregates/Session';
+import { Session } from '@domain/identity/aggregates/Session';
 
 export class SessionMapper {
   static toDomain(prismaSession: PrismaSession): Session {

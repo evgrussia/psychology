@@ -23,6 +23,13 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
+  app.enableCors({
+    origin: true, // For development, allow all origins
+    credentials: true,
+  });
+
+  app.setGlobalPrefix('api');
+
   const config = new DocumentBuilder()
     .setTitle('Psychology Platform API')
     .setDescription('The Psychology Platform API description')

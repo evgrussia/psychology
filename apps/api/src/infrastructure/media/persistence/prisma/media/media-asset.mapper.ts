@@ -1,6 +1,6 @@
 import { MediaAsset as PrismaMediaAsset, MediaStorageProvider as PrismaStorageProvider, MediaType as PrismaMediaType } from '@prisma/client';
-import { MediaAsset } from '../../../../../../domain/media/entities/MediaAsset';
-import { MediaStorageProvider, MediaType } from '../../../../../../domain/media/value-objects/MediaType';
+import { MediaAsset } from '@domain/media/entities/MediaAsset';
+import { MediaStorageProvider, MediaType } from '@domain/media/value-objects/MediaType';
 
 export class MediaAssetMapper {
   static toDomain(prismaMediaAsset: PrismaMediaAsset): MediaAsset {

@@ -422,6 +422,31 @@ END $$;
 
 ---
 
+## Тестирование миграций
+
+Для безопасной проверки миграций перед деплоем используйте изолированную тестовую среду:
+
+1. **Поднять тестовую БД:**
+   ```bash
+   pnpm test:infra:up
+   ```
+
+2. **Применить миграции к тестовой БД:**
+   Тесты автоматически выполняют миграции перед запуском. Вы также можете запустить их вручную:
+   ```bash
+   # Используя test.env
+   export DATABASE_URL="postgresql://test_user:test_password@localhost:5433/psychology_test?schema=public"
+   cd apps/api
+   pnpm migrate:deploy
+   ```
+
+3. **Запустить тесты целостности БД:**
+   ```bash
+   pnpm test:api:e2e test/smoke.e2e-spec.ts
+   ```
+
+---
+
 ## Troubleshooting
 
 ### Проблема: Миграция не применяется

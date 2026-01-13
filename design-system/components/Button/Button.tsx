@@ -7,7 +7,7 @@
  */
 
 import React from 'react';
-import { colors, typography, spacing, effects } from '../../tokens';
+import { colors, typography, spacing, effects, a11yStyles } from '../../tokens';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'ghost';
 export type ButtonSize = 'sm' | 'md' | 'lg';
@@ -45,6 +45,7 @@ const Button: React.FC<ButtonProps> = ({
     gap: spacing.space[2],
     width: fullWidth ? '100%' : 'auto',
     opacity: disabled ? 0.6 : 1,
+    outline: 'none', // Remove default outline, will add focus-visible
   };
 
   const sizeStyles: Record<ButtonSize, React.CSSProperties> = {
@@ -101,10 +102,13 @@ const Button: React.FC<ButtonProps> = ({
     },
   };
 
+  const [isFocused, setIsFocused] = React.useState(false);
+  
   const combinedStyles: React.CSSProperties = {
     ...baseStyles,
     ...sizeStyles[size],
     ...variantStyles[variant],
+    ...(isFocused && a11yStyles.focusVisible),
   };
 
   return (
@@ -121,6 +125,14 @@ const Button: React.FC<ButtonProps> = ({
         if (!disabled && !loading) {
           Object.assign(e.currentTarget.style, variantStyles[variant]);
         }
+      }}
+      onFocus={(e) => {
+        setIsFocused(true);
+        props.onFocus?.(e);
+      }}
+      onBlur={(e) => {
+        setIsFocused(false);
+        props.onBlur?.(e);
       }}
       {...props}
     >

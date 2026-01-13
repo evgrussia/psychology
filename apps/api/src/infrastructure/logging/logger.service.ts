@@ -4,6 +4,10 @@ import { Injectable, LoggerService, ConsoleLogger } from '@nestjs/common';
 export class AppLogger extends ConsoleLogger implements LoggerService {
   private static PII_FIELDS = ['password', 'token', 'email', 'phone', 'card_number'];
 
+  constructor(context?: string) {
+    super(context);
+  }
+
   log(message: any, context?: string) {
     super.log(this.maskPii(message), context);
   }

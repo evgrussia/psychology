@@ -1,10 +1,10 @@
 import { User as PrismaUser, UserRole as PrismaUserRole, Role as PrismaRole, Consent as PrismaConsent } from '@prisma/client';
-import { User } from '../../../../domain/identity/aggregates/User';
-import { Email } from '../../../../domain/identity/value-objects/Email';
-import { Role } from '../../../../domain/identity/value-objects/Role';
-import { UserStatus } from '../../../../domain/identity/value-objects/UserStatus';
-import { Consent } from '../../../../domain/identity/entities/Consent';
-import { ConsentType } from '../../../../domain/identity/value-objects/ConsentType';
+import { User } from '@domain/identity/aggregates/User';
+import { Email } from '@domain/identity/value-objects/Email';
+import { Role } from '@domain/identity/value-objects/Role';
+import { UserStatus } from '@domain/identity/value-objects/UserStatus';
+import { Consent } from '@domain/identity/entities/Consent';
+import { ConsentType } from '@domain/identity/value-objects/ConsentType';
 
 export class UserMapper {
   static toDomain(

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
-import { IAdminInviteRepository } from '../../../../domain/identity/repositories/IAdminInviteRepository';
-import { AdminInvite } from '../../../../domain/identity/aggregates/AdminInvite';
+import { IAdminInviteRepository } from '@domain/identity/repositories/IAdminInviteRepository';
+import { AdminInvite } from '@domain/identity/aggregates/AdminInvite';
 import { AdminInviteMapper } from './admin-invite.mapper';
 
 @Injectable()

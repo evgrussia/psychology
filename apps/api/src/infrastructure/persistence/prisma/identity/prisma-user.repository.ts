@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
-import { IUserRepository } from '../../../../domain/identity/repositories/IUserRepository';
-import { User } from '../../../../domain/identity/aggregates/User';
-import { Email } from '../../../../domain/identity/value-objects/Email';
+import { IUserRepository } from '@domain/identity/repositories/IUserRepository';
+import { User } from '@domain/identity/aggregates/User';
+import { Email } from '@domain/identity/value-objects/Email';
 import { UserMapper } from './user.mapper';
 
 @Injectable()

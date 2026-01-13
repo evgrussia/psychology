@@ -7,6 +7,7 @@ import { ListMediaAssetsUseCase } from './ListMediaAssetsUseCase';
 import { LocalFsStorageService } from '../../../infrastructure/media/storage/local-fs-storage.service';
 import { PrismaMediaAssetRepository } from '../../../infrastructure/media/persistence/prisma/media/prisma-media-asset.repository';
 import { EventBusService } from '../../../infrastructure/events/event-bus.service';
+import { AuditLogHelper } from '../../audit/helpers/audit-log.helper';
 import { MediaType } from '../../../domain/media/value-objects/MediaType';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -26,6 +27,10 @@ describe('Media Integration Tests', () => {
     // Create temporary storage directory
     testStoragePath = path.join(__dirname, '../../../../test-media-storage');
     await fs.mkdir(testStoragePath, { recursive: true });
+
+    const mockAuditLogHelper = {
+      logAction: jest.fn().mockResolvedValue(undefined),
+    };
 
     // Create test user
     module = await Test.createTestingModule({
@@ -60,6 +65,14 @@ describe('Media Integration Tests', () => {
           provide: 'IEventBus',
           useClass: EventBusService,
         },
+        {
+          provide: 'AuditLogHelper',
+          useValue: mockAuditLogHelper,
+        },
+        {
+          provide: AuditLogHelper,
+          useValue: mockAuditLogHelper,
+        }
       ],
     }).compile();
 
@@ -69,13 +82,24 @@ describe('Media Integration Tests', () => {
     prisma = module.get<PrismaService>(PrismaService);
     storageService = module.get<LocalFsStorageService>('IStorageService') as LocalFsStorageService;
 
+    // Seed roles
+    await prisma.role.upsert({
+      where: { code: 'owner' },
+      update: {},
+      create: { code: 'owner', scope: 'admin' },
+    });
+
     // Create test user
     const testUser = await prisma.user.create({
       data: {
         email: `test-${randomUUID()}@example.com`,
         password_hash: 'test-hash',
-        role: 'owner',
         status: 'active',
+        roles: {
+          create: {
+            role_code: 'owner',
+          },
+        },
       },
     });
     testUserId = testUser.id;

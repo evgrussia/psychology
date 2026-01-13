@@ -12,9 +12,10 @@ import { IStorageService } from '../../application/media/interfaces/IStorageServ
 import { TrackingService } from '../tracking/tracking.service';
 import { MediaTrackingHandler } from '../tracking/media-tracking.handler';
 import { EventsModule } from '../events/events.module';
+import { AuditModule } from '../audit/audit.module';
 
 @Module({
-  imports: [ConfigModule, EventsModule],
+  imports: [ConfigModule, EventsModule, AuditModule],
   controllers: [AdminMediaController],
   providers: [
     {

@@ -304,6 +304,7 @@ model User {
   review_consents    ReviewPublicationConsent[]
   audit_logs         AuditLogEntry[]
   template_updates   MessageTemplateVersion[]
+  content_revisions  ContentRevision[]
 
   @@map("users")
 }
@@ -388,6 +389,13 @@ model ContentItem {
   time_to_benefit TimeToBenefit?
   format          ContentFormat?
   support_level   SupportLevel?
+  
+  // SEO fields
+  seo_title       String?
+  seo_description String?
+  seo_keywords    String?
+  canonical_url   String?
+
   created_at      DateTime       @default(now())
   updated_at      DateTime       @updatedAt
 
@@ -397,10 +405,27 @@ model ContentItem {
   media    ContentMedia[]
   in_collections CuratedItem[]
   glossary_links GlossaryTermLink[]
+  revisions      ContentRevision[]
 
   @@unique([content_type, slug])
   @@index([status, content_type, slug])
   @@map("content_items")
+}
+
+model ContentRevision {
+  id              String      @id @default(uuid()) @db.Uuid
+  content_item_id String      @db.Uuid
+  body_markdown   String
+  title           String
+  excerpt         String?
+  meta            Json?       // To store other fields like SEO, format, etc.
+  changed_by_user_id String   @db.Uuid
+  created_at      DateTime    @default(now())
+
+  content_item ContentItem @relation(fields: [content_item_id], references: [id])
+  changed_by   User        @relation(fields: [changed_by_user_id], references: [id])
+
+  @@map("content_revisions")
 }
 
 model Topic {
@@ -575,6 +600,8 @@ model InteractiveRun {
   result_level              ResultLevel?
   result_profile            String?
   duration_ms               Int?
+  crisis_triggered          Boolean     @default(false)
+  crisis_trigger_type       String?
   deep_link_id              String?
 
   definition InteractiveDefinition @relation(fields: [interactive_definition_id], references: [id])

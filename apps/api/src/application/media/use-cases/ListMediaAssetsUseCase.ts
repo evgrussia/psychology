@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../infrastructure/database/prisma.service';
+import { PrismaService } from '@infrastructure/database/prisma.service';
 import { MediaAssetResponseDto } from '../dto/media-asset.dto';
-import { MediaType } from '../../../domain/media/value-objects/MediaType';
+import { MediaType } from '@domain/media/value-objects/MediaType';
 
 @Injectable()
 export class ListMediaAssetsUseCase {
@@ -14,7 +14,7 @@ export class ListMediaAssetsUseCase {
 
     return assets.map((asset) => ({
       id: asset.id,
-      publicUrl: asset.publicUrl,
+      publicUrl: asset.public_url,
       mediaType: asset.media_type as unknown as MediaType,
       mimeType: asset.mime_type,
       sizeBytes: asset.size_bytes.toString(),

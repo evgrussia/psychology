@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../../../database/prisma.service';
-import { IMediaAssetRepository } from '../../../../../../domain/media/repositories/IMediaAssetRepository';
-import { MediaAsset } from '../../../../../../domain/media/entities/MediaAsset';
+import { PrismaService } from '@infrastructure/database/prisma.service';
+import { IMediaAssetRepository } from '@domain/media/repositories/IMediaAssetRepository';
+import { MediaAsset } from '@domain/media/entities/MediaAsset';
 import { MediaAssetMapper } from './media-asset.mapper';
 
 @Injectable()
