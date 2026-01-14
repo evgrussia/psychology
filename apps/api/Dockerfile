@@ -1,6 +1,6 @@
 # Многоступенчатая сборка для оптимизации размера образа
 
-# Этап 1: Установка зависимостей
+# Этап 1: Установка зависимостей (включая dev для сборки)
 FROM node:18-alpine AS deps
 RUN apk add --no-cache libc6-compat openssl
 
@@ -10,7 +10,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json ./apps/api/
 
-# Устанавливаем pnpm и зависимости
+# Устанавливаем pnpm и ВСЕ зависимости (включая dev для prisma CLI)
 RUN npm install -g pnpm
 RUN pnpm install --frozen-lockfile
 
@@ -29,9 +29,9 @@ COPY apps/api/package.json ./apps/api/
 
 RUN npm install -g pnpm
 
-# Генерируем Prisma клиент (запускаем из корня с указанием workspace)
+# Генерируем Prisma клиент из корня с фильтром workspace
 WORKDIR /app
-RUN pnpm --filter @psychology/api exec prisma generate
+RUN pnpm --filter @psychology/api exec npx prisma generate
 
 # Этап 3: Сборка приложения
 FROM node:18-alpine AS builder
@@ -53,7 +53,21 @@ RUN npm install -g pnpm @nestjs/cli
 WORKDIR /app/apps/api
 RUN pnpm build
 
-# Этап 4: Production образ
+# Этап 4: Production зависимости
+FROM node:18-alpine AS prod-deps
+RUN apk add --no-cache libc6-compat openssl
+
+WORKDIR /app
+
+# Копируем файлы конфигурации
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/api/package.json ./apps/api/
+
+# Устанавливаем только production зависимости
+RUN npm install -g pnpm
+RUN pnpm install --frozen-lockfile --prod
+
+# Этап 5: Production образ
 FROM node:18-alpine AS runner
 RUN apk add --no-cache libc6-compat openssl curl
 
@@ -69,7 +83,7 @@ RUN adduser --system --uid 1001 nestjs
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./dist
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/package.json ./
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/prisma ./prisma
-COPY --from=deps --chown=nestjs:nodejs /app/node_modules ./node_modules
+COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --from=prisma --chown=nestjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 
 # Создаем директории для медиа файлов
