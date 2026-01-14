@@ -32,85 +32,33 @@ const Button: React.FC<ButtonProps> = ({
   className = '',
   ...props
 }) => {
-  const baseStyles: React.CSSProperties = {
-    fontFamily: typography.fontFamily.sans,
+  const combinedStyles: React.CSSProperties = {
+    fontFamily: 'var(--font-sans)',
     fontWeight: typography.fontWeight.medium,
     lineHeight: typography.lineHeight.normal,
-    letterSpacing: typography.letterSpacing.normal,
-    border: 'none',
-    borderRadius: effects.radius.pill,
+    border: variant === 'tertiary' ? `1px solid var(--color-border-primary)` : 'none',
+    borderRadius: 'var(--radius-pill)',
     cursor: disabled || loading ? 'not-allowed' : 'pointer',
-    transition: effects.transition.normal,
+    transition: 'var(--transition-normal)',
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.space[2],
+    gap: 'var(--space-2)',
     width: fullWidth ? '100%' : 'auto',
     opacity: disabled ? 0.6 : 1,
-    outline: 'none', // Remove default outline, will add focus-visible
-  };
-
-  const sizeStyles: Record<ButtonSize, React.CSSProperties> = {
-    sm: {
-      fontSize: typography.fontSize['body-sm'],
-      padding: `${spacing.space[2]} ${spacing.space[4]}`,
-    },
-    md: {
-      fontSize: typography.fontSize.body,
-      padding: `${spacing.space[3]} ${spacing.space[6]}`,
-    },
-    lg: {
-      fontSize: typography.fontSize['body-lg'],
-      padding: `${spacing.space[4]} ${spacing.space[8]}`,
-    },
-  };
-
-  const variantStyles: Record<ButtonVariant, React.CSSProperties> = {
-    primary: {
-      backgroundColor: colors.brand.primary.DEFAULT,
-      color: colors.text.onDark,
-      boxShadow: effects.shadow.sm,
-    },
-    secondary: {
-      backgroundColor: colors.brand.secondary.DEFAULT,
-      color: colors.text.primary,
-      boxShadow: effects.shadow.sm,
-    },
-    tertiary: {
-      backgroundColor: 'transparent',
-      color: colors.brand.primary.DEFAULT,
-      border: `1px solid ${colors.border.primary}`,
-    },
-    ghost: {
-      backgroundColor: 'transparent',
-      color: colors.text.primary,
-    },
-  };
-
-  const hoverStyles: Record<ButtonVariant, React.CSSProperties> = {
-    primary: {
-      backgroundColor: colors.brand.primary.dark,
-      boxShadow: effects.shadow.md,
-    },
-    secondary: {
-      backgroundColor: colors.brand.secondary.dark,
-      boxShadow: effects.shadow.md,
-    },
-    tertiary: {
-      borderColor: colors.brand.primary.DEFAULT,
-    },
-    ghost: {
-      backgroundColor: colors.bg.secondary,
-    },
-  };
-
-  const [isFocused, setIsFocused] = React.useState(false);
-  
-  const combinedStyles: React.CSSProperties = {
-    ...baseStyles,
-    ...sizeStyles[size],
-    ...variantStyles[variant],
-    ...(isFocused && a11yStyles.focusVisible),
+    outline: 'none',
+    padding: size === 'sm' ? 'var(--space-2) var(--space-4)' : 
+             size === 'lg' ? 'var(--space-4) var(--space-8)' : 
+             'var(--space-3) var(--space-6)',
+    fontSize: size === 'sm' ? 'var(--font-size-body-sm)' : 
+              size === 'lg' ? 'var(--font-size-body-lg)' : 
+              'var(--font-size-body)',
+    backgroundColor: variant === 'primary' ? 'var(--color-brand-primary)' :
+                     variant === 'secondary' ? 'var(--color-brand-secondary)' :
+                     'transparent',
+    color: variant === 'primary' ? 'var(--color-text-on-dark)' : 'var(--color-text-primary)',
+    boxShadow: (variant === 'primary' || variant === 'secondary') ? 'var(--shadow-sm)' : 'none',
+    ...style,
   };
 
   return (

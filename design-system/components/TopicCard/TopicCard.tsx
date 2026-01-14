@@ -20,32 +20,32 @@ const TopicCard: React.FC<TopicCardProps> = ({
   href,
 }) => {
   const content = (
-    <>
-      {icon && <div style={{ marginBottom: spacing.space[4] }}>{icon}</div>}
+    <div style={{ padding: 'var(--space-2)' }}>
+      {icon && <div style={{ marginBottom: 'var(--space-4)', fontSize: '2rem' }}>{icon}</div>}
       <h3 style={{
         ...typography.h3,
-        color: colors.text.primary,
-        marginBottom: spacing.space[2],
+        color: 'var(--color-text-primary)',
+        marginBottom: 'var(--space-2)',
       }}>{title}</h3>
       {description && (
         <p style={{
           ...typography.body.sm,
-          color: colors.text.secondary,
+          color: 'var(--color-text-secondary)',
+          margin: 0,
         }}>{description}</p>
       )}
-    </>
+    </div>
   );
 
-  const focusStyles = {
-    outline: 'none',
-    ':focus-visible': a11yStyles.focusVisible,
-  };
-
-  const cardStyle = {
+  const cardStyle: React.CSSProperties = {
     cursor: (onClick || href) ? 'pointer' : 'default',
-    textAlign: 'center' as const,
+    textAlign: 'center',
     height: '100%',
-    transition: effects.transition.normal,
+    transition: 'var(--transition-normal)',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
   };
 
   if (href) {

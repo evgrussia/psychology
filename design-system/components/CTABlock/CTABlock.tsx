@@ -8,6 +8,8 @@ export interface CTABlockProps {
   secondaryCTA?: React.ReactNode;
 }
 
+import { Container } from '../Layout';
+
 const CTABlock: React.FC<CTABlockProps> = ({
   title,
   description,
@@ -15,32 +17,31 @@ const CTABlock: React.FC<CTABlockProps> = ({
   secondaryCTA,
 }) => {
   return (
-    <section style={{ padding: `${spacing.space[20]} ${spacing.space[6]}` }}>
+    <Container>
       <div style={{
-        maxWidth: '1000px',
-        margin: '0 auto',
-        backgroundColor: colors.brand.primary.DEFAULT,
-        borderRadius: effects.radius.lg,
-        padding: `${spacing.space[16]} ${spacing.space[8]}`,
+        backgroundColor: 'var(--color-brand-primary)',
+        borderRadius: 'var(--radius-lg)',
+        padding: 'var(--space-12) var(--space-8)',
         textAlign: 'center',
-        color: colors.text.onDark,
+        color: 'var(--color-text-on-dark)',
+        boxShadow: 'var(--shadow-lg)',
       }}>
         <h2 style={{
           ...typography.h2,
-          color: colors.text.onDark,
-          marginBottom: spacing.space[4],
+          color: 'var(--color-text-on-dark)',
+          marginBottom: 'var(--space-4)',
         }}>{title}</h2>
         <p style={{
           ...typography.body.lg,
-          color: colors.text.onDark,
+          color: 'var(--color-text-on-dark)',
           opacity: 0.9,
-          marginBottom: spacing.space[10],
+          marginBottom: 'var(--space-8)',
           maxWidth: '600px',
-          margin: '0 auto 40px auto',
+          margin: '0 auto var(--space-8) auto',
         }}>{description}</p>
         <div style={{
           display: 'flex',
-          gap: spacing.space[4],
+          gap: 'var(--space-4)',
           justifyContent: 'center',
           flexWrap: 'wrap',
         }}>
@@ -48,7 +49,7 @@ const CTABlock: React.FC<CTABlockProps> = ({
           {secondaryCTA}
         </div>
       </div>
-    </section>
+    </Container>
   );
 };
 

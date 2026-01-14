@@ -39,3 +39,5 @@ export type { ProgressBarProps } from './ProgressBar/ProgressBar';
 
 export { ResultCard } from './ResultCard/ResultCard';
 export type { ResultCardProps } from './ResultCard/ResultCard';
+
+export * from './Layout';

@@ -8,7 +8,9 @@ import {
   FAQSection, 
   CTABlock,
   Button,
-  Disclaimer
+  Disclaimer,
+  Container,
+  Section
 } from '@psychology/design-system/components';
 import { spacing, typography, colors } from '@psychology/design-system/tokens';
 import { track, captureUTMParameters } from '../lib/tracking';
@@ -57,130 +59,139 @@ export default function HomeClient({ data }: HomeClientProps) {
 
   return (
     <main>
-      <HeroSection 
-        title="Эмоциональный баланс"
-        subtitle="Тёплое пространство профессиональной поддержки"
-        description="Помогаю справиться с тревогой, выгоранием и найти опору в себе за 1–3 клика до первого шага."
-        primaryCTA={
-          <Button variant="primary" size="lg" onClick={() => handleBookingClick('hero_booking')}>
-            Записаться на консультацию
-          </Button>
-        }
-        secondaryCTA={
-          <Button variant="secondary" size="lg" onClick={() => handleTGClick('hero_tg')}>
-            Начать в Telegram
-          </Button>
-        }
-      />
+      <Section variant="secondary" spacingSize="none">
+        <HeroSection 
+          title="Эмоциональный баланс"
+          subtitle="Тёплое пространство профессиональной поддержки"
+          description="Помогаю справиться с тревогой, выгоранием и найти опору в себе за 1–3 клика до первого шага."
+          primaryCTA={
+            <Button variant="primary" size="lg" onClick={() => handleBookingClick('hero_booking')}>
+              Записаться на консультацию
+            </Button>
+          }
+          secondaryCTA={
+            <Button variant="secondary" size="lg" onClick={() => handleTGClick('hero_tg')}>
+              Начать в Telegram
+            </Button>
+          }
+        />
+      </Section>
 
-      <section style={{ padding: `${spacing.space[20]} ${spacing.space[6]}` }}>
-        <h2 style={{
-          ...typography.h2,
-          textAlign: 'center',
-          marginBottom: spacing.space[12],
-          color: colors.text.primary,
-        }}>С чем я помогаю</h2>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: spacing.space[8],
-          maxWidth: '1200px',
-          margin: '0 auto',
-        }}>
-          {data.topics.map((topic) => (
-            <TopicCard 
-              key={topic.code}
-              title={topic.title}
-              description={`Узнайте больше о том, как я работаю с темой ${topic.title.toLowerCase()}.`}
-              href={`/s-chem-ya-pomogayu/${topic.code}`}
-              onClick={() => handleTopicClick(topic.code)}
-            />
-          ))}
-        </div>
-      </section>
-
-      {data.featured_interactives.length > 0 && (
-        <section style={{ 
-          padding: `${spacing.space[20]} ${spacing.space[6]}`,
-          backgroundColor: colors.bg.secondary 
-        }}>
+      <Section>
+        <Container>
           <h2 style={{
             ...typography.h2,
             textAlign: 'center',
             marginBottom: spacing.space[12],
             color: colors.text.primary,
-          }}>Первый шаг за 3 минуты</h2>
+          }}>С чем я помогаю</h2>
           <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: spacing.space[6],
-            maxWidth: '800px',
-            margin: '0 auto',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: spacing.space[8],
           }}>
-            {data.featured_interactives.map((item) => (
+            {data.topics.map((topic) => (
               <TopicCard 
-                key={item.id}
-                title={item.title}
-                description="Пройдите короткий интерактив и получите план действий."
-                href={`/start/${item.slug}`}
-                onClick={() => track('cta_click', { cta_id: `interactive_${item.slug}`, cta_target: `interactive_${item.type}` })}
+                key={topic.code}
+                title={topic.title}
+                description={`Узнайте больше о том, как я работаю с темой ${topic.title.toLowerCase()}.`}
+                href={`/s-chem-ya-pomogayu/${topic.code}`}
+                onClick={() => handleTopicClick(topic.code)}
               />
             ))}
           </div>
-        </section>
+        </Container>
+      </Section>
+
+      {data.featured_interactives.length > 0 && (
+        <Section variant="secondary">
+          <Container>
+            <h2 style={{
+              ...typography.h2,
+              textAlign: 'center',
+              marginBottom: spacing.space[12],
+              color: colors.text.primary,
+            }}>Первый шаг за 3 минуты</h2>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: spacing.space[6],
+              maxWidth: '800px',
+              margin: '0 auto',
+            }}>
+              {data.featured_interactives.map((item) => (
+                <TopicCard 
+                  key={item.id}
+                  title={item.title}
+                  description="Пройдите короткий интерактив и получите план действий."
+                  href={`/start/${item.slug}`}
+                  onClick={() => track('cta_click', { cta_id: `interactive_${item.slug}`, cta_target: `interactive_${item.type}` })}
+                />
+              ))}
+            </div>
+          </Container>
+        </Section>
       )}
 
-      <TrustBlocks 
-        title="Почему мне можно доверять"
-        items={data.trust_blocks.map(b => ({
-          ...b,
-          icon: b.id === 'confidentiality' ? '🔒' : b.id === 'how_it_works' ? '🤝' : '🛡️'
-        }))}
-      />
+      <Section>
+        <TrustBlocks 
+          title="Почему мне можно доверять"
+          items={data.trust_blocks.map(b => ({
+            ...b,
+            icon: b.id === 'confidentiality' ? '🔒' : b.id === 'how_it_works' ? '🤝' : '🛡️'
+          }))}
+        />
+      </Section>
 
-      <FAQSection 
-        title="Частые вопросы"
-        onItemToggle={handleFAQToggle}
-        items={[
-          { 
-            id: '1', 
-            question: 'Как проходит первая встреча?', 
-            answer: 'Мы знакомимся, обсуждаем ваш запрос и определяем цели работы. Это безопасное пространство для ваших чувств.' 
-          },
-          { 
-            id: '2', 
-            question: 'Это конфиденциально?', 
-            answer: 'Да, всё, что обсуждается на сессиях, остается строго между нами, согласно этическому кодексу.' 
-          },
-          { 
-            id: '3', 
-            question: 'Сколько нужно встреч?', 
-            answer: 'Всё индивидуально. Кому-то достаточно 3–5 встреч для решения конкретного вопроса, кто-то выбирает длительную терапию.' 
+      <Section variant="secondary">
+        <FAQSection 
+          title="Частые вопросы"
+          onItemToggle={handleFAQToggle}
+          items={[
+            { 
+              id: '1', 
+              question: 'Как проходит первая встреча?', 
+              answer: 'Мы знакомимся, обсуждаем ваш запрос и определяем цели работы. Это безопасное пространство для ваших чувств.' 
+            },
+            { 
+              id: '2', 
+              question: 'Это конфиденциально?', 
+              answer: 'Да, всё, что обсуждается на сессиях, остается строго между нами, согласно этическому кодексу.' 
+            },
+            { 
+              id: '3', 
+              question: 'Сколько нужно встреч?', 
+              answer: 'Всё индивидуально. Кому-то достаточно 3–5 встреч для решения конкретного вопроса, кто-то выбирает длительную терапию.' 
+            }
+          ]}
+        />
+      </Section>
+
+      <Section spacingSize="sm">
+        <Container>
+          <Disclaimer variant="info" showEmergencyLink title="Важная информация">
+            Сайт «Эмоциональный баланс» предоставляет психологическую поддержку и информационные услуги. 
+            Информация на сайте не является заменой профессиональной медицинской консультации, диагностики или лечения. 
+          </Disclaimer>
+        </Container>
+      </Section>
+
+      <Section variant="primary" spacingSize="none">
+        <CTABlock 
+          title="Готовы сделать первый шаг?"
+          description="Выберите удобный способ начать: записаться на консультацию или получить полезные материалы в Telegram."
+          primaryCTA={
+            <Button variant="primary" size="lg" onClick={() => handleBookingClick('footer_booking')}>
+              Записаться
+            </Button>
           }
-        ]}
-      />
-
-      <section style={{ maxWidth: '1200px', margin: '0 auto', padding: `0 ${spacing.space[6]}` }}>
-        <Disclaimer variant="info" showEmergencyLink title="Важная информация">
-          Сайт «Эмоциональный баланс» предоставляет психологическую поддержку и информационные услуги. 
-          Информация на сайте не является заменой профессиональной медицинской консультации, диагностики или лечения. 
-        </Disclaimer>
-      </section>
-
-      <CTABlock 
-        title="Готовы сделать первый шаг?"
-        description="Выберите удобный способ начать: записаться на консультацию или получить полезные материалы в Telegram."
-        primaryCTA={
-          <Button variant="primary" size="lg" onClick={() => handleBookingClick('footer_booking')}>
-            Записаться
-          </Button>
-        }
-        secondaryCTA={
-          <Button variant="secondary" size="lg" onClick={() => handleTGClick('footer_tg')}>
-            Telegram-бот
-          </Button>
-        }
-      />
+          secondaryCTA={
+            <Button variant="secondary" size="lg" onClick={() => handleTGClick('footer_tg')}>
+              Telegram-бот
+            </Button>
+          }
+        />
+      </Section>
     </main>
   );
 }

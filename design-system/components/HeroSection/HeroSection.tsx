@@ -10,6 +10,8 @@ export interface HeroSectionProps {
   secondaryCTA?: React.ReactNode;
 }
 
+import { Container } from '../Layout';
+
 const HeroSection: React.FC<HeroSectionProps> = ({
   title,
   subtitle,
@@ -18,12 +20,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   secondaryCTA,
 }) => {
   return (
-    <section style={{
-      padding: `${spacing.space[20]} ${spacing.space[6]}`,
-      backgroundColor: colors.bg.secondary,
-      textAlign: 'center',
-    }}>
-      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+    <Container>
+      <div style={{
+        textAlign: 'center',
+        padding: `${spacing.space[16]} 0`,
+        maxWidth: '800px',
+        margin: '0 auto',
+      }}>
         <p style={{
           ...typography.h3,
           color: colors.brand.primary.DEFAULT,
@@ -52,7 +55,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           {secondaryCTA}
         </div>
       </div>
-    </section>
+    </Container>
   );
 };
 

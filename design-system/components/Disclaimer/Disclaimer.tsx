@@ -48,33 +48,43 @@ export const Disclaimer: React.FC<DisclaimerProps> = ({
       style={{
         backgroundColor: currentStyle.bg,
         border: `1px solid ${currentStyle.border}`,
-        borderRadius: '8px',
-        padding: spacing.space[4],
-        marginBottom: spacing.space[6],
+        borderRadius: 'var(--radius-md)',
+        padding: 'var(--space-4)',
+        marginBottom: 'var(--space-6)',
         display: 'flex',
         flexDirection: 'column',
-        gap: spacing.space[2],
+        gap: 'var(--space-2)',
+        boxShadow: 'var(--shadow-sm)',
       }}
       role="alert"
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: spacing.space[2] }}>
-        <span style={{ fontSize: '20px', color: currentStyle.iconColor }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+        <span style={{ fontSize: '24px', color: currentStyle.iconColor }}>
           {currentStyle.icon}
         </span>
-        <h4 style={{ ...typography.h4, margin: 0, color: colors.text.primary }}>
+        <h4 style={{ 
+          ...typography.h4, 
+          margin: 0, 
+          color: 'var(--color-text-primary)',
+          fontSize: 'var(--font-size-h4)',
+        }}>
           {title}
         </h4>
       </div>
-      <div style={{ ...typography.body.md, color: colors.text.secondary }}>
+      <div style={{ 
+        ...typography.body.md, 
+        color: 'var(--color-text-secondary)',
+        lineHeight: 1.6,
+      }}>
         {children}
       </div>
       {showEmergencyLink && (
-        <div style={{ marginTop: spacing.space[2] }}>
+        <div style={{ marginTop: 'var(--space-2)' }}>
           <a
             href="/emergency"
             style={{
               ...typography.body.sm,
-              color: colors.semantic.error.dark,
+              color: 'var(--color-error)',
               fontWeight: 600,
               textDecoration: 'underline',
             }}

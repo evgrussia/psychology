@@ -20,29 +20,15 @@ const Card: React.FC<CardProps> = ({
   className = '',
   ...props
 }) => {
-  const baseStyles: React.CSSProperties = {
-    backgroundColor: colors.bg.primary,
-    borderRadius: effects.radius.md,
-    padding: spacing.space[6],
-    transition: effects.transition.normal,
-  };
-
-  const variantStyles: Record<CardProps['variant'], React.CSSProperties> = {
-    default: {
-      border: `1px solid ${colors.border.primary}`,
-    },
-    elevated: {
-      boxShadow: effects.shadow.md,
-      border: 'none',
-    },
-    outlined: {
-      border: `2px solid ${colors.border.secondary}`,
-    },
-  };
-
   const combinedStyles: React.CSSProperties = {
-    ...baseStyles,
-    ...variantStyles[variant],
+    backgroundColor: 'var(--color-bg-primary)',
+    borderRadius: 'var(--radius-md)',
+    padding: 'var(--space-6)',
+    transition: 'var(--transition-normal)',
+    border: variant === 'outlined' ? '2px solid var(--color-border-secondary)' : 
+            variant === 'default' ? '1px solid var(--color-border-primary)' : 'none',
+    boxShadow: variant === 'elevated' ? 'var(--shadow-md)' : 'none',
+    ...style,
   };
 
   return (

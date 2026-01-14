@@ -8,7 +8,9 @@ import {
   FAQSection, 
   CTABlock,
   Button,
-  Disclaimer
+  Disclaimer,
+  Container,
+  Section
 } from '@psychology/design-system/components';
 import { spacing, typography, colors } from '@psychology/design-system/tokens';
 import { track } from '../lib/tracking';
@@ -63,38 +65,38 @@ export default function PageClient({ slug, data }: PageClientProps) {
   
   return (
     <main>
-      <section style={{ 
-        padding: `${spacing.space[20]} ${spacing.space[6]}`,
-        maxWidth: '800px',
-        margin: '0 auto'
-      }}>
-        <h1 style={{
-          ...typography.h1,
-          marginBottom: spacing.space[8],
-          color: colors.text.primary,
-        }}>{data.title}</h1>
-        
-        <div className="prose" style={{
-          ...typography.body.md,
-          color: colors.text.secondary,
-        }}>
-          <SafeMarkdownRenderer content={data.body_markdown} />
-        </div>
-      </section>
+      <Section>
+        <Container maxWidth="800px">
+          <h1 style={{
+            ...typography.h1,
+            marginBottom: spacing.space[8],
+            color: colors.text.primary,
+          }}>{data.title}</h1>
+          
+          <div className="prose" style={{
+            ...typography.body.md,
+            color: colors.text.secondary,
+          }}>
+            <SafeMarkdownRenderer content={data.body_markdown} />
+          </div>
+        </Container>
+      </Section>
 
       {trustPagesEnabled && slug === 'about' && (
-        <TrustBlocks 
-          title="Мои принципы и этика"
-          items={[
-            { id: 'confidentiality', title: 'Конфиденциальность', description: 'Соблюдаю профессиональную тайну и этический кодекс.', icon: '🔒' },
-            { id: 'boundaries', title: 'Границы', description: 'Создаю безопасное и предсказуемое пространство.', icon: '🛡️' },
-            { id: 'education', title: 'Образование', description: 'Регулярная супервизия и повышение квалификации.', icon: '🎓' },
-          ]}
-        />
+        <Section variant="secondary">
+          <TrustBlocks 
+            title="Мои принципы и этика"
+            items={[
+              { id: 'confidentiality', title: 'Конфиденциальность', description: 'Соблюдаю профессиональную тайну и этический кодекс.', icon: '🔒' },
+              { id: 'boundaries', title: 'Границы', description: 'Создаю безопасное и предсказуемое пространство.', icon: '🛡️' },
+              { id: 'education', title: 'Образование', description: 'Регулярная супервизия и повышение квалификации.', icon: '🎓' },
+            ]}
+          />
+        </Section>
       )}
 
       {trustPagesEnabled && slug === 'how-it-works' && (
-        <>
+        <Section variant="secondary">
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
@@ -151,31 +153,35 @@ export default function PageClient({ slug, data }: PageClientProps) {
               }
             ]}
           />
-        </>
+        </Section>
       )}
 
       {slug === 'how-it-works' && (
-        <section style={{ maxWidth: '800px', margin: '0 auto', padding: `0 ${spacing.space[6]}` }}>
-          <Disclaimer variant="info" showEmergencyLink title="Важно понимать">
-            Психологическая консультация не является медицинской услугой. Если вы находитесь в остром кризисном состоянии, пожалуйста, обратитесь в специализированные службы.
-          </Disclaimer>
-        </section>
+        <Section spacingSize="sm">
+          <Container maxWidth="800px">
+            <Disclaimer variant="info" showEmergencyLink title="Важно понимать">
+              Психологическая консультация не является медицинской услугой. Если вы находитесь в остром кризисном состоянии, пожалуйста, обратитесь в специализированные службы.
+            </Disclaimer>
+          </Container>
+        </Section>
       )}
 
-      <CTABlock 
-        title="С чего начнём?"
-        description="Вы можете записаться на ознакомительную сессию или задать вопрос в Telegram."
-        primaryCTA={
-          <Button variant="primary" size="lg" onClick={() => handleBookingClick(`${slug}_footer_booking`)}>
-            Записаться
-          </Button>
-        }
-        secondaryCTA={
-          <Button variant="secondary" size="lg" onClick={() => handleTGClick(`${slug}_footer_tg`)}>
-            Написать в Telegram
-          </Button>
-        }
-      />
+      <Section variant="primary">
+        <CTABlock 
+          title="С чего начнём?"
+          description="Вы можете записаться на ознакомительную сессию или задать вопрос в Telegram."
+          primaryCTA={
+            <Button variant="primary" size="lg" onClick={() => handleBookingClick(`${slug}_footer_booking`)}>
+              Записаться
+            </Button>
+          }
+          secondaryCTA={
+            <Button variant="secondary" size="lg" onClick={() => handleTGClick(`${slug}_footer_tg`)}>
+              Написать в Telegram
+            </Button>
+          }
+        />
+      </Section>
     </main>
   );
 }
