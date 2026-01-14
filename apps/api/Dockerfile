@@ -78,20 +78,14 @@ RUN NODE_PATH=/app/node_modules /app/node_modules/.bin/prisma generate || /app/n
 WORKDIR /app/apps/api
 RUN nest build
 
-# Экспортируем Prisma runtime-client из pnpm virtual-store.
-# Prisma кладёт артефакт сюда:
-#   /app/node_modules/.pnpm/@prisma+client@.../node_modules/.prisma/client
-# В prod-слое (prod-deps) его нет, поэтому собираем в стабильную директорию,
-# чтобы затем корректно восстановить в runner без жёсткой привязки к версии.
+# Экспортируем Prisma runtime-client в стабильную директорию.
+# В pnpm workspace Prisma хранит runtime в "virtual store", путь может отличаться,
+# поэтому вычисляем точный путь через createRequire(require.resolve('@prisma/client')).
 WORKDIR /app
 RUN rm -rf /prisma-runtime && mkdir -p /prisma-runtime && \
-    for d in /app/node_modules/.pnpm/@prisma+client@*/node_modules/.prisma; do \
-        if [ -d "$d/client" ]; then \
-            cp -r "$d" /prisma-runtime/.prisma; \
-            break; \
-        fi; \
-    done && \
-    test -f /prisma-runtime/.prisma/client/index.js
+    PRISMA_RUNTIME_DIR="$(node -e "const {createRequire}=require('module'); const path=require('path'); const req=createRequire(require.resolve('@prisma/client')); const p=req.resolve('.prisma/client/index'); process.stdout.write(path.dirname(path.dirname(p)))")" && \
+    test -f "$PRISMA_RUNTIME_DIR/client/index.js" && \
+    cp -r "$PRISMA_RUNTIME_DIR" /prisma-runtime/.prisma
 
 # Этап 4: Production зависимости
 FROM node:18-alpine AS prod-deps
@@ -129,16 +123,22 @@ COPY --from=builder --chown=nestjs:nodejs /app/apps/api/prisma ./prisma
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --from=prod-deps --chown=nestjs:nodejs /app/apps/api/node_modules ./apps/api/node_modules
 
-# Восстанавливаем Prisma runtime-client в pnpm virtual-store внутри runner.
+# Восстанавливаем Prisma runtime-client рядом с @prisma/client в runner.
 COPY --from=builder --chown=nestjs:nodejs /prisma-runtime/.prisma /tmp/prisma-runtime/.prisma
+# В prod-образе `@prisma/client` может резолвиться не из /app/node_modules (pnpm workspace),
+# поэтому не используем require.resolve тут. Вместо этого кладём runtime в virtual-store,
+# где Prisma его ожидает: .../.pnpm/@prisma+client@*/node_modules/.prisma
 RUN set -e; \
+    copied=0; \
     for m in /app/node_modules/.pnpm/@prisma+client@*/node_modules; do \
-        if [ -d "$m/@prisma/client" ]; then \
+        if [ -d "$m" ]; then \
             mkdir -p "$m/.prisma"; \
             cp -r /tmp/prisma-runtime/.prisma/* "$m/.prisma/"; \
+            copied=1; \
         fi; \
     done; \
-    rm -rf /tmp/prisma-runtime
+    rm -rf /tmp/prisma-runtime; \
+    test "$copied" = "1"
 
 # Копируем Prisma клиент из prisma stage (директория всегда существует после генерации)
 RUN mkdir -p ./node_modules/.prisma
