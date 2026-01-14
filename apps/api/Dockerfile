@@ -6,8 +6,8 @@ RUN apk add --no-cache libc6-compat openssl
 
 WORKDIR /app
 
-# Копируем package.json и pnpm-lock
-COPY package.json pnpm-lock.yaml* ./
+# Копируем файлы конфигурации для установки зависимостей
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json ./apps/api/
 
 # Устанавливаем pnpm и зависимости
@@ -20,12 +20,18 @@ RUN apk add --no-cache libc6-compat openssl
 
 WORKDIR /app
 
+# Копируем зависимости и конфигурацию
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/package.json ./package.json
+COPY --from=deps /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY apps/api/prisma ./apps/api/prisma
 COPY apps/api/package.json ./apps/api/
 
 RUN npm install -g pnpm
-RUN cd apps/api && pnpm prisma:generate
+
+# Генерируем Prisma клиент (запускаем из корня с указанием workspace)
+WORKDIR /app
+RUN pnpm --filter @psychology/api exec prisma generate
 
 # Этап 3: Сборка приложения
 FROM node:18-alpine AS builder
@@ -35,12 +41,11 @@ WORKDIR /app
 
 # Копируем зависимости и Prisma клиент
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=prisma /app/apps/api/node_modules/.prisma ./apps/api/node_modules/.prisma
 COPY --from=prisma /app/node_modules/.prisma ./node_modules/.prisma
 
 # Копируем исходники
 COPY apps/api ./apps/api
-COPY package.json ./
+COPY package.json pnpm-workspace.yaml ./
 
 RUN npm install -g pnpm @nestjs/cli
 
@@ -65,7 +70,7 @@ COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./dist
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/package.json ./
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/prisma ./prisma
 COPY --from=deps --chown=nestjs:nodejs /app/node_modules ./node_modules
-COPY --from=prisma --chown=nestjs:nodejs /app/apps/api/node_modules/.prisma ./node_modules/.prisma
+COPY --from=prisma --chown=nestjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 
 # Создаем директории для медиа файлов
 RUN mkdir -p /app/media && chown nestjs:nodejs /app/media
