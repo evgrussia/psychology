@@ -255,14 +255,14 @@ cd /var/www/psychology
 ### Контейнеры не запускаются
 ```bash
 # Проверьте логи
-docker compose -f docker-compose.prod.yml logs
+docker compose -f docker compose.prod.yml logs
 
 # Проверьте .env файл
 cat .env.prod
 
 # Перезапустите
-docker compose -f docker-compose.prod.yml down
-docker compose -f docker-compose.prod.yml up -d
+docker compose -f docker compose.prod.yml down
+docker compose -f docker compose.prod.yml up -d
 ```
 
 ### Ошибка подключения к БД

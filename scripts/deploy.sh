@@ -50,7 +50,7 @@ GIT_BRANCH="develop"
 check_dependencies() {
     print_info "Проверка зависимостей..."
     
-    local deps=("docker" "docker-compose" "git" "openssl")
+    local deps=("docker" "docker compose" "git" "openssl")
     for dep in "${deps[@]}"; do
         if ! command -v "$dep" &> /dev/null; then
             print_error "Не найдена зависимость: $dep"
@@ -134,7 +134,7 @@ stop_containers() {
     print_info "Остановка старых контейнеров..."
     
     cd "$DEPLOY_PATH"
-    docker-compose -f docker-compose.prod.yml down || true
+    docker compose -f docker-compose.prod.yml down || true
     
     print_success "Контейнеры остановлены"
 }
@@ -144,7 +144,7 @@ build_images() {
     print_info "Сборка Docker образов..."
     
     cd "$DEPLOY_PATH"
-    docker-compose -f docker-compose.prod.yml build --no-cache
+    docker compose -f docker-compose.prod.yml build --no-cache
     
     print_success "Образы собраны"
 }
@@ -156,14 +156,14 @@ run_migrations() {
     cd "$DEPLOY_PATH"
     
     # Запускаем только БД и Redis для миграций
-    docker-compose -f docker-compose.prod.yml up -d db redis
+    docker compose -f docker-compose.prod.yml up -d db redis
     
     # Ждем готовности БД
     print_info "Ожидание готовности базы данных..."
     sleep 10
     
     # Применяем миграции через временный контейнер
-    docker-compose -f docker-compose.prod.yml run --rm api sh -c "cd /app && npx prisma migrate deploy"
+    docker compose -f docker-compose.prod.yml run --rm api sh -c "cd /app && npx prisma migrate deploy"
     
     print_success "Миграции применены"
 }
@@ -173,7 +173,7 @@ start_containers() {
     print_info "Запуск контейнеров..."
     
     cd "$DEPLOY_PATH"
-    docker-compose -f docker-compose.prod.yml up -d
+    docker compose -f docker-compose.prod.yml up -d
     
     print_success "Контейнеры запущены"
 }
@@ -214,7 +214,7 @@ cleanup() {
 show_logs() {
     print_info "Последние логи сервисов:"
     cd "$DEPLOY_PATH"
-    docker-compose -f docker-compose.prod.yml logs --tail=50
+    docker compose -f docker-compose.prod.yml logs --tail=50
 }
 
 # ============================================
@@ -276,11 +276,11 @@ case "${1:-deploy}" in
         ;;
     logs)
         cd "$DEPLOY_PATH"
-        docker-compose -f docker-compose.prod.yml logs -f
+        docker compose -f docker-compose.prod.yml logs -f
         ;;
     restart)
         cd "$DEPLOY_PATH"
-        docker-compose -f docker-compose.prod.yml restart
+        docker compose -f docker-compose.prod.yml restart
         print_success "Контейнеры перезапущены"
         ;;
     stop)
@@ -288,7 +288,7 @@ case "${1:-deploy}" in
         ;;
     status)
         cd "$DEPLOY_PATH"
-        docker-compose -f docker-compose.prod.yml ps
+        docker compose -f docker-compose.prod.yml ps
         ;;
     *)
         echo "Использование: $0 {deploy|backup|logs|restart|stop|status}"
