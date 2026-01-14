@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ['@psychology/design-system'],
   output: 'standalone', // Для Docker деплоя
 }
 

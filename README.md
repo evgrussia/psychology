@@ -177,3 +177,61 @@ API предоставляет следующие endpoints:
 
 После запуска API, Swagger документация доступна по адресу:
 http://localhost:3000/api/docs
+
+## Деплой на сервер
+
+### Быстрый старт
+
+Для деплоя проекта на production/dev сервер следуйте инструкциям:
+
+1. **Полная инструкция**: [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)
+2. **Чеклист деплоя**: [docs/DEPLOYMENT-CHECKLIST.md](./docs/DEPLOYMENT-CHECKLIST.md)
+3. **Быстрые команды**: [docs/COMMANDS.md](./docs/COMMANDS.md)
+4. **Сводка**: [DEPLOYMENT-SUMMARY.md](./DEPLOYMENT-SUMMARY.md)
+
+### Созданные файлы для деплоя
+
+- `apps/*/Dockerfile` - Docker образы для каждого сервиса
+- `docker-compose.prod.yml` - Production конфигурация
+- `nginx/` - Конфигурация Nginx с SSL
+- `scripts/deploy.sh` - Скрипт автоматического деплоя
+- `scripts/setup-server.sh` - Скрипт настройки сервера
+- `scripts/monitor.sh` - Скрипт мониторинга
+- `env.prod.example` - Шаблон переменных окружения
+
+### Быстрые команды деплоя
+
+```bash
+# Настройка нового сервера (один раз)
+./scripts/setup-server.sh
+
+# Деплой приложения
+./scripts/deploy.sh deploy
+
+# Мониторинг состояния
+./scripts/monitor.sh
+
+# Просмотр логов
+./scripts/deploy.sh logs
+
+# Создание бэкапа
+./scripts/deploy.sh backup
+```
+
+### Требования для деплоя
+
+- **Сервер**: Ubuntu 24.04 (рекомендуется)
+- **Ресурсы**: минимум 2GB RAM, 20GB диск
+- **Домен**: настроенный с DNS записями
+- **SSL**: Let's Encrypt (автоматически через Certbot)
+
+### Архитектура production
+
+```
+Internet → Nginx (SSL) → Docker Compose
+                              ├── API (NestJS)
+                              ├── Web (Next.js)
+                              ├── Admin (Next.js)
+                              ├── PostgreSQL
+                              └── Redis
+```
