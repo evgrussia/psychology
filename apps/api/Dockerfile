@@ -100,6 +100,9 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+# Устанавливаем pnpm и prisma CLI для выполнения миграций
+RUN npm install -g pnpm prisma
+
 # Создаем непривилегированного пользователя
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nestjs

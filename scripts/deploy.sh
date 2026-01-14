@@ -171,7 +171,10 @@ run_migrations() {
     sleep 10
     
     # Применяем миграции через временный контейнер
-    docker compose -f docker-compose.prod.yml run --rm api sh -c "pnpm --filter @psychology/api exec prisma migrate deploy"
+    # Используем prisma CLI напрямую (установлен глобально в контейнере)
+    # Запускаем от root для доступа к prisma CLI
+    # В production образе prisma находится в /app/prisma
+    docker compose -f docker-compose.prod.yml run --rm --user root api sh -c "prisma migrate deploy --schema=/app/prisma/schema.prisma"
     
     print_success "Миграции применены"
 }
