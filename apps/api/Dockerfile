@@ -83,8 +83,14 @@ RUN nest build
 # поэтому вычисляем точный путь через createRequire(require.resolve('@prisma/client')).
 WORKDIR /app
 RUN rm -rf /prisma-runtime && mkdir -p /prisma-runtime && \
-    PRISMA_RUNTIME_DIR="$(node -e "const fs=require('fs'); const path=require('path'); const locs=['/app/node_modules/.prisma', '/app/apps/api/node_modules/.prisma']; const found=locs.find(l=>fs.existsSync(path.join(l,'client/index.js'))); if(found) process.stdout.write(found); else process.exit(1)")" && \
-    test -f "$PRISMA_RUNTIME_DIR/client/index.js" && \
+    echo "Searching for Prisma client..." && \
+    PRISMA_RUNTIME_DIR="$(find /app -name "index.js" -path "*/.prisma/client/index.js" | head -n 1 | sed 's/\/client\/index.js//')" && \
+    if [ -z "$PRISMA_RUNTIME_DIR" ]; then \
+        echo "ERROR: Prisma client (index.js) not found in /app" >&2; \
+        find /app -type d -name ".prisma" -ls >&2; \
+        exit 1; \
+    fi && \
+    echo "Found Prisma runtime at: $PRISMA_RUNTIME_DIR" && \
     cp -r "$PRISMA_RUNTIME_DIR" /prisma-runtime/.prisma
 
 # Этап 4: Production зависимости
