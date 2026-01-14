@@ -83,7 +83,7 @@ RUN nest build
 # поэтому вычисляем точный путь через createRequire(require.resolve('@prisma/client')).
 WORKDIR /app
 RUN rm -rf /prisma-runtime && mkdir -p /prisma-runtime && \
-    PRISMA_RUNTIME_DIR="$(node -e "const {createRequire}=require('module'); const path=require('path'); const req=createRequire(require.resolve('@prisma/client')); const p=req.resolve('.prisma/client/index'); process.stdout.write(path.dirname(path.dirname(p)))")" && \
+    PRISMA_RUNTIME_DIR="$(node -e "const fs=require('fs'); const path=require('path'); const locs=['/app/node_modules/.prisma', '/app/apps/api/node_modules/.prisma']; const found=locs.find(l=>fs.existsSync(path.join(l,'client/index.js'))); if(found) process.stdout.write(found); else process.exit(1)")" && \
     test -f "$PRISMA_RUNTIME_DIR/client/index.js" && \
     cp -r "$PRISMA_RUNTIME_DIR" /prisma-runtime/.prisma
 
