@@ -83,7 +83,7 @@ sudo chown deploy:deploy /var/www/psychology
 cd /var/www/psychology
 
 # Клонируйте репозиторий
-git clone -b develop YOUR_REPO_URL .
+git clone -b main YOUR_REPO_URL .
 ```
 
 ### Шаг 4: Настройка окружения

@@ -113,14 +113,14 @@ docker compose -f docker-compose.prod.yml run --rm -p 5555:5555 api sh -c "cd /a
 ### Обновить код из Git и передеплоить
 ```bash
 cd /var/www/psychology
-git pull origin develop
+git pull origin main
 ./scripts/deploy.sh deploy
 ```
 
 ### Быстрое обновление без пересборки
 ```bash
 cd /var/www/psychology
-git pull origin develop
+git pull origin main
 docker compose -f docker-compose.prod.yml restart
 ```
 

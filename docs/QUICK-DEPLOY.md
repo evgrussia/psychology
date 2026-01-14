@@ -30,7 +30,7 @@ api A 213.159.67.199
 ```bash
 ssh root@213.159.67.199
 cd ~
-wget https://raw.githubusercontent.com/YOUR_REPO/psychology/develop/scripts/setup-server.sh
+wget https://raw.githubusercontent.com/YOUR_REPO/psychology/main/scripts/setup-server.sh
 chmod +x setup-server.sh
 ./setup-server.sh
 ```
@@ -51,7 +51,7 @@ cd /var/www/psychology
 
 ### Шаг 4: Клонирование проекта
 ```bash
-git clone -b develop https://github.com/YOUR_REPO/psychology.git .
+git clone -b main https://github.com/YOUR_REPO/psychology.git .
 ```
 
 ### Шаг 5: Настройка окружения

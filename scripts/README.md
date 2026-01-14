@@ -21,7 +21,7 @@
 **Использование**:
 ```bash
 # На сервере от имени root
-wget https://raw.githubusercontent.com/your-repo/psychology/develop/scripts/setup-server.sh
+wget https://raw.githubusercontent.com/your-repo/psychology/main/scripts/setup-server.sh
 chmod +x setup-server.sh
 ./setup-server.sh
 ```
@@ -109,7 +109,7 @@ certbot certonly --standalone \
 # От пользователя deploy
 su - deploy
 cd /var/www/psychology
-git clone -b develop YOUR_REPO_URL .
+git clone -b main YOUR_REPO_URL .
 ```
 
 ### Шаг 5: Настройка окружения

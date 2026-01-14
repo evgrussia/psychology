@@ -245,10 +245,10 @@ cd /var/www/psychology
 
 ```bash
 # Замените URL на ваш репозиторий
-git clone -b develop https://github.com/yourusername/psychology.git .
+git clone -b main https://github.com/yourusername/psychology.git .
 
 # Или если используете SSH
-git clone -b develop git@github.com:yourusername/psychology.git .
+git clone -b main git@github.com:yourusername/psychology.git .
 ```
 
 ### 5.4 Создание файла окружения

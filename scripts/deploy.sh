@@ -40,7 +40,7 @@ DEPLOY_USER="deploy"
 DEPLOY_PATH="/var/www/psychology"
 BACKUP_PATH="/var/backups/psychology"
 GIT_REPO="https://github.com/yourusername/psychology.git"
-GIT_BRANCH="develop"
+GIT_BRANCH="main"
 
 # ============================================
 # ФУНКЦИИ
