@@ -180,23 +180,45 @@ http://localhost:3000/api/docs
 
 ## Деплой на сервер
 
-### Быстрый старт
+### 🎯 Два варианта деплоя
 
-Для деплоя проекта на production/dev сервер следуйте инструкциям:
+**У вас чистый сервер?**
+- 👉 [Инструкция для чистого сервера](./docs/DEPLOYMENT.md)
+- 👉 [Быстрый старт (1 страница)](./docs/QUICK-DEPLOY.md)
 
-1. **Полная инструкция**: [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)
-2. **Чеклист деплоя**: [docs/DEPLOYMENT-CHECKLIST.md](./docs/DEPLOYMENT-CHECKLIST.md)
-3. **Быстрые команды**: [docs/COMMANDS.md](./docs/COMMANDS.md)
-4. **Сводка**: [DEPLOYMENT-SUMMARY.md](./DEPLOYMENT-SUMMARY.md)
+**У вас уже установлен Nginx?**
+- 👉 [Инструкция для существующего Nginx](./docs/DEPLOYMENT-EXISTING-NGINX.md)
+
+**Не уверены, какой вариант выбрать?**
+- 👉 [Сравнение вариантов](./docs/DEPLOYMENT-SCENARIOS.md)
+
+### Документация по деплою
+
+1. **[DEPLOYMENT-SCENARIOS.md](./docs/DEPLOYMENT-SCENARIOS.md)** - Выбор варианта деплоя
+2. **[DEPLOYMENT.md](./docs/DEPLOYMENT.md)** - Полная инструкция (чистый сервер)
+3. **[DEPLOYMENT-EXISTING-NGINX.md](./docs/DEPLOYMENT-EXISTING-NGINX.md)** - Инструкция для существующего Nginx
+4. **[QUICK-DEPLOY.md](./docs/QUICK-DEPLOY.md)** - Краткая инструкция на одну страницу
+5. **[DEPLOYMENT-CHECKLIST.md](./docs/DEPLOYMENT-CHECKLIST.md)** - Чеклист деплоя
+6. **[COMMANDS.md](./docs/COMMANDS.md)** - Справочник команд
+7. **[DEPLOYMENT-SUMMARY.md](./DEPLOYMENT-SUMMARY.md)** - Общая сводка
 
 ### Созданные файлы для деплоя
 
+**Docker:**
 - `apps/*/Dockerfile` - Docker образы для каждого сервиса
 - `docker-compose.prod.yml` - Production конфигурация
-- `nginx/` - Конфигурация Nginx с SSL
-- `scripts/deploy.sh` - Скрипт автоматического деплоя
+
+**Nginx:**
+- `nginx/nginx.conf` - Конфигурация внутреннего Nginx
+- `nginx/conf.d/default.conf` - Виртуальные хосты
+- `nginx/host-nginx-config.conf` - Конфигурация для внешнего Nginx (если используется)
+
+**Скрипты:**
 - `scripts/setup-server.sh` - Скрипт настройки сервера
+- `scripts/deploy.sh` - Скрипт автоматического деплоя
 - `scripts/monitor.sh` - Скрипт мониторинга
+
+**Конфигурация:**
 - `env.prod.example` - Шаблон переменных окружения
 
 ### Быстрые команды деплоя
@@ -227,11 +249,22 @@ http://localhost:3000/api/docs
 
 ### Архитектура production
 
+**Вариант А - Чистый сервер:**
 ```
-Internet → Nginx (SSL) → Docker Compose
-                              ├── API (NestJS)
-                              ├── Web (Next.js)
-                              ├── Admin (Next.js)
-                              ├── PostgreSQL
-                              └── Redis
+Internet → Docker Nginx (SSL) → Docker Compose
+                                    ├── API (NestJS)
+                                    ├── Web (Next.js)
+                                    ├── Admin (Next.js)
+                                    ├── PostgreSQL
+                                    └── Redis
+```
+
+**Вариант Б - Существующий Nginx:**
+```
+Internet → Nginx на хосте (SSL) → Docker Nginx → Docker Compose
+              ├── другие проекты...              ├── API (NestJS)
+              └── balance-space.ru               ├── Web (Next.js)
+                                                 ├── Admin (Next.js)
+                                                 ├── PostgreSQL
+                                                 └── Redis
 ```
