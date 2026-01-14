@@ -51,7 +51,9 @@ export function RitualClient({ initialRitual }: { initialRitual: Ritual }) {
       
       // Create InteractiveRun in backend
       InteractivePlatform.startRun({
-        interactiveDefinitionId: initialRitual.id,
+        interactive_type: 'ritual',
+        interactive_slug: initialRitual.slug,
+        topic: initialRitual.topicCode || undefined,
       }).then((id) => {
         setRunId(id);
         localStorage.setItem(`ritual_run_${initialRitual.slug}`, id);
@@ -59,7 +61,7 @@ export function RitualClient({ initialRitual }: { initialRitual: Ritual }) {
         console.error('Failed to create InteractiveRun:', error);
       });
     }
-  }, [initialRitual.slug, initialRitual.topicCode, initialRitual.id]);
+  }, [currentStepIndex, initialRitual.slug, initialRitual.topicCode]);
 
   useEffect(() => {
     if (currentStep && currentStep.durationSeconds && !isPaused) {

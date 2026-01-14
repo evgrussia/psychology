@@ -4,7 +4,10 @@ import { Card } from '@psychology/design-system/components';
 async function getCollections() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
   try {
-    const res = await fetch(`${apiUrl}/public/curated`, { cache: 'no-store' });
+    const res = await fetch(`${apiUrl}/public/curated`, { 
+      cache: 'no-store',
+      signal: AbortSignal.timeout(5000)
+    });
     if (!res.ok) return [];
     return res.json();
   } catch (error) {

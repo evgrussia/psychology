@@ -18,6 +18,12 @@ export default function EditContentPage() {
     bodyMarkdown: '',
     excerpt: '',
     status: 'draft',
+    seoTitle: '',
+    seoDescription: '',
+    seoKeywords: '',
+    canonicalUrl: '',
+    topicCodes: [] as string[],
+    tagIds: [] as string[],
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

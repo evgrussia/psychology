@@ -11,8 +11,9 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json ./apps/api/
 
 # Устанавливаем pnpm и ВСЕ зависимости (включая dev для prisma CLI)
+# Используем --shamefully-hoist для плоской структуры node_modules (лучше для TypeScript)
 RUN npm install -g pnpm
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --shamefully-hoist
 
 # Этап 2: Генерация Prisma клиента
 FROM node:18-alpine AS prisma
@@ -33,14 +34,28 @@ RUN npm install -g pnpm
 WORKDIR /app
 RUN pnpm --filter @psychology/api exec npx prisma generate
 
+# Проверяем, где был сгенерирован Prisma клиент и копируем его в стандартное место
+RUN if [ -d "/app/node_modules/.prisma" ]; then \
+        echo "Prisma client found in node_modules/.prisma"; \
+    elif [ -d "/app/apps/api/node_modules/.prisma" ]; then \
+        mkdir -p /app/node_modules/.prisma && \
+        cp -r /app/apps/api/node_modules/.prisma/* /app/node_modules/.prisma/; \
+    else \
+        echo "Prisma client not found, creating empty directory"; \
+        mkdir -p /app/node_modules/.prisma; \
+    fi
+
 # Этап 3: Сборка приложения
 FROM node:18-alpine AS builder
 RUN apk add --no-cache libc6-compat openssl
 
 WORKDIR /app
 
-# Копируем зависимости и Prisma клиент
+# Копируем node_modules из deps stage (там есть все зависимости, включая dev)
 COPY --from=deps /app/node_modules ./node_modules
+
+# Копируем Prisma клиент из prisma stage (там он уже сгенерирован)
+RUN mkdir -p ./node_modules/.prisma
 COPY --from=prisma /app/node_modules/.prisma ./node_modules/.prisma
 
 # Копируем исходники
@@ -49,9 +64,19 @@ COPY package.json pnpm-workspace.yaml ./
 
 RUN npm install -g pnpm @nestjs/cli
 
-# Сборка проекта
+# Копируем node_modules в apps/api для правильного разрешения зависимостей TypeScript
+# Это необходимо, так как TypeScript ищет модули относительно tsconfig.json
+WORKDIR /app
+RUN cp -r node_modules apps/api/node_modules
+
+# Генерируем Prisma клиент еще раз в builder stage для правильной работы TypeScript
+# Используем prisma из корневого node_modules
 WORKDIR /app/apps/api
-RUN pnpm build
+RUN NODE_PATH=/app/node_modules /app/node_modules/.bin/prisma generate || /app/node_modules/prisma/build/index.js generate
+
+# Запускаем билд из директории проекта
+WORKDIR /app/apps/api
+RUN nest build
 
 # Этап 4: Production зависимости
 FROM node:18-alpine AS prod-deps
@@ -84,6 +109,9 @@ COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./dist
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/package.json ./
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/prisma ./prisma
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
+
+# Копируем Prisma клиент из prisma stage (директория всегда существует после генерации)
+RUN mkdir -p ./node_modules/.prisma
 COPY --from=prisma --chown=nestjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 
 # Создаем директории для медиа файлов

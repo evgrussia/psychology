@@ -21,6 +21,7 @@
   - `testing`
   - `integration`
   - `architecture`
+  - `tech-specs`
 - Точку входа поддерживать в `docs/generated/README.md`.
 
 ## Индексация

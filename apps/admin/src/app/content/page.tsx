@@ -19,10 +19,6 @@ export default function ContentListPage() {
     type: '',
     status: '',
   });
-  const [filters, setFilters] = useState({
-    type: '',
-    status: '',
-  });
 
   useEffect(() => {
     let url = 'http://127.0.0.1:3001/api/admin/content?';

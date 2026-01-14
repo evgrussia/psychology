@@ -24,16 +24,27 @@ WORKDIR /app
 # Копируем зависимости (в pnpm все в корне)
 COPY --from=deps /app/node_modules ./node_modules
 
+# Копируем конфигурационные файлы
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/web/package.json ./apps/web/
+COPY design-system/package.json ./design-system/
+
 # Копируем исходники
 COPY apps/web ./apps/web
 COPY design-system ./design-system
-COPY package.json pnpm-workspace.yaml* ./
 
 RUN npm install -g pnpm
+
+# Устанавливаем зависимости в workspace (для правильной работы symlinks)
+RUN pnpm install --frozen-lockfile --offline
 
 # Сборка Next.js приложения
 WORKDIR /app/apps/web
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+
+# Создаем пустую директорию public, если её нет (Next.js требует её для билда)
+RUN mkdir -p public
 
 RUN pnpm build
 
@@ -55,6 +66,7 @@ COPY --from=builder /app/apps/web/next.config.js ./
 COPY --from=builder /app/apps/web/package.json ./
 
 # Копируем собранное приложение
+# В standalone режиме структура: .next/standalone/ содержит server.js в корне
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
@@ -71,4 +83,5 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 # Запуск приложения
-CMD ["node", "apps/web/server.js"]
+# В standalone режиме server.js находится в корне скопированной директории
+CMD ["node", "server.js"]

@@ -171,7 +171,7 @@ run_migrations() {
     sleep 10
     
     # Применяем миграции через временный контейнер
-    docker compose -f docker-compose.prod.yml run --rm api sh -c "cd /app && npx prisma migrate deploy"
+    docker compose -f docker-compose.prod.yml run --rm api sh -c "pnpm --filter @psychology/api exec prisma migrate deploy"
     
     print_success "Миграции применены"
 }

@@ -4,9 +4,18 @@ import { Card } from '@psychology/design-system/components/Card';
 import { Button } from '@psychology/design-system/components/Button';
 
 async function getCollection(slug: string) {
-  const res = await fetch(`http://127.0.0.1:3001/api/public/curated/${slug}`, { cache: 'no-store' });
-  if (!res.ok) return null;
-  return res.json();
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
+  try {
+    const res = await fetch(`${apiUrl}/public/curated/${slug}`, { 
+      cache: 'no-store',
+      signal: AbortSignal.timeout(5000)
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch (error) {
+    console.error(`Error fetching collection ${slug}:`, error);
+    return null;
+  }
 }
 
 export default async function CuratedCollectionPage({ params }: { params: { slug: string } }) {
