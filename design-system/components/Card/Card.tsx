@@ -18,6 +18,7 @@ const Card: React.FC<CardProps> = ({
   variant = 'default',
   children,
   className = '',
+  style,
   ...props
 }) => {
   const combinedStyles: React.CSSProperties = {

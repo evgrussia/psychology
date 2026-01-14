@@ -30,8 +30,11 @@ const Button: React.FC<ButtonProps> = ({
   loading = false,
   disabled,
   className = '',
+  style,
   ...props
 }) => {
+  const [isFocused, setIsFocused] = React.useState(false);
+
   const combinedStyles: React.CSSProperties = {
     fontFamily: 'var(--font-sans)',
     fontWeight: typography.fontWeight.medium,
@@ -58,7 +61,43 @@ const Button: React.FC<ButtonProps> = ({
                      'transparent',
     color: variant === 'primary' ? 'var(--color-text-on-dark)' : 'var(--color-text-primary)',
     boxShadow: (variant === 'primary' || variant === 'secondary') ? 'var(--shadow-sm)' : 'none',
+    ...(isFocused && a11yStyles.focusVisible),
     ...style,
+  };
+
+  const hoverStyles: Record<ButtonVariant, React.CSSProperties> = {
+    primary: {
+      backgroundColor: colors.brand.primary.dark,
+      boxShadow: effects.shadow.md,
+    },
+    secondary: {
+      backgroundColor: colors.brand.secondary.dark,
+      boxShadow: effects.shadow.md,
+    },
+    tertiary: {
+      borderColor: colors.brand.primary.DEFAULT,
+    },
+    ghost: {
+      backgroundColor: colors.bg.secondary,
+    },
+  };
+
+  const variantStyles: Record<ButtonVariant, React.CSSProperties> = {
+    primary: {
+      backgroundColor: colors.brand.primary.DEFAULT,
+      boxShadow: effects.shadow.sm,
+    },
+    secondary: {
+      backgroundColor: colors.brand.secondary.DEFAULT,
+      boxShadow: effects.shadow.sm,
+    },
+    tertiary: {
+      backgroundColor: 'transparent',
+      borderColor: colors.border.primary,
+    },
+    ghost: {
+      backgroundColor: 'transparent',
+    },
   };
 
   return (
