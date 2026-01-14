@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ProgressBar, ResultCard, CrisisBanner, Button } from '@psychology/design-system/components';
+import { ProgressBar, ResultCard, CrisisBanner, Button, Section, Container, Card } from '@psychology/design-system/components';
+import { typography } from '@psychology/design-system/tokens';
 import { InteractivePlatform, ResultLevel } from '@/lib/interactive';
 import SafeMarkdownRenderer from '@/components/SafeMarkdownRenderer';
 
@@ -84,145 +85,176 @@ export const NavigatorClient: React.FC<NavigatorClientProps> = ({ definition, sl
 
   if (step === 'start') {
     return (
-      <div className="text-center py-12">
-        <h1 className="text-3xl font-bold text-slate-900 mb-4">{definition.title || 'Навигатор состояния'}</h1>
-        <p className="text-lg text-slate-600 mb-8 max-w-xl mx-auto">
-          Ответьте на несколько вопросов, чтобы мы могли подобрать для вас наиболее подходящие ресурсы и план действий.
-        </p>
-        <Button onClick={startNavigator} size="lg" variant="primary">
-          Начать
-        </Button>
-      </div>
+      <Section>
+        <Container maxWidth="600px">
+          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
+            <h1 style={{ ...typography.hero, color: 'var(--color-text-primary)' }}>{definition.title || 'Навигатор состояния'}</h1>
+            <p style={{ ...typography.body.lg, color: 'var(--color-text-secondary)' }}>
+              Ответьте на несколько вопросов, чтобы мы могли подобрать для вас наиболее подходящие ресурсы и план действий.
+            </p>
+            <Button onClick={startNavigator} size="lg" variant="primary" fullWidth>
+              Начать
+            </Button>
+          </div>
+        </Container>
+      </Section>
     );
   }
 
   if (step === 'progress' && currentStep) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 max-w-2xl mx-auto">
-        <div className="mb-8 flex items-center justify-between">
-          <Button variant="secondary" onClick={handleBack} disabled={history.length === 0}>
-            Назад
-          </Button>
-          <div className="text-sm text-slate-500">
-            Шаг {history.length + 1}
-          </div>
-        </div>
-        
-        <fieldset className="mb-8">
-          <legend className="text-2xl font-semibold text-slate-900 mb-8">
-            {currentStep.question_text}
-          </legend>
+      <Section>
+        <Container maxWidth="600px">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-4)' }}>
+              <Button variant="ghost" onClick={handleBack} disabled={history.length === 0} size="sm">
+                ← Назад
+              </Button>
+              <div style={{ fontSize: 'var(--font-size-body-sm)', color: 'var(--color-text-tertiary)', fontWeight: 500 }}>
+                Шаг {history.length + 1}
+              </div>
+            </div>
+            
+            <Card style={{ padding: 'var(--space-8)' }} variant="elevated">
+              <fieldset style={{ border: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
+                <legend style={{ ...typography.h3, color: 'var(--color-text-primary)', marginBottom: 0 }}>
+                  {currentStep.question_text}
+                </legend>
 
-          <div className="grid grid-cols-1 gap-4" role="radiogroup" aria-labelledby="navigator-question">
-            {currentStep.choices.map((choice: any, index: number) => (
-              <button
-                key={choice.choice_id}
-                onClick={() => handleChoice(choice)}
-                role="radio"
-                aria-checked="false"
-                aria-label={choice.text}
-                aria-describedby={`choice-${choice.choice_id}-desc`}
-                className="text-left px-6 py-4 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all text-slate-700 font-medium text-lg"
-                tabIndex={index === 0 ? 0 : -1}
-              >
-                <span id={`choice-${choice.choice_id}-desc`}>{choice.text}</span>
-              </button>
-            ))}
-          </div>
-        </fieldset>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--space-3)' }} role="radiogroup" aria-labelledby="navigator-question">
+                  {currentStep.choices.map((choice: any, index: number) => (
+                    <button
+                      key={choice.choice_id}
+                      onClick={() => handleChoice(choice)}
+                      role="radio"
+                      aria-checked="false"
+                      aria-label={choice.text}
+                      aria-describedby={`choice-${choice.choice_id}-desc`}
+                      style={{
+                        textAlign: 'left',
+                        padding: 'var(--space-4) var(--space-6)',
+                        borderRadius: 'var(--radius-md)',
+                        border: '1px solid var(--color-border-primary)',
+                        backgroundColor: 'var(--color-bg-primary)',
+                        transition: 'var(--transition-normal)',
+                        color: 'var(--color-text-primary)',
+                        fontWeight: 500,
+                        fontSize: 'var(--font-size-body)',
+                        cursor: 'pointer'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--color-brand-primary)';
+                        e.currentTarget.style.backgroundColor = 'var(--color-bg-secondary)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--color-border-primary)';
+                        e.currentTarget.style.backgroundColor = 'var(--color-bg-primary)';
+                      }}
+                      tabIndex={index === 0 ? 0 : -1}
+                    >
+                      <span id={`choice-${choice.choice_id}-desc`}>{choice.text}</span>
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+            </Card>
 
-        {crisisTriggered && isCrisisVisible && (
-          <div className="mt-8">
-            <CrisisBanner 
-              surface="navigator" 
-              triggerType="panic_like" 
-              onBackToResources={() => setIsCrisisVisible(false)}
-            />
+            {crisisTriggered && isCrisisVisible && (
+              <CrisisBanner 
+                surface="navigator" 
+                triggerType="panic_like" 
+                onBackToResources={() => setIsCrisisVisible(false)}
+              />
+            )}
           </div>
-        )}
-      </div>
+        </Container>
+      </Section>
     );
   }
 
   if (step === 'result' && finalResultProfile) {
     return (
-      <div className="space-y-6 max-w-3xl mx-auto">
-        {crisisTriggered && isCrisisVisible && (
-          <CrisisBanner 
-            surface="navigator_result" 
-            triggerType="panic_like" 
-            onBackToResources={() => setIsCrisisVisible(false)}
-          />
-        )}
-        
-        <ResultCard
-          title={finalResultProfile.title}
-          description={finalResultProfile.description}
-        >
-          <div className="mt-8 space-y-6">
-            {finalResultProfile.recommendations && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {finalResultProfile.recommendations.articles && finalResultProfile.recommendations.articles.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold text-slate-900 mb-3">Статьи</h4>
-                    <ul className="space-y-2">
-                      {finalResultProfile.recommendations.articles.map((item: string, i: number) => (
-                        <li key={i} className="text-slate-600 flex items-start gap-2">
-                          <span className="text-indigo-500">•</span>
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {finalResultProfile.recommendations.exercises && finalResultProfile.recommendations.exercises.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold text-slate-900 mb-3">Упражнения</h4>
-                    <ul className="space-y-2">
-                      {finalResultProfile.recommendations.exercises.map((item: string, i: number) => (
-                        <li key={i} className="text-slate-600 flex items-start gap-2">
-                          <span className="text-indigo-500">•</span>
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
+      <Section>
+        <Container maxWidth="800px">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
+            {crisisTriggered && isCrisisVisible && (
+              <CrisisBanner 
+                surface="navigator_result" 
+                triggerType="panic_like" 
+                onBackToResources={() => setIsCrisisVisible(false)}
+              />
             )}
+            
+            <ResultCard
+              title={finalResultProfile.title}
+              description={finalResultProfile.description}
+            >
+              <div style={{ marginTop: 'var(--space-8)', display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
+                {finalResultProfile.recommendations && (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 'var(--space-8)' }}>
+                    {finalResultProfile.recommendations.articles && finalResultProfile.recommendations.articles.length > 0 && (
+                      <div>
+                        <h4 style={{ ...typography.h4, color: 'var(--color-text-primary)', marginBottom: 'var(--space-3)' }}>Статьи</h4>
+                        <ul style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', listStyle: 'none' }}>
+                          {finalResultProfile.recommendations.articles.map((item: string, i: number) => (
+                            <li key={i} style={{ color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'flex-start', gap: 'var(--space-2)' }}>
+                              <span style={{ color: 'var(--color-brand-primary)' }}>•</span>
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {finalResultProfile.recommendations.exercises && finalResultProfile.recommendations.exercises.length > 0 && (
+                      <div>
+                        <h4 style={{ ...typography.h4, color: 'var(--color-text-primary)', marginBottom: 'var(--space-3)' }}>Упражнения</h4>
+                        <ul style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', listStyle: 'none' }}>
+                          {finalResultProfile.recommendations.exercises.map((item: string, i: number) => (
+                            <li key={i} style={{ color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'flex-start', gap: 'var(--space-2)' }}>
+                              <span style={{ color: 'var(--color-brand-primary)' }}>•</span>
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
 
-            <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
-              {finalResultProfile.cta ? (
-                <Button 
-                  variant={crisisTriggered ? "secondary" : "primary"} 
-                  onClick={() => window.location.href = finalResultProfile.cta.link}
-                >
-                  {finalResultProfile.cta.text}
-                </Button>
-              ) : (
-                <Button 
-                  variant={crisisTriggered ? "secondary" : "primary"} 
-                  onClick={() => window.location.href = 'https://t.me/psy_balance_bot'}
-                >
-                  Получить план в Telegram
-                </Button>
-              )}
-              <Button 
-                variant="secondary" 
-                onClick={() => window.location.href = '/booking'}
-              >
-                Записаться к психологу
+                <div style={{ marginTop: 'var(--space-8)', display: 'flex', flexDirection: 'row', gap: 'var(--space-4)', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  {finalResultProfile.cta ? (
+                    <Button 
+                      variant={crisisTriggered ? "tertiary" : "primary"} 
+                      onClick={() => window.location.href = finalResultProfile.cta.link}
+                    >
+                      {finalResultProfile.cta.text}
+                    </Button>
+                  ) : (
+                    <Button 
+                      variant={crisisTriggered ? "tertiary" : "primary"} 
+                      onClick={() => window.location.href = 'https://t.me/psy_balance_bot'}
+                    >
+                      Получить план в Telegram
+                    </Button>
+                  )}
+                  <Button 
+                    variant="secondary" 
+                    onClick={() => window.location.href = '/booking'}
+                  >
+                    Записаться к психологу
+                  </Button>
+                </div>
+              </div>
+            </ResultCard>
+
+            <div style={{ textAlign: 'center', paddingTop: 'var(--space-8)' }}>
+              <Button variant="ghost" onClick={() => window.location.href = '/start'}>
+                ← Вернуться к началу
               </Button>
             </div>
           </div>
-        </ResultCard>
-
-        <div className="text-center pt-8">
-          <Button variant="secondary" onClick={() => window.location.href = '/start'}>
-            Вернуться к началу
-          </Button>
-        </div>
-      </div>
+        </Container>
+      </Section>
     );
   }
 

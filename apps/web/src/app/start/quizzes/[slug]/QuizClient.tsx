@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ProgressBar, ResultCard, CrisisBanner, Button } from '@psychology/design-system/components';
+import { ProgressBar, ResultCard, CrisisBanner, Button, Section, Container, Card } from '@psychology/design-system/components';
+import { typography } from '@psychology/design-system/tokens';
 import { InteractivePlatform, ResultLevel } from '@/lib/interactive';
 
 interface QuizClientProps {
@@ -123,42 +124,75 @@ export const QuizClient: React.FC<QuizClientProps> = ({ quiz }) => {
 
   if (step === 'start') {
     return (
-      <div className="text-center py-12">
-        <h1 className="text-3xl font-bold text-slate-900 mb-4">{quiz.title}</h1>
-        <p className="text-lg text-slate-600 mb-8 max-w-xl mx-auto">
-          {quiz.description || 'Пройдите этот тест, чтобы лучше понять свое состояние.'}
-        </p>
-        <Button onClick={startQuiz} size="lg" variant="primary">
-          Начать тест
-        </Button>
-      </div>
+      <Section>
+        <Container maxWidth="600px">
+          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
+            <h1 style={{ ...typography.hero, color: 'var(--color-text-primary)' }}>{quiz.title}</h1>
+            <p style={{ ...typography.body.lg, color: 'var(--color-text-secondary)' }}>
+              {quiz.description || 'Пройдите этот тест, чтобы лучше понять свое состояние.'}
+            </p>
+            <Button onClick={startQuiz} size="lg" variant="primary" fullWidth>
+              Начать тест
+            </Button>
+          </div>
+        </Container>
+      </Section>
     );
   }
 
   if (step === 'progress') {
     const currentQuestion = questions[currentQuestionIdx];
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
-        <div className="mb-8">
-          <ProgressBar current={currentQuestionIdx + 1} total={questions.length} />
-        </div>
-        
-        <h2 className="text-xl font-medium text-slate-900 mb-8">
-          {currentQuestion.text}
-        </h2>
+      <Section>
+        <Container maxWidth="600px">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--font-size-body-sm)', fontWeight: 500, color: 'var(--color-text-tertiary)' }}>
+                <span>Вопрос {currentQuestionIdx + 1} из {questions.length}</span>
+                <span>{Math.round(((currentQuestionIdx + 1) / questions.length) * 100)}%</span>
+              </div>
+              <ProgressBar current={currentQuestionIdx + 1} total={questions.length} />
+            </div>
+            
+            <Card style={{ padding: 'var(--space-8)' }} variant="elevated">
+              <h2 style={{ ...typography.h3, color: 'var(--color-text-primary)', marginBottom: 'var(--space-8)' }}>
+                {currentQuestion.text}
+              </h2>
 
-        <div className="grid grid-cols-1 gap-3">
-          {currentQuestion.options.map((option) => (
-            <button
-              key={option.value}
-              onClick={() => handleAnswer(option.value)}
-              className="text-left px-6 py-4 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all text-slate-700 font-medium"
-            >
-              {option.text}
-            </button>
-          ))}
-        </div>
-      </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--space-3)' }}>
+                {currentQuestion.options.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => handleAnswer(option.value)}
+                    style={{
+                      textAlign: 'left',
+                      padding: 'var(--space-4) var(--space-6)',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--color-border-primary)',
+                      backgroundColor: 'var(--color-bg-primary)',
+                      transition: 'var(--transition-normal)',
+                      color: 'var(--color-text-primary)',
+                      fontWeight: 500,
+                      fontSize: 'var(--font-size-body)',
+                      cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--color-brand-primary)';
+                      e.currentTarget.style.backgroundColor = 'var(--color-bg-secondary)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--color-border-primary)';
+                      e.currentTarget.style.backgroundColor = 'var(--color-bg-primary)';
+                    }}
+                  >
+                    {option.text}
+                  </button>
+                ))}
+              </div>
+            </Card>
+          </div>
+        </Container>
+      </Section>
     );
   }
 
@@ -176,42 +210,46 @@ export const QuizClient: React.FC<QuizClientProps> = ({ quiz }) => {
   }
 
   return (
-    <div className="space-y-6">
-      {isHighRisk && isCrisisVisible && (
-        <CrisisBanner 
-          surface="quiz_result" 
-          triggerType="panic_like" 
-          onBackToResources={() => setIsCrisisVisible(false)}
-        />
-      )}
-      
-      <ResultCard
-        title={resultData.title}
-        level={resultLevel as any}
-        description={resultData.description}
-        steps={steps}
-      >
-        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-          <Button 
-            variant={isHighRisk ? "secondary" : "primary"} 
-            onClick={() => window.location.href = 'https://t.me/psy_balance_bot'}
+    <Section>
+      <Container maxWidth="800px">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
+          {isHighRisk && isCrisisVisible && (
+            <CrisisBanner 
+              surface="quiz_result" 
+              triggerType="panic_like" 
+              onBackToResources={() => setIsCrisisVisible(false)}
+            />
+          )}
+          
+          <ResultCard
+            title={resultData.title}
+            level={resultLevel as any}
+            description={resultData.description}
+            steps={steps}
           >
-            {resultData.ctaText || 'Получить план в Telegram'}
-          </Button>
-          <Button 
-            variant="secondary" 
-            onClick={() => window.location.href = '/booking'}
-          >
-            Записаться к психологу
-          </Button>
-        </div>
-      </ResultCard>
+            <div style={{ marginTop: 'var(--space-8)', display: 'flex', flexDirection: 'row', gap: 'var(--space-4)', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <Button 
+                variant={isHighRisk ? "tertiary" : "primary"} 
+                onClick={() => window.location.href = 'https://t.me/psy_balance_bot'}
+              >
+                {resultData.ctaText || 'Получить план в Telegram'}
+              </Button>
+              <Button 
+                variant="secondary" 
+                onClick={() => window.location.href = '/booking'}
+              >
+                Записаться к психологу
+              </Button>
+            </div>
+          </ResultCard>
 
-      <div className="text-center pt-8">
-        <Button variant="secondary" onClick={() => window.location.href = '/start'}>
-          Вернуться к списку тестов
-        </Button>
-      </div>
-    </div>
+          <div style={{ textAlign: 'center', paddingTop: 'var(--space-8)' }}>
+            <Button variant="ghost" onClick={() => window.location.href = '/start'}>
+              ← Вернуться к списку тестов
+            </Button>
+          </div>
+        </div>
+      </Container>
+    </Section>
   );
 };

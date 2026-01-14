@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ProgressBar, Button, CrisisBanner, Card } from '@psychology/design-system/components';
+import { ProgressBar, Button, CrisisBanner, Card, Section, Container } from '@psychology/design-system/components';
+import { typography } from '@psychology/design-system/tokens';
 import { InteractivePlatform } from '@/lib/interactive';
 
 interface BoundaryScriptsClientProps {
@@ -80,18 +81,22 @@ export const BoundaryScriptsClient: React.FC<BoundaryScriptsClientProps> = ({ da
 
   if (isCrisisVisible) {
     return (
-      <div className="space-y-6">
-        <CrisisBanner 
-          surface="boundaries_script" 
-          triggerType="violence" 
-          onBackToResources={() => reset()}
-        />
-        <div className="text-center pt-8">
-          <Button variant="secondary" onClick={reset}>
-            Вернуться к выбору сценария
-          </Button>
-        </div>
-      </div>
+      <Section>
+        <Container maxWidth="800px">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+            <CrisisBanner 
+              surface="boundaries_script" 
+              triggerType="violence" 
+              onBackToResources={() => reset()}
+            />
+            <div style={{ textAlign: 'center', paddingTop: 'var(--space-8)' }}>
+              <Button variant="secondary" onClick={reset}>
+                Вернуться к выбору сценария
+              </Button>
+            </div>
+          </div>
+        </Container>
+      </Section>
     );
   }
 
@@ -99,17 +104,28 @@ export const BoundaryScriptsClient: React.FC<BoundaryScriptsClientProps> = ({ da
     switch (step) {
       case 'scenario':
         return (
-          <div className="space-y-6">
-            <h2 ref={headingRef} tabIndex={-1} className="text-2xl font-bold text-center outline-none">Выберите ситуацию</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+            <h2 ref={headingRef} tabIndex={-1} style={{ ...typography.h2, textAlign: 'center', outline: 'none' }}>Выберите ситуацию</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-4)' }}>
               {config.scenarios.map((s: any) => (
                 <button
                   key={s.id}
                   onClick={() => handleScenarioSelect(s.id)}
-                  className="p-6 text-left border rounded-xl hover:border-indigo-500 transition-colors bg-white shadow-sm"
+                  style={{
+                    padding: 'var(--space-6)',
+                    textAlign: 'left',
+                    border: '1px solid var(--color-border-primary)',
+                    borderRadius: 'var(--radius-md)',
+                    transition: 'var(--transition-normal)',
+                    backgroundColor: 'var(--color-bg-primary)',
+                    boxShadow: 'var(--shadow-sm)',
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--color-brand-primary)'}
+                  onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--color-border-primary)'}
                 >
-                  <div className="font-bold text-lg">{s.name}</div>
-                  {s.description && <div className="text-slate-500 text-sm mt-1">{s.description}</div>}
+                  <div style={{ ...typography.h4, color: 'var(--color-text-primary)' }}>{s.name}</div>
+                  {s.description && <div style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-body-sm)', marginTop: 'var(--space-1)' }}>{s.description}</div>}
                 </button>
               ))}
             </div>
@@ -117,17 +133,17 @@ export const BoundaryScriptsClient: React.FC<BoundaryScriptsClientProps> = ({ da
         );
       case 'tone':
         return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-center">Выберите стиль общения</h2>
-            <div className="flex flex-col gap-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+            <h2 style={{ ...typography.h2, textAlign: 'center' }}>Выберите стиль общения</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               {config.tones.map((t: any) => (
-                <Button key={t.id} onClick={() => handleToneSelect(t.id)} variant="secondary" size="lg">
+                <Button key={t.id} onClick={() => handleToneSelect(t.id)} variant="secondary" size="lg" fullWidth>
                   {t.name}
                 </Button>
               ))}
             </div>
-            <div className="text-center">
-               <button onClick={() => setStep('scenario')} className="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+            <div style={{ textAlign: 'center' }}>
+               <button onClick={() => setStep('scenario')} style={{ color: 'var(--color-brand-primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>
                   ← Назад к выбору ситуации
                </button>
             </div>
@@ -135,17 +151,17 @@ export const BoundaryScriptsClient: React.FC<BoundaryScriptsClientProps> = ({ da
         );
       case 'goal':
         return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-center">Чего хотите добиться?</h2>
-            <div className="flex flex-col gap-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+            <h2 style={{ ...typography.h2, textAlign: 'center' }}>Чего хотите добиться?</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               {config.goals.map((g: any) => (
-                <Button key={g.id} onClick={() => handleGoalSelect(g.id)} variant="secondary" size="lg">
+                <Button key={g.id} onClick={() => handleGoalSelect(g.id)} variant="secondary" size="lg" fullWidth>
                   {g.name}
                 </Button>
               ))}
             </div>
-            <div className="text-center">
-               <button onClick={() => setStep('tone')} className="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+            <div style={{ textAlign: 'center' }}>
+               <button onClick={() => setStep('tone')} style={{ color: 'var(--color-brand-primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>
                   ← Назад к выбору стиля
                </button>
             </div>
@@ -183,23 +199,26 @@ export const BoundaryScriptsClient: React.FC<BoundaryScriptsClientProps> = ({ da
   };
 
   return (
-    <div className="max-w-3xl mx-auto py-8">
-      {/* A11y: aria-live region for toast notifications */}
-      <div 
-        aria-live="polite" 
-        aria-atomic="true" 
-        className="absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0"
-        style={{ clip: 'rect(0, 0, 0, 0)', clipPath: 'inset(50%)' }}
-      >
-        {copiedVariantId && 'Фраза скопирована'}
-      </div>
-      <div className="mb-8 px-4">
-        <ProgressBar current={stepToProgress[step]} total={4} />
-      </div>
-      <div className="px-4">
-        {renderStep()}
-      </div>
-    </div>
+    <Section>
+      <Container maxWidth="800px">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
+          {/* A11y: aria-live region for toast notifications */}
+          <div 
+            aria-live="polite" 
+            aria-atomic="true" 
+            style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', border: 0 }}
+          >
+            {copiedVariantId && 'Фраза скопирована'}
+          </div>
+          <div style={{ padding: '0 var(--space-4)' }}>
+            <ProgressBar current={stepToProgress[step]} total={4} />
+          </div>
+          <div style={{ padding: '0 var(--space-4)' }}>
+            {renderStep()}
+          </div>
+        </div>
+      </Container>
+    </Section>
   );
 };
 

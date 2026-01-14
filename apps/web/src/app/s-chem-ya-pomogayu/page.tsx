@@ -1,7 +1,7 @@
 import React from 'react';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { TopicCard } from '@psychology/design-system/components';
+import { TopicCard, Section, Container } from '@psychology/design-system/components';
 import { spacing, typography, colors } from '@psychology/design-system/tokens';
 import { isFeatureEnabled } from '../../lib/feature-flags';
 
@@ -47,32 +47,32 @@ export default async function TopicsHubPage() {
   const topics = await getTopics();
 
   return (
-    <main style={{ 
-      maxWidth: '1200px', 
-      margin: '0 auto', 
-      padding: `${spacing.space[12]} ${spacing.space[6]}` 
-    }}>
-      <header style={{ marginBottom: spacing.space[12], textAlign: 'center' }}>
-        <h1 style={{ ...typography.h1, marginBottom: spacing.space[4] }}>С чем я помогаю</h1>
-        <p style={{ ...typography.body.lg, color: colors.text.secondary, maxWidth: '800px', margin: '0 auto' }}>
-          Выберите тему, которая вас беспокоит, чтобы узнать больше о том, как я работаю с этим запросом, 
-          и найти полезные ресурсы и упражнения.
-        </p>
-      </header>
+    <main>
+      <Section>
+        <Container>
+          <header style={{ marginBottom: 'var(--space-12)', textAlign: 'center' }}>
+            <h1 style={{ ...typography.h1, marginBottom: 'var(--space-4)' }}>С чем я помогаю</h1>
+            <p style={{ ...typography.body.lg, color: 'var(--color-text-secondary)', maxWidth: '800px', margin: '0 auto' }}>
+              Выберите тему, которая вас беспокоит, чтобы узнать больше о том, как я работаю с этим запросом, 
+              и найти полезные ресурсы и упражнения.
+            </p>
+          </header>
 
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
-        gap: spacing.space[6] 
-      }}>
-        {topics.map((topic) => (
-          <TopicCard
-            key={topic.code}
-            title={topic.title}
-            href={`/s-chem-ya-pomogayu/${topic.code}`}
-          />
-        ))}
-      </div>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
+            gap: 'var(--space-6)' 
+          }}>
+            {topics.map((topic) => (
+              <TopicCard
+                key={topic.code}
+                title={topic.title}
+                href={`/s-chem-ya-pomogayu/${topic.code}`}
+              />
+            ))}
+          </div>
+        </Container>
+      </Section>
     </main>
   );
 }
