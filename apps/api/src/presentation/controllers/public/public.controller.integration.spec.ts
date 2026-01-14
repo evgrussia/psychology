@@ -3,6 +3,15 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { PublicController } from './public.controller';
 import { GetHomepageModelUseCase } from '../../../application/public/use-cases/GetHomepageModelUseCase';
+import { GetPageBySlugUseCase } from '../../../application/public/use-cases/GetPageBySlugUseCase';
+import { GetContentBySlugUseCase } from '../../../application/public/use-cases/GetContentBySlugUseCase';
+import { ListContentItemsUseCase } from '../../../application/public/use-cases/ListContentItemsUseCase';
+import { GetTopicsUseCase } from '../../../application/public/use-cases/GetTopicsUseCase';
+import { GetTopicLandingUseCase } from '../../../application/public/use-cases/GetTopicLandingUseCase';
+import { ListCuratedCollectionsUseCase } from '../../../application/public/use-cases/ListCuratedCollectionsUseCase';
+import { GetCuratedCollectionUseCase } from '../../../application/public/use-cases/GetCuratedCollectionUseCase';
+import { ListPublicGlossaryTermsUseCase } from '../../../application/public/use-cases/ListPublicGlossaryTermsUseCase';
+import { GetPublicGlossaryTermUseCase } from '../../../application/public/use-cases/GetPublicGlossaryTermUseCase';
 import { HomepageDto } from '../../../application/public/dto/homepage.dto';
 
 describe('PublicController (Integration)', () => {
@@ -53,7 +62,45 @@ describe('PublicController (Integration)', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PublicController],
-      providers: [mockUseCaseProvider],
+      providers: [
+        mockUseCaseProvider,
+        {
+          provide: GetPageBySlugUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: GetContentBySlugUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: ListContentItemsUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: GetTopicsUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: GetTopicLandingUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: ListCuratedCollectionsUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: GetCuratedCollectionUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: ListPublicGlossaryTermsUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: GetPublicGlossaryTermUseCase,
+          useValue: { execute: jest.fn() },
+        },
+      ],
     }).compile();
 
     app = module.createNestApplication();

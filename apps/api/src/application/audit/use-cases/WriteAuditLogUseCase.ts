@@ -1,6 +1,6 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
-import { IAuditLogRepository } from '../../../domain/audit/repositories/IAuditLogRepository';
-import { AuditLogEntry } from '../../../domain/audit/entities/AuditLogEntry';
+import { IAuditLogRepository } from '@domain/audit/repositories/IAuditLogRepository';
+import { AuditLogEntry } from '@domain/audit/entities/AuditLogEntry';
 import { WriteAuditLogDto } from '../dto/audit-log.dto';
 import { AuditLogSanitizer } from '../utils/audit-log-sanitizer';
 import { randomUUID } from 'crypto';

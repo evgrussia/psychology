@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException, Inject } from '@nestjs/common';
-import { IUserRepository } from '../../../domain/identity/repositories/IUserRepository';
-import { ISessionRepository } from '../../../domain/identity/repositories/ISessionRepository';
+import { IUserRepository } from '@domain/identity/repositories/IUserRepository';
+import { ISessionRepository } from '@domain/identity/repositories/ISessionRepository';
 
 @Injectable()
 export class GetCurrentUserUseCase {

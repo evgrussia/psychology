@@ -1,7 +1,7 @@
 import { Injectable, Inject, ForbiddenException } from '@nestjs/common';
-import { IAuditLogRepository } from '../../../domain/audit/repositories/IAuditLogRepository';
+import { IAuditLogRepository } from '@domain/audit/repositories/IAuditLogRepository';
 import { ListAuditLogDto, ListAuditLogResponseDto, AuditLogEntryResponseDto } from '../dto/audit-log.dto';
-import { Role } from '../../../domain/identity/value-objects/Role';
+import { Role } from '@domain/identity/value-objects/Role';
 
 @Injectable()
 export class ListAuditLogUseCase {

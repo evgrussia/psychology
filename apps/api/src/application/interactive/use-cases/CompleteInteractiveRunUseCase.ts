@@ -1,5 +1,5 @@
-import { IInteractiveRunRepository } from '../../../domain/interactive/repositories/IInteractiveRunRepository';
-import { ResultLevel } from '../../../domain/interactive/value-objects/ResultLevel';
+import { IInteractiveRunRepository } from '@domain/interactive/repositories/IInteractiveRunRepository';
+import { ResultLevel } from '@domain/interactive/value-objects/ResultLevel';
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 
 @Injectable()
@@ -11,7 +11,7 @@ export class CompleteInteractiveRunUseCase {
 
   async execute(params: {
     runId: string;
-    resultLevel: ResultLevel | null;
+    resultLevel?: ResultLevel | null;
     resultProfile?: string | null;
     durationMs: number;
     crisisTriggered?: boolean;

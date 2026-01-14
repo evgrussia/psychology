@@ -1,8 +1,8 @@
 import { Inject, Injectable, NotFoundException, ConflictException } from '@nestjs/common';
-import { IContentItemRepository } from '../../../domain/content/repositories/IContentItemRepository';
+import { IContentItemRepository } from '@domain/content/repositories/IContentItemRepository';
 import { PrismaService } from '../../../infrastructure/database/prisma.service';
 import { UpdateContentItemDto, ContentItemResponseDto } from '../dto/content.dto';
-import { ContentStatus } from '../../../domain/content/value-objects/ContentEnums';
+import { ContentStatus } from '@domain/content/value-objects/ContentEnums';
 
 @Injectable()
 export class UpdateContentItemUseCase {

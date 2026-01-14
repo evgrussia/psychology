@@ -13,7 +13,7 @@ export interface TrustBlocksProps {
   title?: string;
 }
 
-const TrustBlocks: React.FC<TrustBlocksProps> = ({ items, title }) => {
+const TrustBlocks: React.FC<TrustBlocksProps> = ({ items = [], title }) => {
   return (
     <section style={{ padding: `${spacing.space[20]} ${spacing.space[6]}` }}>
       {title && (
@@ -35,7 +35,7 @@ const TrustBlocks: React.FC<TrustBlocksProps> = ({ items, title }) => {
           <div key={item.id} style={{ textAlign: 'center' }}>
             {item.icon && <div style={{ 
               marginBottom: spacing.space[4],
-              color: colors.brand.primary,
+              color: colors.brand.primary.DEFAULT,
               fontSize: '2rem',
             }}>{item.icon}</div>}
             <h3 style={{
@@ -44,8 +44,9 @@ const TrustBlocks: React.FC<TrustBlocksProps> = ({ items, title }) => {
               color: colors.text.primary,
             }}>{item.title}</h3>
             <p style={{
-              ...typography.body,
+              ...typography.body.md,
               color: colors.text.secondary,
+              margin: 0,
             }}>{item.description}</p>
           </div>
         ))}

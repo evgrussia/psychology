@@ -1,5 +1,7 @@
+'use client';
+
 import React from 'react';
-import { HeroSection, TopicCard, CTABlock } from '@/../../design-system/components';
+import { HeroSection, TopicCard, CTABlock, Button } from '@psychology/design-system/components';
 import Link from 'next/link';
 
 export default function StartHubPage() {
@@ -36,12 +38,21 @@ export default function StartHubPage() {
       topic: 'energy',
       time: '1 мин',
     },
+    {
+      id: 'rituals',
+      title: 'Библиотека ритуалов',
+      description: 'Короткие практики для восстановления баланса и снятия напряжения.',
+      slug: 'rituals',
+      topic: 'balance',
+      time: '2-5 мин',
+    },
   ];
 
   return (
     <main className="min-h-screen bg-slate-50/50">
       <HeroSection
         title="С чего начнём?"
+        subtitle="Выберите инструмент"
         description="Выберите подходящий инструмент, чтобы лучше понять своё состояние и получить практические рекомендации. Это анонимно и бесплатно."
       />
 
@@ -52,9 +63,6 @@ export default function StartHubPage() {
               <TopicCard
                 title={item.title}
                 description={item.description}
-                topicCode={item.topic}
-                // @ts-ignore - TopicCard might not have time prop in its definition yet but we can pass metadata
-                metadata={`${item.time} • Бесплатно`}
               />
             </Link>
           ))}
@@ -64,14 +72,16 @@ export default function StartHubPage() {
       <CTABlock
         title="Нужна помощь специалиста?"
         description="Если вы чувствуете, что самопомощи недостаточно, наши психологи всегда готовы поддержать вас."
-        primaryCTA={{
-          label: "Подобрать психолога",
-          href: "/booking"
-        }}
-        secondaryCTA={{
-          label: "Посмотреть услуги",
-          href: "/services"
-        }}
+        primaryCTA={
+          <Button variant="primary" onClick={() => window.location.href = '/booking'}>
+            Подобрать психолога
+          </Button>
+        }
+        secondaryCTA={
+          <Button variant="secondary" onClick={() => window.location.href = '/services'}>
+            Посмотреть услуги
+          </Button>
+        }
       />
     </main>
   );

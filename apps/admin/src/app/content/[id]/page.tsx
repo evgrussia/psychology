@@ -38,7 +38,7 @@ export default function EditContentPage() {
   });
 
   useEffect(() => {
-    fetch(`http://localhost:3000/api/admin/content/${id}`)
+    fetch(`http://127.0.0.1:3001/api/admin/content/${id}`)
       .then(res => res.json())
       .then(data => {
         setFormData({
@@ -68,8 +68,8 @@ export default function EditContentPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch('http://localhost:3000/api/admin/content/topics').then(res => res.json()),
-      fetch('http://localhost:3000/api/admin/content/tags').then(res => res.json())
+      fetch('http://127.0.0.1:3001/api/admin/content/topics').then(res => res.json()),
+      fetch('http://127.0.0.1:3001/api/admin/content/tags').then(res => res.json())
     ]).then(([topicsData, tagsData]) => {
       setTopics(topicsData);
       setTags(tagsData);
@@ -81,7 +81,7 @@ export default function EditContentPage() {
     setSaving(true);
 
     try {
-      const res = await fetch(`http://localhost:3000/api/admin/content/${id}`, {
+      const res = await fetch(`http://127.0.0.1:3001/api/admin/content/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -108,7 +108,7 @@ export default function EditContentPage() {
   const handlePublish = async () => {
     setPublishing(true);
     try {
-      const res = await fetch(`http://localhost:3000/api/admin/content/${id}/publish`, {
+      const res = await fetch(`http://127.0.0.1:3001/api/admin/content/${id}/publish`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -135,7 +135,7 @@ export default function EditContentPage() {
 
   const loadRevisions = async () => {
     try {
-      const res = await fetch(`http://localhost:3000/api/admin/content/${id}/revisions`);
+      const res = await fetch(`http://127.0.0.1:3001/api/admin/content/${id}/revisions`);
       const data = await res.json();
       setRevisions(data);
       setShowRevisions(true);
@@ -149,7 +149,7 @@ export default function EditContentPage() {
     if (!confirm('Вы уверены, что хотите откатиться к этой версии? Текущие несохраненные изменения будут потеряны.')) return;
     
     try {
-      const res = await fetch(`http://localhost:3000/api/admin/content/${id}/revisions/${revisionId}/rollback`, {
+      const res = await fetch(`http://127.0.0.1:3001/api/admin/content/${id}/revisions/${revisionId}/rollback`, {
         method: 'POST',
         headers: {
           'Authorization': 'Bearer test-token',
@@ -171,7 +171,7 @@ export default function EditContentPage() {
 
   const loadMedia = async () => {
     try {
-      const res = await fetch('http://localhost:3000/api/admin/media');
+      const res = await fetch('http://127.0.0.1:3001/api/admin/media');
       const data = await res.json();
       setMediaAssets(data);
       setShowMediaPicker(true);

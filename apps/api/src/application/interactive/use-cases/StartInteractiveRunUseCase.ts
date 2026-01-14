@@ -1,8 +1,8 @@
-import { IInteractiveRunRepository } from '../../../domain/interactive/repositories/IInteractiveRunRepository';
-import { IInteractiveDefinitionRepository } from '../../../domain/interactive/repositories/IInteractiveDefinitionRepository';
-import { InteractiveRun } from '../../../domain/interactive/aggregates/InteractiveRun';
-import { InteractiveType } from '../../../domain/interactive/value-objects/InteractiveType';
-import { InteractiveStatus } from '../../../domain/interactive/value-objects/InteractiveStatus';
+import { IInteractiveRunRepository } from '@domain/interactive/repositories/IInteractiveRunRepository';
+import { IInteractiveDefinitionRepository } from '@domain/interactive/repositories/IInteractiveDefinitionRepository';
+import { InteractiveRun } from '@domain/interactive/aggregates/InteractiveRun';
+import { InteractiveType } from '@domain/interactive/value-objects/InteractiveType';
+import { InteractiveStatus } from '@domain/interactive/value-objects/InteractiveStatus';
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 

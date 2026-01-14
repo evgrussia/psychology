@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { WriteAuditLogUseCase } from './WriteAuditLogUseCase';
-import { IAuditLogRepository } from '../../../domain/audit/repositories/IAuditLogRepository';
+import { IAuditLogRepository } from '@domain/audit/repositories/IAuditLogRepository';
 import { WriteAuditLogDto } from '../dto/audit-log.dto';
 
 describe('WriteAuditLogUseCase', () => {

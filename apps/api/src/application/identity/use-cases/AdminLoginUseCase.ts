@@ -1,11 +1,11 @@
 import { Injectable, UnauthorizedException, Inject, Optional } from '@nestjs/common';
-import { IUserRepository } from '../../../domain/identity/repositories/IUserRepository';
-import { ISessionRepository } from '../../../domain/identity/repositories/ISessionRepository';
+import { IUserRepository } from '@domain/identity/repositories/IUserRepository';
+import { ISessionRepository } from '@domain/identity/repositories/ISessionRepository';
 import { IPasswordHasher } from '../../../infrastructure/auth/bcrypt-hasher';
-import { IEventBus } from '../../../domain/events/event-bus.interface';
-import { Email } from '../../../domain/identity/value-objects/Email';
-import { Session } from '../../../domain/identity/aggregates/Session';
-import { AdminLoggedInEvent } from '../../../domain/identity/events/AdminLoggedInEvent';
+import { IEventBus } from '@domain/events/event-bus.interface';
+import { Email } from '@domain/identity/value-objects/Email';
+import { Session } from '@domain/identity/aggregates/Session';
+import { AdminLoggedInEvent } from '@domain/identity/events/AdminLoggedInEvent';
 import { AdminLoginDto, LoginResponseDto } from '../dto/login.dto';
 import { AuditLogHelper } from '../../audit/helpers/audit-log.helper';
 import { AuditLogAction } from '../../audit/dto/audit-log.dto';

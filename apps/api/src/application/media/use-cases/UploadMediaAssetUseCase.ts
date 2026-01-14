@@ -1,11 +1,11 @@
 import { Injectable, BadRequestException, Inject } from '@nestjs/common';
-import { IMediaAssetRepository } from '../../../domain/media/repositories/IMediaAssetRepository';
+import { IMediaAssetRepository } from '@domain/media/repositories/IMediaAssetRepository';
 import { IStorageService } from '../interfaces/IStorageService';
-import { MediaAsset } from '../../../domain/media/entities/MediaAsset';
-import { MediaStorageProvider, MediaType } from '../../../domain/media/value-objects/MediaType';
+import { MediaAsset } from '@domain/media/entities/MediaAsset';
+import { MediaStorageProvider, MediaType } from '@domain/media/value-objects/MediaType';
 import { MediaAssetResponseDto, UploadMediaDto } from '../dto/media-asset.dto';
-import { MediaAssetUploadedEvent } from '../../../domain/media/events/MediaAssetUploadedEvent';
-import { IEventBus } from '../../../domain/events/event-bus.interface';
+import { MediaAssetUploadedEvent } from '@domain/media/events/MediaAssetUploadedEvent';
+import { IEventBus } from '@domain/events/event-bus.interface';
 import { randomUUID } from 'crypto';
 
 @Injectable()

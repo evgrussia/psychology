@@ -12,6 +12,7 @@ export interface FeatureFlags {
   booking_flow_enabled: boolean;
   diary_feature_enabled: boolean;
   trust_pages_v1_enabled: boolean;
+  topic_landings_enabled: boolean;
 }
 
 // Дефолтные значения feature flags для разных окружений
@@ -23,6 +24,7 @@ const defaultFlags: Record<string, FeatureFlags> = {
     booking_flow_enabled: true,
     diary_feature_enabled: true,
     trust_pages_v1_enabled: true,
+    topic_landings_enabled: true,
   },
   stage: {
     homepage_v1_enabled: true,
@@ -31,6 +33,7 @@ const defaultFlags: Record<string, FeatureFlags> = {
     booking_flow_enabled: true,
     diary_feature_enabled: false, // Еще не готово на stage
     trust_pages_v1_enabled: true, // Trust pages включены на stage
+    topic_landings_enabled: true, // Topic landings включены на stage
   },
   production: {
     homepage_v1_enabled: true, // Главная страница включена в production
@@ -39,6 +42,7 @@ const defaultFlags: Record<string, FeatureFlags> = {
     booking_flow_enabled: true,
     diary_feature_enabled: false, // Дневники еще не в production
     trust_pages_v1_enabled: true, // Trust pages включены в production
+    topic_landings_enabled: true, // Topic landings включены в production
   },
 };
 
@@ -80,6 +84,9 @@ function loadFeatureFlags(): FeatureFlags {
       trust_pages_v1_enabled:
         process.env.NEXT_PUBLIC_FF_TRUST_PAGES === 'true' ||
         defaults.trust_pages_v1_enabled,
+      topic_landings_enabled:
+        process.env.NEXT_PUBLIC_FF_TOPIC_LANDINGS === 'true' ||
+        defaults.topic_landings_enabled,
     };
   }
 

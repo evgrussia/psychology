@@ -1,5 +1,5 @@
 import { Topic as PrismaTopic } from '@prisma/client';
-import { Topic } from '../../../../../domain/content/entities/Topic';
+import { Topic } from '@domain/content/entities/Topic';
 
 export class TopicMapper {
   static toDomain(prismaTopic: PrismaTopic): Topic {

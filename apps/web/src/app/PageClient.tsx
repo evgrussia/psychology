@@ -9,8 +9,8 @@ import {
   CTABlock,
   Button,
   Disclaimer
-} from '../../../../design-system/components';
-import { spacing, typography, colors } from '../../../../design-system/tokens';
+} from '@psychology/design-system/components';
+import { spacing, typography, colors } from '@psychology/design-system/tokens';
 import { track } from '../lib/tracking';
 import { useFeatureFlag } from '../lib/feature-flags';
 
@@ -75,7 +75,7 @@ export default function PageClient({ slug, data }: PageClientProps) {
         }}>{data.title}</h1>
         
         <div className="prose" style={{
-          ...typography.body,
+          ...typography.body.md,
           color: colors.text.secondary,
         }}>
           <SafeMarkdownRenderer content={data.body_markdown} />

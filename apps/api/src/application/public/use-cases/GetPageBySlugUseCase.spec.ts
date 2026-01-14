@@ -1,7 +1,7 @@
 import { GetPageBySlugUseCase } from './GetPageBySlugUseCase';
-import { IContentItemRepository } from '../../../domain/content/repositories/IContentItemRepository';
-import { ContentItem } from '../../../domain/content/entities/ContentItem';
-import { ContentType, ContentStatus } from '../../../domain/content/value-objects/ContentEnums';
+import { IContentItemRepository } from '@domain/content/repositories/IContentItemRepository';
+import { ContentItem } from '@domain/content/entities/ContentItem';
+import { ContentType, ContentStatus } from '@domain/content/value-objects/ContentEnums';
 import { NotFoundException } from '@nestjs/common';
 
 describe('GetPageBySlugUseCase', () => {
@@ -12,8 +12,10 @@ describe('GetPageBySlugUseCase', () => {
     contentItemRepository = {
       findBySlug: jest.fn(),
       findById: jest.fn(),
+      findAll: jest.fn(),
+      findByTopic: jest.fn(),
       save: jest.fn(),
-    };
+    } as any;
     useCase = new GetPageBySlugUseCase(contentItemRepository);
   });
 

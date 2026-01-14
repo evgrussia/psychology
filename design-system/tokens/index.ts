@@ -4,11 +4,19 @@
  * Централизованный экспорт всех дизайн-токенов
  */
 
-export { colors, colorsCSS, type Colors } from './colors';
-export { typography, typographyCSS, type Typography } from './typography';
-export { spacing, spacingCSS, type Spacing } from './spacing';
-export { effects, effectsCSS, type Effects } from './effects';
-export { a11yStyles, addFocusVisibleHandlers } from './a11y';
+import { colors, colorsCSS, type Colors } from './colors';
+import { typography, typographyCSS, type Typography } from './typography';
+import { spacing, spacingCSS, type Spacing } from './spacing';
+import { effects, effectsCSS, type Effects } from './effects';
+import { a11yStyles, addFocusVisibleHandlers } from './a11y';
+
+export { 
+  colors, colorsCSS, type Colors,
+  typography, typographyCSS, type Typography,
+  spacing, spacingCSS, type Spacing,
+  effects, effectsCSS, type Effects,
+  a11yStyles, addFocusVisibleHandlers
+};
 
 /**
  * Все CSS Custom Properties в одном объекте

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ITagRepository } from '../../../domain/content/repositories/ITagRepository';
+import { ITagRepository } from '@domain/content/repositories/ITagRepository';
 
 @Injectable()
 export class ListTagsUseCase {

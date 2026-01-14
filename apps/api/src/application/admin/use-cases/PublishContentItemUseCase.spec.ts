@@ -1,10 +1,10 @@
 import { PublishContentItemUseCase } from './PublishContentItemUseCase';
-import { IContentItemRepository } from '../../../domain/content/repositories/IContentItemRepository';
-import { IEventBus } from '../../../domain/events/event-bus.interface';
-import { ContentItem } from '../../../domain/content/entities/ContentItem';
-import { ContentType, ContentStatus } from '../../../domain/content/value-objects/ContentEnums';
+import { IContentItemRepository } from '@domain/content/repositories/IContentItemRepository';
+import { IEventBus } from '@domain/events/event-bus.interface';
+import { ContentItem } from '@domain/content/entities/ContentItem';
+import { ContentType, ContentStatus } from '@domain/content/value-objects/ContentEnums';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { ContentPublishedEvent } from '../../../domain/content/events/ContentPublishedEvent';
+import { ContentPublishedEvent } from '@domain/content/events/ContentPublishedEvent';
 
 describe('PublishContentItemUseCase', () => {
   let useCase: PublishContentItemUseCase;
@@ -16,6 +16,7 @@ describe('PublishContentItemUseCase', () => {
       findBySlug: jest.fn(),
       findById: jest.fn(),
       findAll: jest.fn(),
+      findByTopic: jest.fn(),
       save: jest.fn(),
     };
     eventBus = {

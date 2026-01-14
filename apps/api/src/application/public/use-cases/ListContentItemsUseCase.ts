@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { IContentItemRepository } from '../../../domain/content/repositories/IContentItemRepository';
-import { ContentType, ContentStatus } from '../../../domain/content/value-objects/ContentEnums';
+import { IContentItemRepository } from '@domain/content/repositories/IContentItemRepository';
+import { ContentType, ContentStatus } from '@domain/content/value-objects/ContentEnums';
 
 export interface ListContentItemsRequest {
   type?: ContentType;

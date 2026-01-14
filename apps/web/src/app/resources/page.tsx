@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Metadata } from 'next';
 
 async function getResources() {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
   
   try {
     const res = await fetch(`${apiUrl}/public/content/resource`, {

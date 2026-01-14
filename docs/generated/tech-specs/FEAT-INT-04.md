@@ -77,7 +77,9 @@ P0.
 
 ## 7) API
 Public:
-- `GET /api/public/boundaries-scripts/{slug}` → definition
+- `GET /api/public/interactive/boundaries-scripts/{slug}` → definition
+
+**Примечание:** Путь использует префикс `/interactive/` для единообразия с другими интерактивами (`/interactive/quizzes/`, `/interactive/rituals/`).
 
 Tracking events — на web.
 

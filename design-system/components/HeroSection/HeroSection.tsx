@@ -26,7 +26,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
         <p style={{
           ...typography.h3,
-          color: colors.brand.primary,
+          color: colors.brand.primary.DEFAULT,
           marginBottom: spacing.space[4],
           margin: 0,
         }}>{subtitle}</p>

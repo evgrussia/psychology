@@ -25,39 +25,19 @@ async function main() {
     });
   }
 
-  // --- Test User ---
-  const testUserEmail = 'test@psychology.test';
-  const testUserPassword = 'password123';
-  const passwordHash = await bcrypt.hash(testUserPassword, 12);
-
-  await prisma.user.upsert({
-    where: { email: testUserEmail },
-    update: {},
-    create: {
-      email: testUserEmail,
-      display_name: 'Тестовый Пользователь',
-      password_hash: passwordHash,
-      status: 'active',
-      roles: {
-        create: {
-          role_code: 'client',
-        },
-      },
-    },
-  });
-
-  console.log(`Test user seeded: ${testUserEmail}`);
-
   // --- Test Topics ---
   const topics = [
-    { code: 'test-topic-1', title: 'Тестовая тема 1' },
-    { code: 'test-topic-2', title: 'Тестовая тема 2' },
+    { code: 'anxiety', title: 'Тревога' },
+    { code: 'burnout', title: 'Выгорание' },
+    { code: 'relationships', title: 'Отношения' },
+    { code: 'work', title: 'Работа' },
+    { code: 'family', title: 'Семья' },
   ];
 
   for (const topic of topics) {
     await prisma.topic.upsert({
       where: { code: topic.code },
-      update: {},
+      update: { is_active: true },
       create: {
         code: topic.code,
         title: topic.title,
@@ -65,6 +45,75 @@ async function main() {
       },
     });
   }
+
+  // --- Quizzes ---
+  await prisma.interactiveDefinition.upsert({
+    where: { interactive_type_slug: { interactive_type: 'quiz', slug: 'anxiety' } },
+    update: { status: 'published' },
+    create: {
+      id: '00000000-0000-0000-0000-000000000001',
+      interactive_type: 'quiz',
+      slug: 'anxiety',
+      title: 'Тест на тревогу (GAD-7)',
+      topic_code: 'anxiety',
+      status: 'published',
+      published_at: new Date(),
+      definition_json: {
+        questions: Array(7).fill({ id: 'q', text: 'Q', options: [{ value: 3, text: 'V' }] }),
+        thresholds: [{ level: 'high', minScore: 0, maxScore: 21 }],
+        results: [{ level: 'high', title: 'H', description: 'D', recommendations: { now: [], week: [] } }]
+      }
+    }
+  });
+
+  // --- Navigators ---
+  await prisma.interactiveDefinition.upsert({
+    where: { interactive_type_slug: { interactive_type: 'navigator', slug: 'state-navigator' } },
+    update: { status: 'published' },
+    create: {
+      id: '00000000-0000-0000-0000-000000000002',
+      interactive_type: 'navigator',
+      slug: 'state-navigator',
+      title: 'Навигатор состояния',
+      status: 'published',
+      published_at: new Date(),
+      definition_json: {
+        initial_step_id: 'step_1',
+        steps: [
+          {
+            step_id: 'step_1',
+            question_text: 'Q1',
+            choices: [{ choice_id: 'c1', text: 'C1', next_step_id: null, result_profile_id: 'res_1' }]
+          }
+        ],
+        result_profiles: [{ id: 'res_1', title: 'R1', description: 'D1', recommendations: { now: [], week: [] } }]
+      }
+    }
+  });
+
+  // --- Boundaries Scripts ---
+  await prisma.interactiveDefinition.upsert({
+    where: { interactive_type_slug: { interactive_type: 'boundaries', slug: 'default' } },
+    update: { status: 'published' },
+    create: {
+      id: '00000000-0000-0000-0000-000000000003',
+      interactive_type: 'boundaries',
+      slug: 'default',
+      title: 'Скрипты границ',
+      status: 'published',
+      published_at: new Date(),
+      definition_json: {
+        scenarios: [{ id: 'work', name: 'Работа' }, { id: 'family', name: 'Семья' }],
+        tones: [{ id: 'soft', name: 'Мягко' }],
+        goals: [{ id: 'refuse', name: 'Отказать' }],
+        matrix: [{
+          scenario_id: 'work', tone_id: 'soft', goal_id: 'refuse',
+          variants: [{ variant_id: 'v1', text: 'No' }]
+        }],
+        safety_block: { text: 'Safe' }
+      }
+    }
+  });
 
   console.log('Test data seed completed.');
 }

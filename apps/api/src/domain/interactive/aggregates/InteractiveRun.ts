@@ -64,7 +64,7 @@ export class InteractiveRun {
   }
 
   public complete(params: {
-    resultLevel: ResultLevel | null;
+    resultLevel?: ResultLevel | null;
     resultProfile?: string | null;
     durationMs: number;
     crisisTriggered?: boolean;
@@ -76,7 +76,7 @@ export class InteractiveRun {
     }
 
     this._completedAt = new Date();
-    this._resultLevel = params.resultLevel;
+    this._resultLevel = params.resultLevel ?? null;
     this._resultProfile = params.resultProfile ?? null;
     this._durationMs = params.durationMs;
     this._crisisTriggered = params.crisisTriggered ?? false;

@@ -6,7 +6,7 @@ test.describe('Homepage', () => {
 
     // Check Hero Section
     await expect(page.locator('h1')).toContainText('Эмоциональный баланс');
-    await expect(page.getByRole('button', { name: /Записаться/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Записаться/i }).first()).toBeVisible();
 
     // Check Topics section
     await expect(page.getByRole('heading', { name: /С чем я помогаю/i })).toBeVisible();
@@ -27,7 +27,7 @@ test.describe('Homepage', () => {
   test('should navigate to topic page when clicking a topic card', async ({ page }) => {
     await page.goto('/');
     // Assuming 'anxiety' is one of the topics
-    const anxietyCard = page.getByRole('link', { name: /Тревога/i });
+    const anxietyCard = page.getByRole('link', { name: /Тревога/i }).first();
     if (await anxietyCard.isVisible()) {
       await anxietyCard.click();
       await expect(page).toHaveURL(/\/s-chem-ya-pomogayu\/anxiety/);

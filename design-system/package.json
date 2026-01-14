@@ -1,0 +1,15 @@
+{
+  "name": "@psychology/design-system",
+  "version": "0.1.0",
+  "private": true,
+  "sideEffects": false,
+  "exports": {
+    ".": "./index.ts",
+    "./components": "./components/index.ts",
+    "./tokens": "./tokens/index.ts"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}

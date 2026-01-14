@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
-import { IInteractiveRunRepository } from '../../../../../domain/interactive/repositories/IInteractiveRunRepository';
-import { InteractiveRun } from '../../../../../domain/interactive/aggregates/InteractiveRun';
+import { IInteractiveRunRepository } from '@domain/interactive/repositories/IInteractiveRunRepository';
+import { InteractiveRun } from '@domain/interactive/aggregates/InteractiveRun';
 import { InteractiveRunMapper } from './interactive-run.mapper';
 
 @Injectable()

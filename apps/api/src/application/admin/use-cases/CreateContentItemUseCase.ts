@@ -1,9 +1,9 @@
 import { Inject, Injectable, ConflictException } from '@nestjs/common';
-import { IContentItemRepository } from '../../../domain/content/repositories/IContentItemRepository';
+import { IContentItemRepository } from '@domain/content/repositories/IContentItemRepository';
 import { PrismaService } from '../../../infrastructure/database/prisma.service';
-import { ContentItem } from '../../../domain/content/entities/ContentItem';
+import { ContentItem } from '@domain/content/entities/ContentItem';
 import { CreateContentItemDto, ContentItemResponseDto } from '../dto/content.dto';
-import { ContentStatus } from '../../../domain/content/value-objects/ContentEnums';
+import { ContentStatus } from '@domain/content/value-objects/ContentEnums';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()

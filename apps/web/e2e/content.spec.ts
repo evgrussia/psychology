@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Content Management E2E', () => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
   const adminUrl = process.env.ADMIN_URL || 'http://localhost:3001';
 
   test('should create article in admin → publish → view on public blog', async ({ page, request }) => {

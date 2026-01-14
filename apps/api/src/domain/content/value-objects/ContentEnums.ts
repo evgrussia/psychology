@@ -33,3 +33,21 @@ export enum TimeToBenefit {
   min_20_30 = 'min_20_30',
   series = 'series',
 }
+
+export enum CollectionType {
+  problem = 'problem',
+  format = 'format',
+  goal = 'goal',
+  context = 'context',
+}
+
+export enum CuratedItemType {
+  content = 'content',
+  interactive = 'interactive',
+}
+
+export enum GlossaryTermCategory {
+  approach = 'approach',
+  state = 'state',
+  concept = 'concept',
+}

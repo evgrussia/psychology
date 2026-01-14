@@ -20,6 +20,8 @@ export default function RootLayout({
             <ul>
               <li><a href="/admin">Дашборд</a></li>
               <li><a href="/admin/content">Контент</a></li>
+              <li><a href="/admin/interactive/quizzes">Квизы</a></li>
+              <li><a href="/admin/glossary">Словарь</a></li>
               <li><a href="/admin/audit-log">Логи аудита</a></li>
             </ul>
           </nav>

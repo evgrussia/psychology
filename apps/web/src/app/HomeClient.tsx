@@ -9,8 +9,8 @@ import {
   CTABlock,
   Button,
   Disclaimer
-} from '../../../../design-system/components';
-import { spacing, typography, colors } from '../../../../design-system/tokens';
+} from '@psychology/design-system/components';
+import { spacing, typography, colors } from '@psychology/design-system/tokens';
 import { track, captureUTMParameters } from '../lib/tracking';
 
 interface HomeClientProps {

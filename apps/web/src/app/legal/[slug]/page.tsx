@@ -12,7 +12,7 @@ const ALLOWED_LEGAL_SLUGS = [
 ];
 
 async function getPageData(slug: string) {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
   
   // Mapping some short slugs from layout to full slugs if needed
   const mappedSlug = slug === 'privacy' ? 'privacy-policy' : slug;
@@ -38,23 +38,23 @@ function getFallbackData(slug: string) {
   const fallbacks: Record<string, any> = {
     'privacy': {
       title: 'Политика конфиденциальности',
-      body_markdown: '# Политика конфиденциальности\n\nЗдесь будет текст политики конфиденциальности. Мы серьезно относимся к вашим данным.'
+      body_markdown: 'Здесь будет текст политики конфиденциальности. Мы серьезно относимся к вашим данным.'
     },
     'personal-data-consent': {
       title: 'Согласие на обработку персональных данных',
-      body_markdown: '# Согласие на обработку персональных данных\n\nИспользуя этот сайт, вы соглашаетесь на обработку ваших персональных данных.'
+      body_markdown: 'Используя этот сайт, вы соглашаетесь на обработку ваших персональных данных.'
     },
     'offer': {
       title: 'Публичная оферта',
-      body_markdown: '# Публичная оферта\n\nТекст договора об оказании услуг.'
+      body_markdown: 'Текст договора об оказании услуг.'
     },
     'disclaimer': {
       title: 'Отказ от ответственности',
-      body_markdown: '# Отказ от ответственности\n\nИнформация на сайте не является медицинской консультацией или постановкой диагноза.'
+      body_markdown: 'Информация на сайте не является медицинской консультацией или постановкой диагноза.'
     },
     'cookies': {
       title: 'Политика использования Cookies',
-      body_markdown: '# Политика использования Cookies\n\nМы используем cookies для улучшения работы сайта.'
+      body_markdown: 'Мы используем cookies для улучшения работы сайта.'
     }
   };
 

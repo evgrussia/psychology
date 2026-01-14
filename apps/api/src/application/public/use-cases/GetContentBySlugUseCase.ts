@@ -1,6 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { IContentItemRepository } from '../../../domain/content/repositories/IContentItemRepository';
-import { ContentType, ContentStatus } from '../../../domain/content/value-objects/ContentEnums';
+import { IContentItemRepository } from '@domain/content/repositories/IContentItemRepository';
+import { ContentType, ContentStatus } from '@domain/content/value-objects/ContentEnums';
 
 export interface GetContentBySlugRequest {
   type: ContentType;

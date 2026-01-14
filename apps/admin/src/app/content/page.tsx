@@ -25,7 +25,7 @@ export default function ContentListPage() {
   });
 
   useEffect(() => {
-    let url = 'http://localhost:3000/api/admin/content?';
+    let url = 'http://127.0.0.1:3001/api/admin/content?';
     if (filters.type) url += `type=${filters.type}&`;
     if (filters.status) url += `status=${filters.status}&`;
 

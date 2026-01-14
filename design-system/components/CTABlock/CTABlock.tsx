@@ -19,7 +19,7 @@ const CTABlock: React.FC<CTABlockProps> = ({
       <div style={{
         maxWidth: '1000px',
         margin: '0 auto',
-        backgroundColor: colors.brand.primary,
+        backgroundColor: colors.brand.primary.DEFAULT,
         borderRadius: effects.radius.lg,
         padding: `${spacing.space[16]} ${spacing.space[8]}`,
         textAlign: 'center',

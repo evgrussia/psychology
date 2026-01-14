@@ -33,28 +33,31 @@ describe('Interactive (e2e)', () => {
   });
 
   beforeEach(async () => {
-    // Clean up test data before each test
+    // Clean up test data before each test in correct order
     await prisma.interactiveRun.deleteMany({});
     await prisma.interactiveDefinition.deleteMany({});
-    await prisma.topic.deleteMany({});
+    // We don't delete topics here as they are shared and it causes FK issues
+    // instead we use unique codes for each test if needed
   });
 
   describe('POST /api/public/interactive/runs', () => {
     it('should create a new interactive run', async () => {
+      const topicCode = `anxiety-${Date.now()}`;
       // Create topic
       const topic = await prisma.topic.create({
         data: {
-          code: 'anxiety',
+          code: topicCode,
           title: 'Anxiety',
           is_active: true,
         },
       });
 
+      const slug = `anxiety-test-${Date.now()}`;
       // Create interactive definition
       const interactiveDef = await prisma.interactiveDefinition.create({
         data: {
           interactive_type: 'quiz',
-          slug: 'anxiety-test',
+          slug: slug,
           title: 'Anxiety Test',
           topic_code: topic.code,
           status: 'published',
@@ -68,9 +71,9 @@ describe('Interactive (e2e)', () => {
         .post('/api/public/interactive/runs')
         .send({
           interactive_type: 'quiz',
-          interactive_slug: 'anxiety-test',
+          interactive_slug: slug,
           anonymousId: anonymousId,
-          topic: 'anxiety',
+          topic: topicCode,
           entry_point: 'home',
         })
         .expect(201);
@@ -145,20 +148,22 @@ describe('Interactive (e2e)', () => {
 
   describe('POST /api/public/interactive/runs/:id/complete', () => {
     it('should complete an interactive run', async () => {
+      const topicCode = `anxiety-${Date.now()}`;
       // Create topic
       const topic = await prisma.topic.create({
         data: {
-          code: 'anxiety',
+          code: topicCode,
           title: 'Anxiety',
           is_active: true,
         },
       });
 
+      const slug = `anxiety-test-${Date.now()}`;
       // Create interactive definition
       const interactiveDef = await prisma.interactiveDefinition.create({
         data: {
           interactive_type: 'quiz',
-          slug: 'anxiety-test',
+          slug: slug,
           title: 'Anxiety Test',
           topic_code: topic.code,
           status: 'published',
@@ -195,20 +200,22 @@ describe('Interactive (e2e)', () => {
     });
 
     it('should be idempotent (complete twice)', async () => {
+      const topicCode = `anxiety-${Date.now()}`;
       // Create topic
       const topic = await prisma.topic.create({
         data: {
-          code: 'anxiety',
+          code: topicCode,
           title: 'Anxiety',
           is_active: true,
         },
       });
 
+      const slug = `anxiety-test-${Date.now()}`;
       // Create interactive definition
       const interactiveDef = await prisma.interactiveDefinition.create({
         data: {
           interactive_type: 'quiz',
-          slug: 'anxiety-test',
+          slug: slug,
           title: 'Anxiety Test',
           topic_code: topic.code,
           status: 'published',
@@ -258,8 +265,9 @@ describe('Interactive (e2e)', () => {
     });
 
     it('should return 404 if run not found', async () => {
+      const nonExistentId = '00000000-0000-0000-0000-000000000000';
       await request(app.getHttpServer())
-        .post('/api/public/interactive/runs/non-existent-id/complete')
+        .post(`/api/public/interactive/runs/${nonExistentId}/complete`)
         .send({
           resultLevel: 'moderate',
           durationMs: 120000,
@@ -268,20 +276,22 @@ describe('Interactive (e2e)', () => {
     });
 
     it('should validate required fields', async () => {
+      const topicCode = `test-${Date.now()}`;
       // Create topic
       const topic = await prisma.topic.create({
         data: {
-          code: 'test',
+          code: topicCode,
           title: 'Test',
           is_active: true,
         },
       });
 
+      const slug = `test-${Date.now()}`;
       // Create interactive definition
       const interactiveDef = await prisma.interactiveDefinition.create({
         data: {
           interactive_type: 'quiz',
-          slug: 'test',
+          slug: slug,
           title: 'Test',
           topic_code: topic.code,
           status: 'published',

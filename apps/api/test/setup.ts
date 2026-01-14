@@ -15,11 +15,12 @@ export default async () => {
 
   console.log('Running migrations on test database...');
   try {
-    execSync('npx prisma migrate deploy', {
+    // Use prisma db push for tests to avoid P3005 errors with existing schemas
+    execSync('npx prisma db push --accept-data-loss', {
       env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL },
       stdio: 'inherit',
     });
-    console.log('Migrations completed.');
+    console.log('Database schema pushed.');
   } catch (error) {
     console.error('Failed to run migrations:', error);
     throw error;

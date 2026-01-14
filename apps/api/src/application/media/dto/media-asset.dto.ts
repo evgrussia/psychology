@@ -1,4 +1,4 @@
-import { MediaType } from '../../../domain/media/value-objects/MediaType';
+import { MediaType } from '@domain/media/value-objects/MediaType';
 
 export interface UploadMediaDto {
   title?: string;

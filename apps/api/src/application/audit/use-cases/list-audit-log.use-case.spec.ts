@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ForbiddenException } from '@nestjs/common';
 import { ListAuditLogUseCase } from './ListAuditLogUseCase';
-import { IAuditLogRepository } from '../../../domain/audit/repositories/IAuditLogRepository';
-import { AuditLogEntry } from '../../../domain/audit/entities/AuditLogEntry';
+import { IAuditLogRepository } from '@domain/audit/repositories/IAuditLogRepository';
+import { AuditLogEntry } from '@domain/audit/entities/AuditLogEntry';
 import { ListAuditLogDto, AuditLogAction } from '../dto/audit-log.dto';
 
 describe('ListAuditLogUseCase', () => {

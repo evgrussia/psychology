@@ -36,6 +36,11 @@ import { AuditModule } from '../audit/audit.module';
     TrackingService,
     MediaTrackingHandler,
   ],
-  exports: [UploadMediaAssetUseCase, DeleteMediaAssetUseCase, ListMediaAssetsUseCase],
+  exports: [
+    UploadMediaAssetUseCase,
+    DeleteMediaAssetUseCase,
+    ListMediaAssetsUseCase,
+    'IMediaAssetRepository',
+  ],
 })
 export class MediaModule {}

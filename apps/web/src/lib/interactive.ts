@@ -6,8 +6,56 @@ export enum ResultLevel {
   HIGH = 'high',
 }
 
+export type CrisisTriggerType = 'self_harm' | 'suicidal_ideation' | 'violence' | 'minor_risk' | 'panic_like';
+
+export const CRISIS_KEYWORDS: Record<CrisisTriggerType, string[]> = {
+  suicidal_ideation: [
+    'суицид', 'убить себя', 'покончить', 'не хочу жить', 'умереть', 'конец', 
+    'прыгнуть', 'повеситься', 'самоубийство'
+  ],
+  self_harm: [
+    'таблетки все', 'передозировка', 'резать вены', 'порезать', 'бритва'
+  ],
+  violence: [
+    'бьёт меня', 'ударил', 'избил', 'насилие', 'изнасилование', 
+    'не могу уйти', 'боюсь за жизнь', 'угрожает убить', 'держит силой'
+  ],
+  panic_like: [
+    'паника', 'задыхаюсь', 'страх смерти', 'сердце выпрыгивает'
+  ],
+  minor_risk: [
+    'тяжело', 'не справляюсь', 'одиноко'
+  ]
+};
+
+export function evaluateCrisisTrigger(text: string): CrisisTriggerType | null {
+  if (!text) return null;
+  
+  const lowerText = text.toLowerCase();
+  
+  // High priority categories first
+  const highPriority: CrisisTriggerType[] = ['suicidal_ideation', 'self_harm', 'violence'];
+  for (const category of highPriority) {
+    if (CRISIS_KEYWORDS[category].some(keyword => lowerText.includes(keyword))) {
+      return category;
+    }
+  }
+  
+  // Lower priority
+  const lowPriority: CrisisTriggerType[] = ['panic_like', 'minor_risk'];
+  for (const category of lowPriority) {
+    if (CRISIS_KEYWORDS[category].some(keyword => lowerText.includes(keyword))) {
+      return category;
+    }
+  }
+  
+  return null;
+}
+
 export interface StartInteractiveRunParams {
-  interactiveDefinitionId: string;
+  interactive_type: string;
+  interactive_slug: string;
+  topic?: string;
   userId?: string;
   anonymousId?: string;
   deepLinkId?: string;
@@ -22,7 +70,7 @@ export interface CompleteInteractiveRunParams {
   crisisTriggerType?: string;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
 
 export class InteractivePlatform {
   static async startRun(params: StartInteractiveRunParams): Promise<string> {
@@ -91,5 +139,106 @@ export class InteractivePlatform {
       trigger_type: triggerType,
       surface,
     });
+  }
+
+  static trackNavigatorStart(slug: string) {
+    track('navigator_start', {
+      navigator_slug: slug,
+    });
+  }
+
+  static trackNavigatorStepCompleted(slug: string, stepIndex: number, choiceId: string) {
+    track('navigator_step_completed', {
+      navigator_slug: slug,
+      step_index: stepIndex,
+      choice_id: choiceId,
+    });
+  }
+
+  static trackNavigatorComplete(slug: string, resultProfileId: string, durationMs: number) {
+    track('navigator_complete', {
+      navigator_slug: slug,
+      result_profile: resultProfileId,
+      duration_ms: durationMs,
+    });
+  }
+
+  static trackBoundariesStart(scenario: string, tone: string) {
+    track('boundaries_script_start', {
+      topic: 'boundaries',
+      scenario,
+      tone,
+    });
+  }
+
+  static trackBoundariesVariantViewed(variant_id: string, scenario: string, tone: string) {
+    track('boundaries_script_variant_viewed', {
+      scenario,
+      tone,
+      variant_id,
+    });
+  }
+
+  static trackBoundariesCopied(variant_id: string) {
+    track('boundaries_script_copied', {
+      variant_id,
+    });
+  }
+
+  static trackRitualStart(slug: string, topic?: string) {
+    track('ritual_started', {
+      ritual_slug: slug,
+      topic,
+    });
+  }
+
+  static trackRitualComplete(slug: string, durationMs: number) {
+    track('ritual_completed', {
+      ritual_slug: slug,
+      duration_ms: durationMs,
+    });
+  }
+
+  static async listRituals(topic?: string): Promise<any> {
+    const url = new URL(`${API_BASE_URL}/public/interactive/rituals`);
+    if (topic) url.searchParams.append('topic', topic);
+    
+    try {
+      const response = await fetch(url.toString());
+      if (!response.ok) throw new Error('Failed to fetch rituals');
+      return await response.json();
+    } catch (error) {
+      console.error('[InteractivePlatform] Error listing rituals:', error);
+      return { items: [], total: 0 };
+    }
+  }
+
+  static async getRitual(slug: string): Promise<any> {
+    try {
+      // Support both server-side and client-side calls
+      const baseUrl = typeof window !== 'undefined' 
+        ? (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api')
+        : (process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api');
+      
+      const response = await fetch(`${baseUrl}/public/interactive/rituals/${slug}`, {
+        cache: 'no-store', // Always fetch fresh data
+      });
+      if (!response.ok) throw new Error('Failed to fetch ritual');
+      return await response.json();
+    } catch (error) {
+      console.error('[InteractivePlatform] Error getting ritual:', error);
+      return null;
+    }
+  }
+
+  static async getQuiz(slug: string): Promise<any> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/public/interactive/quizzes/${slug}`);
+      if (!response.ok) throw new Error('Failed to fetch quiz');
+      return await response.json();
+    } catch (error) {
+      console.error('[InteractivePlatform] Error getting quiz:', error);
+      return null;
+    }
   }
 }

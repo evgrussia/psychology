@@ -1,6 +1,6 @@
 import { CreateContentItemUseCase } from './CreateContentItemUseCase';
-import { IContentItemRepository } from '../../../domain/content/repositories/IContentItemRepository';
-import { ContentType, ContentStatus } from '../../../domain/content/value-objects/ContentEnums';
+import { IContentItemRepository } from '@domain/content/repositories/IContentItemRepository';
+import { ContentType, ContentStatus } from '@domain/content/value-objects/ContentEnums';
 import { ConflictException } from '@nestjs/common';
 
 describe('CreateContentItemUseCase', () => {
@@ -13,6 +13,7 @@ describe('CreateContentItemUseCase', () => {
       findBySlug: jest.fn(),
       findById: jest.fn(),
       findAll: jest.fn(),
+      findByTopic: jest.fn(),
       save: jest.fn(),
     };
     prisma = {

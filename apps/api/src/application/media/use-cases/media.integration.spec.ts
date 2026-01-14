@@ -8,7 +8,7 @@ import { LocalFsStorageService } from '../../../infrastructure/media/storage/loc
 import { PrismaMediaAssetRepository } from '../../../infrastructure/media/persistence/prisma/media/prisma-media-asset.repository';
 import { EventBusService } from '../../../infrastructure/events/event-bus.service';
 import { AuditLogHelper } from '../../audit/helpers/audit-log.helper';
-import { MediaType } from '../../../domain/media/value-objects/MediaType';
+import { MediaType } from '@domain/media/value-objects/MediaType';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { randomUUID } from 'crypto';

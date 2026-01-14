@@ -26,6 +26,8 @@ describe('Auth (e2e)', () => {
     hasher = new BcryptHasher();
 
     // Clean up
+    await prisma.contentRevision.deleteMany();
+    await prisma.contentItem.deleteMany();
     await prisma.session.deleteMany();
     await prisma.userRole.deleteMany();
     await prisma.user.deleteMany();

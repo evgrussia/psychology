@@ -4,7 +4,7 @@ import { colors, spacing, typography } from '../../tokens';
 export interface DisclaimerProps {
   title?: string;
   children: React.ReactNode;
-  variant?: 'warning' | 'info';
+  variant?: 'warning' | 'info' | 'error' | 'success';
   showEmergencyLink?: boolean;
 }
 
@@ -14,24 +14,40 @@ export const Disclaimer: React.FC<DisclaimerProps> = ({
   variant = 'warning',
   showEmergencyLink = false,
 }) => {
-  const variantStyles = {
+  const styles = {
     warning: {
       bg: colors.semantic.warning.light,
       border: colors.semantic.warning.DEFAULT,
       iconColor: colors.semantic.warning.dark,
+      icon: '⚠️',
     },
     info: {
       bg: colors.semantic.info.light,
       border: colors.semantic.info.DEFAULT,
       iconColor: colors.semantic.info.dark,
+      icon: 'ℹ️',
     },
-  }[variant];
+    error: {
+      bg: colors.semantic.error.light,
+      border: colors.semantic.error.DEFAULT,
+      iconColor: colors.semantic.error.dark,
+      icon: '🚨',
+    },
+    success: {
+      bg: colors.semantic.success.light,
+      border: colors.semantic.success.DEFAULT,
+      iconColor: colors.semantic.success.dark,
+      icon: '✅',
+    },
+  };
+
+  const currentStyle = styles[variant as keyof typeof styles] || styles.warning;
 
   return (
     <div
       style={{
-        backgroundColor: variantStyles.bg,
-        border: `1px solid ${variantStyles.border}`,
+        backgroundColor: currentStyle.bg,
+        border: `1px solid ${currentStyle.border}`,
         borderRadius: '8px',
         padding: spacing.space[4],
         marginBottom: spacing.space[6],
@@ -42,14 +58,14 @@ export const Disclaimer: React.FC<DisclaimerProps> = ({
       role="alert"
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: spacing.space[2] }}>
-        <span style={{ fontSize: '20px', color: variantStyles.iconColor }}>
-          {variant === 'warning' ? '⚠️' : 'ℹ️'}
+        <span style={{ fontSize: '20px', color: currentStyle.iconColor }}>
+          {currentStyle.icon}
         </span>
         <h4 style={{ ...typography.h4, margin: 0, color: colors.text.primary }}>
           {title}
         </h4>
       </div>
-      <div style={{ ...typography.body, color: colors.text.secondary }}>
+      <div style={{ ...typography.body.md, color: colors.text.secondary }}>
         {children}
       </div>
       {showEmergencyLink && (
@@ -57,7 +73,7 @@ export const Disclaimer: React.FC<DisclaimerProps> = ({
           <a
             href="/emergency"
             style={{
-              ...typography.bodySmall,
+              ...typography.body.sm,
               color: colors.semantic.error.dark,
               fontWeight: 600,
               textDecoration: 'underline',

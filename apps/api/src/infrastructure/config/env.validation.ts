@@ -31,6 +31,10 @@ class EnvironmentVariables {
   MEDIA_UPLOAD_ENABLED?: string; // 'true' or 'false' as string
 
   @IsOptional()
+  @IsString()
+  NAVIGATOR_ENABLED?: string; // 'true' or 'false' as string, defaults to 'true'
+
+  @IsOptional()
   @IsNumber()
   HTTP_TIMEOUT_MS?: number;
 

@@ -1,7 +1,7 @@
 import { GetCurrentUserUseCase } from './GetCurrentUserUseCase';
 import { UnauthorizedException } from '@nestjs/common';
-import { UserStatus } from '../../../domain/identity/value-objects/UserStatus';
-import { Role } from '../../../domain/identity/value-objects/Role';
+import { UserStatus } from '@domain/identity/value-objects/UserStatus';
+import { Role } from '@domain/identity/value-objects/Role';
 
 describe('GetCurrentUserUseCase', () => {
   let useCase: GetCurrentUserUseCase;

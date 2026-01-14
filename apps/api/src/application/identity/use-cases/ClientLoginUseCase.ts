@@ -1,11 +1,11 @@
 import { Injectable, UnauthorizedException, Inject } from '@nestjs/common';
-import { IUserRepository } from '../../../domain/identity/repositories/IUserRepository';
-import { ISessionRepository } from '../../../domain/identity/repositories/ISessionRepository';
+import { IUserRepository } from '@domain/identity/repositories/IUserRepository';
+import { ISessionRepository } from '@domain/identity/repositories/ISessionRepository';
 import { IPasswordHasher } from '../../../infrastructure/auth/bcrypt-hasher';
-import { IEventBus } from '../../../domain/events/event-bus.interface';
-import { Email } from '../../../domain/identity/value-objects/Email';
-import { Session } from '../../../domain/identity/aggregates/Session';
-import { ClientLoggedInEvent } from '../../../domain/identity/events/ClientLoggedInEvent';
+import { IEventBus } from '@domain/events/event-bus.interface';
+import { Email } from '@domain/identity/value-objects/Email';
+import { Session } from '@domain/identity/aggregates/Session';
+import { ClientLoggedInEvent } from '@domain/identity/events/ClientLoggedInEvent';
 import { ClientLoginDto, LoginResponseDto } from '../dto/login.dto';
 import * as crypto from 'crypto';
 

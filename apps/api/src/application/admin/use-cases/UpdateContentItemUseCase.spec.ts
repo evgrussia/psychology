@@ -1,8 +1,8 @@
 import { UpdateContentItemUseCase } from './UpdateContentItemUseCase';
-import { IContentItemRepository } from '../../../domain/content/repositories/IContentItemRepository';
+import { IContentItemRepository } from '@domain/content/repositories/IContentItemRepository';
 import { PrismaService } from '../../../infrastructure/database/prisma.service';
-import { ContentItem } from '../../../domain/content/entities/ContentItem';
-import { ContentType, ContentStatus } from '../../../domain/content/value-objects/ContentEnums';
+import { ContentItem } from '@domain/content/entities/ContentItem';
+import { ContentType, ContentStatus } from '@domain/content/value-objects/ContentEnums';
 import { NotFoundException, ConflictException } from '@nestjs/common';
 
 describe('UpdateContentItemUseCase', () => {
@@ -15,6 +15,7 @@ describe('UpdateContentItemUseCase', () => {
       findBySlug: jest.fn(),
       findById: jest.fn(),
       findAll: jest.fn(),
+      findByTopic: jest.fn(),
       save: jest.fn(),
     };
     prisma = {

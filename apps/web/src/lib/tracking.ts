@@ -138,6 +138,11 @@ export const track = (eventName: string, properties: TrackProperties = {}) => {
     properties,
   };
 
+  // If window.track is defined (e.g. by E2E tests), call it to allow interception
+  if (typeof window !== 'undefined' && (window as any).track && (window as any).track !== track) {
+    (window as any).track(eventName, properties);
+  }
+
   console.log(`[Tracking] ${eventName}:`, payload);
   
   // В production здесь будет отправка в backend

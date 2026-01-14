@@ -1,7 +1,7 @@
 import { GetContentBySlugUseCase } from './GetContentBySlugUseCase';
-import { IContentItemRepository } from '../../../domain/content/repositories/IContentItemRepository';
-import { ContentItem } from '../../../domain/content/entities/ContentItem';
-import { ContentType, ContentStatus } from '../../../domain/content/value-objects/ContentEnums';
+import { IContentItemRepository } from '@domain/content/repositories/IContentItemRepository';
+import { ContentItem } from '@domain/content/entities/ContentItem';
+import { ContentType, ContentStatus } from '@domain/content/value-objects/ContentEnums';
 import { NotFoundException } from '@nestjs/common';
 
 describe('GetContentBySlugUseCase', () => {
@@ -13,6 +13,7 @@ describe('GetContentBySlugUseCase', () => {
       findBySlug: jest.fn(),
       findById: jest.fn(),
       findAll: jest.fn(),
+      findByTopic: jest.fn(),
       save: jest.fn(),
     };
     useCase = new GetContentBySlugUseCase(repository);

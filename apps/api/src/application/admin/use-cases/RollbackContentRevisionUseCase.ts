@@ -1,5 +1,5 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { IContentItemRepository } from '../../../domain/content/repositories/IContentItemRepository';
+import { IContentItemRepository } from '@domain/content/repositories/IContentItemRepository';
 import { PrismaService } from '../../../infrastructure/database/prisma.service';
 import { ContentItemResponseDto } from '../dto/content.dto';
 

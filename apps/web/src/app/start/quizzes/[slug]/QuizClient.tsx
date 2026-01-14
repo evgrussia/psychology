@@ -1,11 +1,43 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ProgressBar, ResultCard, CrisisBanner, Button } from '@/../../design-system/components';
+import { ProgressBar, ResultCard, CrisisBanner, Button } from '@psychology/design-system/components';
 import { InteractivePlatform, ResultLevel } from '@/lib/interactive';
 
 interface QuizClientProps {
-  quiz: any;
+  quiz: {
+    id: string;
+    slug: string;
+    title: string;
+    description?: string;
+    config: {
+      questions: {
+        id: string;
+        text: string;
+        options: { value: number; text: string }[];
+      }[];
+      thresholds: {
+        level: ResultLevel;
+        minScore: number;
+        maxScore: number;
+      }[];
+      results: {
+        level: ResultLevel;
+        title: string;
+        description: string;
+        recommendations: {
+          now: string[];
+          week: string[];
+          whenToSeekHelp?: string;
+        };
+        ctaText?: string;
+      }[];
+      crisisTrigger?: {
+        questionId?: string;
+        thresholdScore?: number;
+      };
+    };
+  };
 }
 
 export const QuizClient: React.FC<QuizClientProps> = ({ quiz }) => {
@@ -14,10 +46,15 @@ export const QuizClient: React.FC<QuizClientProps> = ({ quiz }) => {
   const [answers, setAnswers] = useState<number[]>([]);
   const [runId, setRunId] = useState<string | null>(null);
   const [startTime, setStartTime] = useState<number>(0);
+  const [resultLevel, setResultLevel] = useState<ResultLevel | null>(null);
+  const [isCrisisVisible, setIsCrisisVisible] = useState(true);
+
+  const { questions, thresholds, results, crisisTrigger } = quiz.config;
 
   const startQuiz = async () => {
     const id = await InteractivePlatform.startRun({
-      interactiveDefinitionId: quiz.id,
+      interactive_type: 'quiz',
+      interactive_slug: quiz.slug,
     });
     setRunId(id);
     setStartTime(Date.now());
@@ -29,7 +66,7 @@ export const QuizClient: React.FC<QuizClientProps> = ({ quiz }) => {
     const newAnswers = [...answers, value];
     setAnswers(newAnswers);
 
-    if (currentQuestionIdx < quiz.questions.length - 1) {
+    if (currentQuestionIdx < questions.length - 1) {
       setCurrentQuestionIdx(currentQuestionIdx + 1);
     } else {
       finishQuiz(newAnswers);
@@ -40,36 +77,45 @@ export const QuizClient: React.FC<QuizClientProps> = ({ quiz }) => {
     const score = finalAnswers.reduce((a, b) => a + b, 0);
     const durationMs = Date.now() - startTime;
     
-    let resultLevel: ResultLevel = ResultLevel.LOW;
-    if (quiz.slug === 'anxiety') {
-      if (score >= 10) resultLevel = ResultLevel.HIGH;
-      else if (score >= 5) resultLevel = ResultLevel.MODERATE;
-    } else {
-      // Simple logic for other quizzes
-      const maxScore = quiz.questions.length * 3;
-      if (score > maxScore * 0.7) resultLevel = ResultLevel.HIGH;
-      else if (score > maxScore * 0.3) resultLevel = ResultLevel.MODERATE;
-    }
+    // Find result level based on thresholds
+    const matchedThreshold = thresholds.find(
+      t => score >= t.minScore && score <= t.maxScore
+    ) || thresholds[thresholds.length - 1];
+    
+    const finalResultLevel = matchedThreshold.level;
+    setResultLevel(finalResultLevel);
 
-    const crisisTriggered = resultLevel === ResultLevel.HIGH && quiz.slug === 'anxiety';
+    // Crisis trigger logic
+    let crisisTriggered = false;
+    if (crisisTrigger) {
+      if (crisisTrigger.thresholdScore !== undefined && score >= crisisTrigger.thresholdScore) {
+        crisisTriggered = true;
+      }
+      // question-based trigger could be added here if needed
+    } else if (finalResultLevel === ResultLevel.HIGH) {
+      // Default fallback: HIGH level triggers crisis banner for certain topics
+      if (['anxiety', 'burnout'].includes(quiz.slug)) {
+        crisisTriggered = true;
+      }
+    }
 
     if (runId) {
       await InteractivePlatform.completeRun({
         runId,
-        resultLevel,
+        resultLevel: finalResultLevel,
         durationMs,
         crisisTriggered,
-        crisisTriggerType: crisisTriggered ? 'high_anxiety' : undefined,
+        crisisTriggerType: crisisTriggered ? 'high_score' : undefined,
       });
     }
 
     InteractivePlatform.trackComplete('quiz', quiz.slug, {
-      result_level: resultLevel,
+      result_level: finalResultLevel,
       duration_ms: durationMs,
     });
 
     if (crisisTriggered) {
-      InteractivePlatform.trackCrisisTriggered('high_anxiety', 'quiz_result');
+      InteractivePlatform.trackCrisisTriggered('high_score', 'quiz_result');
     }
 
     setStep('result');
@@ -79,7 +125,9 @@ export const QuizClient: React.FC<QuizClientProps> = ({ quiz }) => {
     return (
       <div className="text-center py-12">
         <h1 className="text-3xl font-bold text-slate-900 mb-4">{quiz.title}</h1>
-        <p className="text-lg text-slate-600 mb-8 max-w-xl mx-auto">{quiz.description}</p>
+        <p className="text-lg text-slate-600 mb-8 max-w-xl mx-auto">
+          {quiz.description || 'Пройдите этот тест, чтобы лучше понять свое состояние.'}
+        </p>
         <Button onClick={startQuiz} size="lg" variant="primary">
           Начать тест
         </Button>
@@ -88,24 +136,25 @@ export const QuizClient: React.FC<QuizClientProps> = ({ quiz }) => {
   }
 
   if (step === 'progress') {
+    const currentQuestion = questions[currentQuestionIdx];
     return (
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
         <div className="mb-8">
-          <ProgressBar current={currentQuestionIdx + 1} total={quiz.questions.length} />
+          <ProgressBar current={currentQuestionIdx + 1} total={questions.length} />
         </div>
         
         <h2 className="text-xl font-medium text-slate-900 mb-8">
-          {quiz.questions[currentQuestionIdx]}
+          {currentQuestion.text}
         </h2>
 
         <div className="grid grid-cols-1 gap-3">
-          {quiz.options.map((option: any) => (
+          {currentQuestion.options.map((option) => (
             <button
               key={option.value}
               onClick={() => handleAnswer(option.value)}
               className="text-left px-6 py-4 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all text-slate-700 font-medium"
             >
-              {option.label}
+              {option.text}
             </button>
           ))}
         </div>
@@ -114,35 +163,45 @@ export const QuizClient: React.FC<QuizClientProps> = ({ quiz }) => {
   }
 
   const score = answers.reduce((a, b) => a + b, 0);
-  let resultKey: 'low' | 'moderate' | 'high' = 'low';
-  if (quiz.slug === 'anxiety') {
-    if (score >= 10) resultKey = 'high';
-    else if (score >= 5) resultKey = 'moderate';
-  } else {
-    const maxScore = quiz.questions.length * 3;
-    if (score > maxScore * 0.7) resultKey = 'high';
-    else if (score > maxScore * 0.3) resultKey = 'moderate';
-  }
+  const resultData = results.find(r => r.level === resultLevel) || results[0];
+  const isHighRisk = resultLevel === ResultLevel.HIGH;
 
-  const result = quiz.results[resultKey];
+  const steps = [
+    { title: 'Прямо сейчас', items: resultData.recommendations.now },
+    { title: 'На этой неделе', items: resultData.recommendations.week },
+  ];
+
+  if (resultData.recommendations.whenToSeekHelp) {
+    steps.push({ title: 'Когда стоит обратиться к специалисту', items: [resultData.recommendations.whenToSeekHelp] });
+  }
 
   return (
     <div className="space-y-6">
-      {resultKey === 'high' && (
-        <CrisisBanner surface="quiz_result" />
+      {isHighRisk && isCrisisVisible && (
+        <CrisisBanner 
+          surface="quiz_result" 
+          triggerType="panic_like" 
+          onBackToResources={() => setIsCrisisVisible(false)}
+        />
       )}
       
       <ResultCard
-        title={result.title}
-        level={resultKey}
-        description={result.description}
-        steps={result.steps}
+        title={resultData.title}
+        level={resultLevel as any}
+        description={resultData.description}
+        steps={steps}
       >
         <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-          <Button variant="primary" onClick={() => window.location.href = 'https://t.me/psy_balance_bot'}>
-            Получить план в Telegram
+          <Button 
+            variant={isHighRisk ? "secondary" : "primary"} 
+            onClick={() => window.location.href = 'https://t.me/psy_balance_bot'}
+          >
+            {resultData.ctaText || 'Получить план в Telegram'}
           </Button>
-          <Button variant="secondary" onClick={() => window.location.href = '/booking'}>
+          <Button 
+            variant="secondary" 
+            onClick={() => window.location.href = '/booking'}
+          >
             Записаться к психологу
           </Button>
         </div>

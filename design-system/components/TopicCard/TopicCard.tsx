@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import Card from '../Card/Card';
 import { colors, spacing, typography, effects, a11yStyles } from '../../tokens';
@@ -58,6 +60,9 @@ const TopicCard: React.FC<TopicCardProps> = ({
             outline: 'none',
           }}
           aria-label={`Перейти к теме: ${title}`}
+          onClick={(e) => {
+            if (onClick) onClick();
+          }}
           onFocus={(e) => {
             // Add focus-visible styling
             if (e.currentTarget.matches(':focus-visible')) {

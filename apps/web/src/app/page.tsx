@@ -9,7 +9,7 @@ interface HomepageData {
 }
 
 async function getHomepageData(): Promise<HomepageData> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
   try {
     // Adding a timeout and more robust error handling for SSR
     const res = await fetch(`${apiUrl}/public/homepage`, { 

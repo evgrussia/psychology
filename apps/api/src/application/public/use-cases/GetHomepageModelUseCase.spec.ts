@@ -1,10 +1,10 @@
 import { GetHomepageModelUseCase } from './GetHomepageModelUseCase';
-import { ITopicRepository } from '../../../domain/content/repositories/ITopicRepository';
-import { IInteractiveDefinitionRepository } from '../../../domain/interactive/repositories/IInteractiveDefinitionRepository';
-import { Topic } from '../../../domain/content/entities/Topic';
-import { InteractiveDefinition } from '../../../domain/interactive/entities/InteractiveDefinition';
-import { InteractiveType } from '../../../domain/interactive/value-objects/InteractiveType';
-import { InteractiveStatus } from '../../../domain/interactive/value-objects/InteractiveStatus';
+import { ITopicRepository } from '@domain/content/repositories/ITopicRepository';
+import { IInteractiveDefinitionRepository } from '@domain/interactive/repositories/IInteractiveDefinitionRepository';
+import { Topic } from '@domain/content/entities/Topic';
+import { InteractiveDefinition } from '@domain/interactive/entities/InteractiveDefinition';
+import { InteractiveType } from '@domain/interactive/value-objects/InteractiveType';
+import { InteractiveStatus } from '@domain/interactive/value-objects/InteractiveStatus';
 
 describe('GetHomepageModelUseCase', () => {
   let useCase: GetHomepageModelUseCase;
@@ -13,12 +13,19 @@ describe('GetHomepageModelUseCase', () => {
 
   beforeEach(() => {
     topicRepository = {
+      findByCode: jest.fn(),
+      findAll: jest.fn(),
       findAllActive: jest.fn(),
-    };
+      save: jest.fn(),
+    } as any;
     interactiveRepository = {
+      findById: jest.fn(),
       findPublished: jest.fn(),
       findByTopic: jest.fn(),
-    };
+      findByTypeAndSlug: jest.fn(),
+      findAll: jest.fn(),
+      save: jest.fn(),
+    } as any;
     useCase = new GetHomepageModelUseCase(topicRepository, interactiveRepository);
   });
 

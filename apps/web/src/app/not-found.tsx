@@ -1,6 +1,8 @@
+'use client';
+
 import React from 'react';
-import { Button } from '../../../design-system/components';
-import { spacing, typography, colors } from '../../../design-system/tokens';
+import { Button } from '@psychology/design-system/components';
+import { spacing, typography, colors } from '@psychology/design-system/tokens';
 
 export default function NotFound() {
   return (
@@ -45,7 +47,7 @@ export default function NotFound() {
         marginBottom: spacing.space[8]
       }}>
         <h2 style={{ ...typography.h2, marginBottom: spacing.space[6] }}>С чего начать?</h2>
-        <p style={{ ...typography.body, marginBottom: spacing.space[6], color: colors.text.secondary }}>
+        <p style={{ ...typography.body.md, marginBottom: spacing.space[6], color: colors.text.secondary }}>
           Вы можете начать с руководства, изучить материалы блога или узнать больше об услугах.
         </p>
         <nav style={{ 

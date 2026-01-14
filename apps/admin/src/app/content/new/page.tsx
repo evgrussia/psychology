@@ -26,8 +26,8 @@ export default function NewContentPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch('http://localhost:3000/api/admin/content/topics').then(res => res.json()),
-      fetch('http://localhost:3000/api/admin/content/tags').then(res => res.json())
+      fetch('http://127.0.0.1:3001/api/admin/content/topics').then(res => res.json()),
+      fetch('http://127.0.0.1:3001/api/admin/content/tags').then(res => res.json())
     ]).then(([topicsData, tagsData]) => {
       setTopics(topicsData);
       setTags(tagsData);
@@ -43,7 +43,7 @@ export default function NewContentPage() {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:3000/api/admin/content', {
+      const res = await fetch('http://127.0.0.1:3001/api/admin/content', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

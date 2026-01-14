@@ -1,6 +1,6 @@
 import { IsString, IsOptional, IsUUID, IsEnum, IsInt, IsBoolean } from 'class-validator';
-import { ResultLevel } from '../../../domain/interactive/value-objects/ResultLevel';
-import { InteractiveType } from '../../../domain/interactive/value-objects/InteractiveType';
+import { ResultLevel } from '@domain/interactive/value-objects/ResultLevel';
+import { InteractiveType } from '@domain/interactive/value-objects/InteractiveType';
 
 export class StartInteractiveRunDto {
   @IsEnum(InteractiveType)

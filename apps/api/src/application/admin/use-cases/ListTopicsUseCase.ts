@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ITopicRepository } from '../../../domain/content/repositories/ITopicRepository';
+import { ITopicRepository } from '@domain/content/repositories/ITopicRepository';
 
 @Injectable()
 export class ListTopicsUseCase {

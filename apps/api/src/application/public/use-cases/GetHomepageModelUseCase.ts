@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ITopicRepository } from '../../../domain/content/repositories/ITopicRepository';
-import { IInteractiveDefinitionRepository } from '../../../domain/interactive/repositories/IInteractiveDefinitionRepository';
+import { ITopicRepository } from '@domain/content/repositories/ITopicRepository';
+import { IInteractiveDefinitionRepository } from '@domain/interactive/repositories/IInteractiveDefinitionRepository';
 import { HomepageDto, TrustBlockDto } from '../dto/homepage.dto';
 
 @Injectable()

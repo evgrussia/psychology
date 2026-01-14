@@ -1,5 +1,5 @@
 import { Tag as PrismaTag } from '@prisma/client';
-import { Tag } from '../../../../../domain/content/entities/Tag';
+import { Tag } from '@domain/content/entities/Tag';
 
 export class TagMapper {
   static toDomain(prismaTag: PrismaTag): Tag {

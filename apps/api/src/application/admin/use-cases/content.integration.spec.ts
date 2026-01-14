@@ -4,7 +4,7 @@ import { PrismaService } from '../../../infrastructure/database/prisma.service';
 import { CreateContentItemUseCase } from './CreateContentItemUseCase';
 import { PublishContentItemUseCase } from './PublishContentItemUseCase';
 import { GetContentBySlugUseCase } from '../../public/use-cases/GetContentBySlugUseCase';
-import { ContentType, ContentStatus } from '../../../domain/content/value-objects/ContentEnums';
+import { ContentType, ContentStatus } from '@domain/content/value-objects/ContentEnums';
 import { ContentModule } from '../../../infrastructure/content/content.module';
 import { DatabaseModule } from '../../../infrastructure/database/database.module';
 import { EventsModule } from '../../../infrastructure/events/events.module';
@@ -48,6 +48,9 @@ describe('Content Management Integration', () => {
   afterAll(async () => {
     // Cleanup
     if (testUserId) {
+      await prisma.contentRevision.deleteMany({
+        where: { changed_by_user_id: testUserId },
+      });
       await prisma.contentItem.deleteMany({
         where: { author_user_id: testUserId },
       });

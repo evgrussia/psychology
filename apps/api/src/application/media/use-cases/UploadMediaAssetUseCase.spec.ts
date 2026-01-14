@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { UploadMediaAssetUseCase } from './UploadMediaAssetUseCase';
-import { IMediaAssetRepository } from '../../../domain/media/repositories/IMediaAssetRepository';
+import { IMediaAssetRepository } from '@domain/media/repositories/IMediaAssetRepository';
 import { IStorageService } from '../interfaces/IStorageService';
-import { IEventBus } from '../../../domain/events/event-bus.interface';
-import { MediaAsset } from '../../../domain/media/entities/MediaAsset';
-import { MediaStorageProvider, MediaType } from '../../../domain/media/value-objects/MediaType';
-import { MediaAssetUploadedEvent } from '../../../domain/media/events/MediaAssetUploadedEvent';
+import { IEventBus } from '@domain/events/event-bus.interface';
+import { MediaAsset } from '@domain/media/entities/MediaAsset';
+import { MediaStorageProvider, MediaType } from '@domain/media/value-objects/MediaType';
+import { MediaAssetUploadedEvent } from '@domain/media/events/MediaAssetUploadedEvent';
 
 describe('UploadMediaAssetUseCase', () => {
   let useCase: UploadMediaAssetUseCase;

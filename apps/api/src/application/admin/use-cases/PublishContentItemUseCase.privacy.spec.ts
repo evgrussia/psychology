@@ -1,9 +1,9 @@
 import { PublishContentItemUseCase } from './PublishContentItemUseCase';
-import { IContentItemRepository } from '../../../domain/content/repositories/IContentItemRepository';
-import { IEventBus } from '../../../domain/events/event-bus.interface';
-import { ContentItem } from '../../../domain/content/entities/ContentItem';
-import { ContentType, ContentStatus } from '../../../domain/content/value-objects/ContentEnums';
-import { ContentPublishedEvent } from '../../../domain/content/events/ContentPublishedEvent';
+import { IContentItemRepository } from '@domain/content/repositories/IContentItemRepository';
+import { IEventBus } from '@domain/events/event-bus.interface';
+import { ContentItem } from '@domain/content/entities/ContentItem';
+import { ContentType, ContentStatus } from '@domain/content/value-objects/ContentEnums';
+import { ContentPublishedEvent } from '@domain/content/events/ContentPublishedEvent';
 
 describe('PublishContentItemUseCase Privacy', () => {
   let useCase: PublishContentItemUseCase;
@@ -15,6 +15,7 @@ describe('PublishContentItemUseCase Privacy', () => {
       findBySlug: jest.fn(),
       findById: jest.fn(),
       findAll: jest.fn(),
+      findByTopic: jest.fn(),
       save: jest.fn(),
     };
     eventBus = {

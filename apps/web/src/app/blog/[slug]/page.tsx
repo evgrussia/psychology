@@ -4,7 +4,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 async function getArticleData(slug: string) {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
   
   try {
     const res = await fetch(`${apiUrl}/public/content/article/${slug}`, { 

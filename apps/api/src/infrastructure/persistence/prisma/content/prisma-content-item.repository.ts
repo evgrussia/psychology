@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
-import { IContentItemRepository } from '../../../../../domain/content/repositories/IContentItemRepository';
-import { ContentItem } from '../../../../../domain/content/entities/ContentItem';
+import { IContentItemRepository } from '@domain/content/repositories/IContentItemRepository';
+import { ContentItem } from '@domain/content/entities/ContentItem';
 import { ContentItemMapper } from './content-item.mapper';
-import { ContentType } from '../../../../../domain/content/value-objects/ContentEnums';
+import { ContentType, ContentStatus } from '@domain/content/value-objects/ContentEnums';
 
 @Injectable()
 export class PrismaContentItemRepository implements IContentItemRepository {
@@ -47,6 +47,27 @@ export class PrismaContentItemRepository implements IContentItemRepository {
       where: {
         content_type: filters?.type,
         status: filters?.status,
+      },
+      include: {
+        topics: true,
+        tags: true,
+      },
+      orderBy: { created_at: 'desc' },
+    });
+
+    return items.map(item => ContentItemMapper.toDomain(item));
+  }
+
+  async findByTopic(topicCode: string, filters?: { type?: ContentType; status?: ContentStatus }): Promise<ContentItem[]> {
+    const items = await this.prisma.contentItem.findMany({
+      where: {
+        content_type: filters?.type,
+        status: filters?.status,
+        topics: {
+          some: {
+            topic_code: topicCode,
+          },
+        },
       },
       include: {
         topics: true,

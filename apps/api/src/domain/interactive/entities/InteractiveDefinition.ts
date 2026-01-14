@@ -1,5 +1,6 @@
 import { InteractiveType } from '../value-objects/InteractiveType';
 import { InteractiveStatus } from '../value-objects/InteractiveStatus';
+import { InteractiveConfig } from '../types/InteractiveConfig';
 
 export class InteractiveDefinition {
   constructor(
@@ -9,6 +10,7 @@ export class InteractiveDefinition {
     public readonly title: string,
     public readonly topicCode: string | null,
     public readonly status: InteractiveStatus,
+    public readonly config: InteractiveConfig | null,
     public readonly publishedAt: Date | null,
   ) {}
 
@@ -19,6 +21,7 @@ export class InteractiveDefinition {
     title: string;
     topicCode: string | null;
     status: InteractiveStatus;
+    config?: InteractiveConfig | null;
     publishedAt: Date | null;
   }): InteractiveDefinition {
     return new InteractiveDefinition(
@@ -28,6 +31,7 @@ export class InteractiveDefinition {
       params.title,
       params.topicCode,
       params.status,
+      params.config ?? null,
       params.publishedAt,
     );
   }

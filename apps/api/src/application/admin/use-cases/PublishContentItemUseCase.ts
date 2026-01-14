@@ -1,9 +1,9 @@
 import { Inject, Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { IContentItemRepository } from '../../../domain/content/repositories/IContentItemRepository';
-import { IEventBus } from '../../../domain/events/event-bus.interface';
-import { ContentPublishedEvent } from '../../../domain/content/events/ContentPublishedEvent';
+import { IContentItemRepository } from '@domain/content/repositories/IContentItemRepository';
+import { IEventBus } from '@domain/events/event-bus.interface';
+import { ContentPublishedEvent } from '@domain/content/events/ContentPublishedEvent';
 import { ContentItemResponseDto } from '../dto/content.dto';
-import { ContentStatus } from '../../../domain/content/value-objects/ContentEnums';
+import { ContentStatus } from '@domain/content/value-objects/ContentEnums';
 
 export interface PublishContentItemRequest {
   qaChecklist: {

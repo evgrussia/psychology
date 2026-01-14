@@ -20,13 +20,20 @@
       {
         "name": "next"
       }
-    ]
+    ],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@psychology/design-system": ["../../design-system"],
+      "@psychology/design-system/*": ["../../design-system/*"]
+    }
   },
   "include": [
     "next-env.d.ts",
     ".next/types/**/*.ts",
     "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    "../../design-system/**/*.ts",
+    "../../design-system/**/*.tsx"
   ],
   "exclude": [
     "node_modules"

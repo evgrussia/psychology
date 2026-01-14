@@ -11,8 +11,8 @@ export const colors = {
   // Brand Colors
   brand: {
     primary: {
-      DEFAULT: '#7A9B7E',      // Sage Green — основной бренд-цвет
-      dark: '#5A7A5E',         // Тёмный вариант для hover
+      DEFAULT: '#5A7A5E',      // Darker Sage Green for better accessibility
+      dark: '#456148',         // Even darker for hover
       light: '#9AB89E',        // Светлый вариант для фонов
     },
     secondary: {

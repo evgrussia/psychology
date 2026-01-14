@@ -27,10 +27,11 @@ describe('PublicController (e2e)', () => {
   describe('GET /api/public/homepage', () => {
     it('should return homepage data', async () => {
       // Ensure we have some data in the DB
+      const topicCode = `anxiety-${Date.now()}`;
       await prisma.topic.upsert({
-        where: { code: 'anxiety' },
+        where: { code: topicCode },
         update: { is_active: true },
-        create: { code: 'anxiety', title: 'Тревога', is_active: true },
+        create: { code: topicCode, title: 'Тревога', is_active: true },
       });
 
       const response = await request(app.getHttpServer())
@@ -41,7 +42,7 @@ describe('PublicController (e2e)', () => {
       expect(response.body).toHaveProperty('featured_interactives');
       expect(response.body).toHaveProperty('trust_blocks');
       expect(Array.isArray(response.body.topics)).toBe(true);
-      expect(response.body.topics.some((t: any) => t.code === 'anxiety')).toBe(true);
+      expect(response.body.topics.some((t: any) => t.code === topicCode)).toBe(true);
     });
   });
 });

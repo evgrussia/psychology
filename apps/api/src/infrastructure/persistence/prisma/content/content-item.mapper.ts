@@ -3,14 +3,14 @@ import {
   ContentItemTopic,
   ContentItemTag
 } from '@prisma/client';
-import { ContentItem } from '../../../../../domain/content/entities/ContentItem';
+import { ContentItem } from '@domain/content/entities/ContentItem';
 import { 
   ContentType, 
   ContentStatus, 
   TimeToBenefit, 
   ContentFormat, 
   SupportLevel 
-} from '../../../../../domain/content/value-objects/ContentEnums';
+} from '@domain/content/value-objects/ContentEnums';
 
 type PrismaContentItemWithRelations = PrismaContentItem & {
   topics?: ContentItemTopic[];

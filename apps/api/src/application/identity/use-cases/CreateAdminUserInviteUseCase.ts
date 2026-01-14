@@ -1,10 +1,10 @@
 import { Injectable, Inject, ConflictException, BadRequestException, Optional } from '@nestjs/common';
-import { IAdminInviteRepository } from '../../../domain/identity/repositories/IAdminInviteRepository';
-import { IUserRepository } from '../../../domain/identity/repositories/IUserRepository';
-import { AdminInvite } from '../../../domain/identity/aggregates/AdminInvite';
+import { IAdminInviteRepository } from '@domain/identity/repositories/IAdminInviteRepository';
+import { IUserRepository } from '@domain/identity/repositories/IUserRepository';
+import { AdminInvite } from '@domain/identity/aggregates/AdminInvite';
 import { CreateAdminInviteDto, AdminInviteResponseDto } from '../dto/invite.dto';
-import { Email } from '../../../domain/identity/value-objects/Email';
-import { Role } from '../../../domain/identity/value-objects/Role';
+import { Email } from '@domain/identity/value-objects/Email';
+import { Role } from '@domain/identity/value-objects/Role';
 import { AuditLogHelper } from '../../audit/helpers/audit-log.helper';
 import { AuditLogAction } from '../../audit/dto/audit-log.dto';
 import * as crypto from 'crypto';
