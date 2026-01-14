@@ -108,10 +108,16 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nestjs
 
 # Копируем необходимые файлы
-COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./dist
+COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./apps/api/dist
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/package.json ./
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/prisma ./prisma
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
+COPY --from=prod-deps --chown=nestjs:nodejs /app/apps/api/node_modules ./apps/api/node_modules
+
+# Prisma generate в pnpm workspace пишет рантайм-клиент в virtual-store:
+#   /app/node_modules/.pnpm/@prisma+client@.../node_modules/.prisma/client
+# В prod-deps этот артефакт отсутствует, поэтому докладываем его из builder stage.
+COPY --from=builder --chown=nestjs:nodejs /app/node_modules/.pnpm/@prisma+client@5.7.0_prisma@5.7.0 /app/node_modules/.pnpm/@prisma+client@5.7.0_prisma@5.7.0
 
 # Копируем Prisma клиент из prisma stage (директория всегда существует после генерации)
 RUN mkdir -p ./node_modules/.prisma
@@ -129,4 +135,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s \
   CMD curl -f http://localhost:3000/api/health || exit 1
 
 # Запуск приложения
-CMD ["node", "dist/main"]
+# EntryPoint запускаем из /app/apps/api, чтобы Node находил зависимости через /app/apps/api/node_modules (pnpm workspace).
+CMD ["node", "apps/api/dist/src/main"]

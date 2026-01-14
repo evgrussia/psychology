@@ -65,12 +65,17 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/apps/admin/package.json ./
 
 # Копируем собранное приложение
-# В standalone режиме структура: .next/standalone/ содержит server.js в корне
-COPY --from=builder --chown=nextjs:nodejs /app/apps/admin/.next/standalone ./
+# В admin-standalone сборке (pnpm workspace) `server.js` и `node_modules` лежат в корне standalone.
+# Важно копировать standalone внутрь `./apps/admin`, иначе pnpm-symlink'и внутри `node_modules` могут стать битые.
+COPY --from=builder --chown=nextjs:nodejs /app/apps/admin/.next/standalone ./apps/admin
 COPY --from=builder --chown=nextjs:nodejs /app/apps/admin/.next/static ./apps/admin/.next/static
 
 # Копируем public директорию (теперь она всегда существует, даже если пустая)
 COPY --from=builder --chown=nextjs:nodejs /app/apps/admin/public ./apps/admin/public
+
+# pnpm store нужен для корректной работы symlink'ов в standalone (например, `node_modules/next` → `.pnpm/...`).
+# В web-образе он попадает в standalone автоматически, но для admin — нет, поэтому докладываем вручную.
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.pnpm ./node_modules/.pnpm
 
 USER nextjs
 
@@ -84,5 +89,7 @@ ENV PORT=3001
 ENV HOSTNAME="0.0.0.0"
 
 # Запуск приложения
-# В standalone режиме server.js находится в корне скопированной директории
-CMD ["node", "server.js"]
+# В зависимости от Next.js/monorepo-конфигурации, standalone может положить server.js:
+# - /app/server.js (классический вариант)
+# - /app/apps/admin/server.js (часто в монорепах)
+CMD ["sh", "-c", "if [ -f /app/server.js ]; then exec node /app/server.js; elif [ -f /app/apps/admin/server.js ]; then exec node /app/apps/admin/server.js; else echo \"[ERROR] server.js not found in /app or /app/apps/admin\" >&2; exit 1; fi"]

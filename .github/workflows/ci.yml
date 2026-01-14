@@ -10,6 +10,19 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
+    env:
+      NODE_ENV: test
+      PORT: "3001"
+      DATABASE_URL: postgresql://test_user:test_password@localhost:5433/psychology_test?schema=public
+      REDIS_URL: redis://localhost:6380
+      SESSION_SECRET: test-secret
+      JWT_SECRET: test-jwt-secret
+      MEDIA_STORAGE_PATH: ./test-media
+      MEDIA_PUBLIC_URL_BASE: http://localhost:3001/media
+      MEDIA_UPLOAD_ENABLED: "true"
+      HTTP_TIMEOUT_MS: "5000"
+      HTTP_RETRY_ATTEMPTS: "3"
+
     strategy:
       matrix:
         node-version: [18.x, 20.x]
@@ -20,7 +33,7 @@ jobs:
     - name: Install pnpm
       uses: pnpm/action-setup@v2
       with:
-        version: 8
+        version: 10
 
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
@@ -29,7 +42,28 @@ jobs:
         cache: 'pnpm'
 
     - name: Install dependencies
-      run: pnpm install
+      run: pnpm install --frozen-lockfile
+
+    - name: Start test infrastructure (Postgres + Redis)
+      run: docker compose -f docker-compose.test.yml up -d
+
+    - name: Wait for Postgres and Redis to be healthy
+      run: |
+        set -euo pipefail
+        echo "Waiting for Postgres..."
+        for i in {1..30}; do
+          if docker exec psychology-test-db pg_isready -U test_user -d psychology_test; then
+            break
+          fi
+          sleep 2
+        done
+        echo "Waiting for Redis..."
+        for i in {1..30}; do
+          if docker exec psychology-test-redis redis-cli ping | grep -q PONG; then
+            break
+          fi
+          sleep 2
+        done
 
     - name: Lint
       run: pnpm lint
@@ -38,7 +72,14 @@ jobs:
       run: pnpm typecheck
 
     - name: Test
-      run: pnpm test
+      run: pnpm -r --if-present test
+
+    - name: API e2e tests (with migrations)
+      run: pnpm --filter @psychology/api test:e2e -- --runInBand
+
+    - name: Stop test infrastructure
+      if: always()
+      run: docker compose -f docker-compose.test.yml down -v
 
     - name: Secret scanning
       uses: trufflesecurity/trufflehog@main

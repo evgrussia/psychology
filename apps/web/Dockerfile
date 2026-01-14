@@ -83,5 +83,7 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 # Запуск приложения
-# В standalone режиме server.js находится в корне скопированной директории
-CMD ["node", "server.js"]
+# В зависимости от Next.js/monorepo-конфигурации, standalone может положить server.js:
+# - /app/server.js (классический вариант)
+# - /app/apps/web/server.js (часто в монорепах)
+CMD ["sh", "-c", "if [ -f /app/server.js ]; then exec node /app/server.js; elif [ -f /app/apps/web/server.js ]; then exec node /app/apps/web/server.js; else echo \"[ERROR] server.js not found in /app or /app/apps/web\" >&2; exit 1; fi"]

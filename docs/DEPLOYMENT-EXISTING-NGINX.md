@@ -251,6 +251,19 @@ cd /var/www/psychology
 
 ## 🆘 Troubleshooting
 
+### Проблема: `Error: Cannot find module '/app/server.js'`
+
+**Причина**: контейнер `web` или `admin` запускается командой `node server.js`, но в standalone-сборке Next.js (особенно в монорепах) `server.js` может оказаться не в `/app/server.js`, а в `/app/apps/web/server.js` или `/app/apps/admin/server.js`.
+
+**Решение**:
+- Обновите репозиторий на сервере до версии, где исправлены Dockerfile (`apps/web/Dockerfile`, `apps/admin/Dockerfile`), и выполните пересборку:
+
+```bash
+cd /var/www/psychology
+git pull
+./scripts/deploy.sh deploy
+```
+
 ### Проблема: Ошибка "address already in use"
 
 **Решение**: Измените порты в `docker-compose.prod.yml`:
