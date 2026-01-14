@@ -107,7 +107,7 @@ echo \
 
 # Устанавливаем Docker
 apt update
-apt install -y docker-ce docker-ce-cli containerd.io docker compose-plugin
+apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
 # Добавляем deploy в группу docker
 usermod -aG docker deploy

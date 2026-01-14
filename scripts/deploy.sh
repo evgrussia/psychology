@@ -50,13 +50,21 @@ GIT_BRANCH="develop"
 check_dependencies() {
     print_info "Проверка зависимостей..."
     
-    local deps=("docker" "docker compose" "git" "openssl")
+    # Проверяем обычные команды
+    local deps=("docker" "git" "openssl")
     for dep in "${deps[@]}"; do
         if ! command -v "$dep" &> /dev/null; then
             print_error "Не найдена зависимость: $dep"
             exit 1
         fi
     done
+    
+    # Проверяем Docker Compose отдельно
+    if ! docker compose version &> /dev/null; then
+        print_error "Docker Compose не установлен или не работает"
+        print_info "Установите: apt install -y docker-compose-plugin"
+        exit 1
+    fi
     
     print_success "Все зависимости установлены"
 }

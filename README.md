@@ -206,7 +206,7 @@ http://localhost:3000/api/docs
 
 **Docker:**
 - `apps/*/Dockerfile` - Docker образы для каждого сервиса
-- `docker compose.prod.yml` - Production конфигурация
+- `docker-compose.prod.yml` - Production конфигурация
 
 **Nginx:**
 - `nginx/nginx.conf` - Конфигурация внутреннего Nginx

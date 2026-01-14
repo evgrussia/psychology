@@ -6,7 +6,7 @@
 - **`apps/api/Dockerfile`** - Dockerfile для backend API (NestJS)
 - **`apps/web/Dockerfile`** - Dockerfile для frontend (Next.js)
 - **`apps/admin/Dockerfile`** - Dockerfile для admin панели (Next.js)
-- **`docker compose.prod.yml`** - Docker Compose для production окружения
+- **`docker-compose.prod.yml`** - Docker Compose для production окружения
 
 ### 2. Nginx конфигурация
 - **`nginx/nginx.conf`** - Основная конфигурация Nginx
@@ -231,8 +231,8 @@ curl -I https://admin.balance-space.ru
 
 ### Проблема: Контейнеры не запускаются
 ```bash
-docker compose -f docker compose.prod.yml logs
-docker compose -f docker compose.prod.yml ps
+docker compose -f docker-compose.prod.yml logs
+docker compose -f docker-compose.prod.yml ps
 ```
 
 ### Проблема: 502 Bad Gateway
