@@ -6,8 +6,8 @@ RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
 
-# Копируем package.json
-COPY package.json pnpm-lock.yaml* ./
+# Копируем файлы конфигурации для установки зависимостей
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json ./apps/web/
 COPY design-system/package.json ./design-system/
 
@@ -21,14 +21,13 @@ RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
 
-# Копируем зависимости
+# Копируем зависимости (в pnpm все в корне)
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 
 # Копируем исходники
 COPY apps/web ./apps/web
 COPY design-system ./design-system
-COPY package.json ./
+COPY package.json pnpm-workspace.yaml* ./
 
 RUN npm install -g pnpm
 
