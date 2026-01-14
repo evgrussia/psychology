@@ -78,6 +78,21 @@ RUN NODE_PATH=/app/node_modules /app/node_modules/.bin/prisma generate || /app/n
 WORKDIR /app/apps/api
 RUN nest build
 
+# Экспортируем Prisma runtime-client из pnpm virtual-store.
+# Prisma кладёт артефакт сюда:
+#   /app/node_modules/.pnpm/@prisma+client@.../node_modules/.prisma/client
+# В prod-слое (prod-deps) его нет, поэтому собираем в стабильную директорию,
+# чтобы затем корректно восстановить в runner без жёсткой привязки к версии.
+WORKDIR /app
+RUN rm -rf /prisma-runtime && mkdir -p /prisma-runtime && \
+    for d in /app/node_modules/.pnpm/@prisma+client@*/node_modules/.prisma; do \
+        if [ -d "$d/client" ]; then \
+            cp -r "$d" /prisma-runtime/.prisma; \
+            break; \
+        fi; \
+    done && \
+    test -f /prisma-runtime/.prisma/client/index.js
+
 # Этап 4: Production зависимости
 FROM node:18-alpine AS prod-deps
 RUN apk add --no-cache libc6-compat openssl
@@ -114,10 +129,16 @@ COPY --from=builder --chown=nestjs:nodejs /app/apps/api/prisma ./prisma
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --from=prod-deps --chown=nestjs:nodejs /app/apps/api/node_modules ./apps/api/node_modules
 
-# Prisma generate в pnpm workspace пишет рантайм-клиент в virtual-store:
-#   /app/node_modules/.pnpm/@prisma+client@.../node_modules/.prisma/client
-# В prod-deps этот артефакт отсутствует, поэтому докладываем его из builder stage.
-COPY --from=builder --chown=nestjs:nodejs /app/node_modules/.pnpm/@prisma+client@5.7.0_prisma@5.7.0 /app/node_modules/.pnpm/@prisma+client@5.7.0_prisma@5.7.0
+# Восстанавливаем Prisma runtime-client в pnpm virtual-store внутри runner.
+COPY --from=builder --chown=nestjs:nodejs /prisma-runtime/.prisma /tmp/prisma-runtime/.prisma
+RUN set -e; \
+    for m in /app/node_modules/.pnpm/@prisma+client@*/node_modules; do \
+        if [ -d "$m/@prisma/client" ]; then \
+            mkdir -p "$m/.prisma"; \
+            cp -r /tmp/prisma-runtime/.prisma/* "$m/.prisma/"; \
+        fi; \
+    done; \
+    rm -rf /tmp/prisma-runtime
 
 # Копируем Prisma клиент из prisma stage (директория всегда существует после генерации)
 RUN mkdir -p ./node_modules/.prisma
