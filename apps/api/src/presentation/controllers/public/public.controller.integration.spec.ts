@@ -12,6 +12,9 @@ import { ListCuratedCollectionsUseCase } from '../../../application/public/use-c
 import { GetCuratedCollectionUseCase } from '../../../application/public/use-cases/GetCuratedCollectionUseCase';
 import { ListPublicGlossaryTermsUseCase } from '../../../application/public/use-cases/ListPublicGlossaryTermsUseCase';
 import { GetPublicGlossaryTermUseCase } from '../../../application/public/use-cases/GetPublicGlossaryTermUseCase';
+import { ListServicesUseCase } from '../../../application/public/use-cases/ListServicesUseCase';
+import { GetServiceBySlugUseCase } from '../../../application/public/use-cases/GetServiceBySlugUseCase';
+import { ServiceFormat } from '@domain/booking/value-objects/ServiceEnums';
 import { HomepageDto } from '../../../application/public/dto/homepage.dto';
 
 describe('PublicController (Integration)', () => {
@@ -98,6 +101,14 @@ describe('PublicController (Integration)', () => {
         },
         {
           provide: GetPublicGlossaryTermUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: ListServicesUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: GetServiceBySlugUseCase,
           useValue: { execute: jest.fn() },
         },
       ],
@@ -255,6 +266,60 @@ describe('PublicController (Integration)', () => {
         .expect(200);
 
       expect(response.body.featured_interactives).toEqual([]);
+    });
+  });
+
+  describe('GET /public/services', () => {
+    it('should return list of services', async () => {
+      const listServicesUseCase = app.get<ListServicesUseCase>(ListServicesUseCase);
+      jest.spyOn(listServicesUseCase, 'execute').mockResolvedValueOnce([
+        {
+          id: 'service-1',
+          slug: 'intro-session',
+          title: 'Ознакомительная сессия',
+          format: ServiceFormat.online,
+          duration_minutes: 50,
+          price_amount: 4000,
+          deposit_amount: 1000,
+          offline_address: null,
+          description_markdown: 'Описание',
+        },
+      ]);
+
+      const response = await request(app.getHttpServer())
+        .get('/public/services')
+        .expect(200);
+
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0].slug).toBe('intro-session');
+    });
+  });
+
+  describe('GET /public/services/:slug', () => {
+    it('should return service details by slug', async () => {
+      const getServiceBySlugUseCase = app.get<GetServiceBySlugUseCase>(GetServiceBySlugUseCase);
+      jest.spyOn(getServiceBySlugUseCase, 'execute').mockResolvedValueOnce({
+        id: 'service-1',
+        slug: 'intro-session',
+        title: 'Ознакомительная сессия',
+        format: ServiceFormat.online,
+        duration_minutes: 50,
+        price_amount: 4000,
+        deposit_amount: 1000,
+        offline_address: null,
+        description_markdown: 'Описание',
+        cancel_free_hours: 24,
+        cancel_partial_hours: 12,
+        reschedule_min_hours: 24,
+        reschedule_max_count: 1,
+      });
+
+      const response = await request(app.getHttpServer())
+        .get('/public/services/intro-session')
+        .expect(200);
+
+      expect(response.body.slug).toBe('intro-session');
+      expect(response.body.cancel_free_hours).toBe(24);
     });
   });
 });

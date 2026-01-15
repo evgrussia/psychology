@@ -103,14 +103,15 @@ export const BoundaryScriptsClient: React.FC<BoundaryScriptsClientProps> = ({ da
             <h2 ref={headingRef} tabIndex={-1} className="text-3xl font-bold text-center outline-none">Выберите ситуацию</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {config.scenarios.map((s: any) => (
-                <button
+                <Button
                   key={s.id}
                   onClick={() => handleScenarioSelect(s.id)}
-                  className="p-6 text-left border border-border rounded-xl transition-all bg-card hover:border-primary shadow-sm group"
+                  variant="outline"
+                  className="p-6 text-left h-auto flex flex-col items-start border border-border rounded-xl transition-all bg-card hover:border-primary shadow-sm group"
                 >
                   <div className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">{s.name}</div>
-                  {s.description && <div className="text-muted-foreground text-sm mt-2 leading-relaxed">{s.description}</div>}
-                </button>
+                  {s.description && <div className="text-muted-foreground text-sm mt-2 leading-relaxed whitespace-normal">{s.description}</div>}
+                </Button>
               ))}
             </div>
           </div>
@@ -118,7 +119,7 @@ export const BoundaryScriptsClient: React.FC<BoundaryScriptsClientProps> = ({ da
       case 'tone':
         return (
           <div className="flex flex-col gap-8">
-            <h2 className="text-3xl font-bold text-center">Выберите стиль общения</h2>
+            <h2 ref={headingRef} tabIndex={-1} className="text-3xl font-bold text-center outline-none">Выберите стиль общения</h2>
             <div className="flex flex-col gap-3 max-w-md mx-auto w-full">
               {config.tones.map((t: any) => (
                 <Button key={t.id} onClick={() => handleToneSelect(t.id)} variant="outline" size="lg" className="w-full justify-start h-auto py-4">
@@ -136,7 +137,7 @@ export const BoundaryScriptsClient: React.FC<BoundaryScriptsClientProps> = ({ da
       case 'goal':
         return (
           <div className="flex flex-col gap-8">
-            <h2 className="text-3xl font-bold text-center">Чего хотите добиться?</h2>
+            <h2 ref={headingRef} tabIndex={-1} className="text-3xl font-bold text-center outline-none">Чего хотите добиться?</h2>
             <div className="flex flex-col gap-3 max-w-md mx-auto w-full">
               {config.goals.map((g: any) => (
                 <Button key={g.id} onClick={() => handleGoalSelect(g.id)} variant="outline" size="lg" className="w-full justify-start h-auto py-4">
@@ -216,7 +217,12 @@ interface ResultViewProps {
 }
 
 const ResultView: React.FC<ResultViewProps> = ({ variants, scenario, tone, safetyText, onCopy, copiedVariantId, onReset }) => {
+  const headingRef = React.useRef<HTMLHeadingElement>(null);
+
   useEffect(() => {
+    if (headingRef.current) {
+      headingRef.current.focus();
+    }
     variants.forEach((v: any) => {
       InteractivePlatform.trackBoundariesVariantViewed(v.variant_id, scenario, tone);
     });
@@ -224,7 +230,7 @@ const ResultView: React.FC<ResultViewProps> = ({ variants, scenario, tone, safet
 
   return (
     <div className="space-y-8">
-      <h2 className="text-3xl font-bold text-center">Варианты фраз</h2>
+      <h2 ref={headingRef} tabIndex={-1} className="text-3xl font-bold text-center outline-none">Варианты фраз</h2>
       {variants.length > 0 ? (
         <div className="space-y-4">
           {variants.map((v: any) => (

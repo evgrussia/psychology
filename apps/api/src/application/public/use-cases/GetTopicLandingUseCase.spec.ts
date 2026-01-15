@@ -2,6 +2,7 @@ import { GetTopicLandingUseCase } from './GetTopicLandingUseCase';
 import { ITopicRepository } from '@domain/content/repositories/ITopicRepository';
 import { IContentItemRepository } from '@domain/content/repositories/IContentItemRepository';
 import { IInteractiveDefinitionRepository } from '@domain/interactive/repositories/IInteractiveDefinitionRepository';
+import { IServiceRepository } from '@domain/booking/repositories/IServiceRepository';
 import { Topic } from '@domain/content/entities/Topic';
 import { ContentItem } from '@domain/content/entities/ContentItem';
 import { ContentType, ContentStatus } from '@domain/content/value-objects/ContentEnums';
@@ -15,6 +16,7 @@ describe('GetTopicLandingUseCase', () => {
   let topicRepository: jest.Mocked<ITopicRepository>;
   let contentRepository: jest.Mocked<IContentItemRepository>;
   let interactiveRepository: jest.Mocked<IInteractiveDefinitionRepository>;
+  let serviceRepository: jest.Mocked<IServiceRepository>;
 
   beforeEach(() => {
     topicRepository = {
@@ -38,10 +40,18 @@ describe('GetTopicLandingUseCase', () => {
       findAll: jest.fn(),
       save: jest.fn(),
     } as any;
+    serviceRepository = {
+      findByTopic: jest.fn(),
+      findBySlug: jest.fn(),
+      findAll: jest.fn(),
+      findById: jest.fn(),
+      save: jest.fn(),
+    };
     useCase = new GetTopicLandingUseCase(
       topicRepository,
       contentRepository,
       interactiveRepository,
+      serviceRepository,
     );
   });
 
@@ -91,6 +101,7 @@ describe('GetTopicLandingUseCase', () => {
       new Date(),
     );
     interactiveRepository.findByTopic.mockResolvedValue([interactive]);
+    serviceRepository.findByTopic.mockResolvedValue([]);
 
     const result = await useCase.execute({ topicSlug: 'anxiety' });
 

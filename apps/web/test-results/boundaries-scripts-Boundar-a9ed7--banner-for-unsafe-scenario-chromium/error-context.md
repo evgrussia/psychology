@@ -26,54 +26,55 @@
           - /url: /about
           - generic [ref=e20]: 👩‍💼
           - generic [ref=e21]: О психологе
-    - button "На главную" [ref=e22] [cursor=pointer]
+    - button "На главную" [ref=e22]
   - contentinfo [ref=e23]:
     - generic [ref=e24]:
       - generic [ref=e25]:
-        - heading "Навигация" [level=3] [ref=e26]
-        - navigation [ref=e27]:
-          - link "С чего начать" [ref=e28] [cursor=pointer]:
-            - /url: /start
-          - link "С чем я помогаю" [ref=e29] [cursor=pointer]:
-            - /url: /s-chem-ya-pomogayu
-          - link "Услуги" [ref=e30] [cursor=pointer]:
-            - /url: /services
-          - link "О психологе" [ref=e31] [cursor=pointer]:
-            - /url: /about
-          - link "Как проходит консультация" [ref=e32] [cursor=pointer]:
-            - /url: /how-it-works
-          - link "Блог" [ref=e33] [cursor=pointer]:
-            - /url: /blog
-      - generic [ref=e34]:
-        - heading "⚠️ Экстренная помощь" [level=3] [ref=e35]
-        - paragraph [ref=e36]: "Если вам нужна немедленная помощь:"
-        - list [ref=e37]:
-          - listitem [ref=e38]:
-            - text: "Телефон доверия:"
-            - strong [ref=e39]: 8-800-2000-122
-          - listitem [ref=e40]:
-            - text: "МЧС:"
-            - strong [ref=e41]: +7 (495) 989-50-50
-          - listitem [ref=e42]:
-            - text: "Скорая помощь:"
-            - strong [ref=e43]: "112"
-        - link "Все экстренные контакты" [ref=e44] [cursor=pointer]:
-          - /url: /emergency
-      - generic [ref=e45]:
-        - heading "Юридическая информация" [level=3] [ref=e46]
-        - navigation [ref=e47]:
-          - link "Политика конфиденциальности" [ref=e48] [cursor=pointer]:
-            - /url: /legal/privacy
-          - link "Согласие на обработку ПДн" [ref=e49] [cursor=pointer]:
-            - /url: /legal/personal-data-consent
-          - link "Публичная оферта" [ref=e50] [cursor=pointer]:
-            - /url: /legal/offer
-          - link "Отказ от ответственности" [ref=e51] [cursor=pointer]:
-            - /url: /legal/disclaimer
-          - link "Cookie Policy" [ref=e52] [cursor=pointer]:
-            - /url: /legal/cookies
-    - generic [ref=e53]:
-      - paragraph [ref=e54]: © 2026 Эмоциональный баланс. Все права защищены.
-      - paragraph [ref=e55]: Информация на сайте не является публичной офертой и носит информационный характер.
-  - alert [ref=e56]
+        - generic [ref=e26]:
+          - heading "Навигация" [level=3] [ref=e27]
+          - navigation [ref=e28]:
+            - link "С чего начать" [ref=e29] [cursor=pointer]:
+              - /url: /start
+            - link "С чем я помогаю" [ref=e30] [cursor=pointer]:
+              - /url: /s-chem-ya-pomogayu
+            - link "Услуги" [ref=e31] [cursor=pointer]:
+              - /url: /services
+            - link "О психологе" [ref=e32] [cursor=pointer]:
+              - /url: /about
+            - link "Как проходит консультация" [ref=e33] [cursor=pointer]:
+              - /url: /how-it-works
+            - link "Блог" [ref=e34] [cursor=pointer]:
+              - /url: /blog
+        - generic [ref=e35]:
+          - heading "⚠️ Экстренная помощь" [level=3] [ref=e36]
+          - paragraph [ref=e37]: "Если вам нужна немедленная помощь:"
+          - list [ref=e38]:
+            - listitem [ref=e39]:
+              - text: "Телефон доверия:"
+              - strong [ref=e40]: 8-800-2000-122
+            - listitem [ref=e41]:
+              - text: "МЧС:"
+              - strong [ref=e42]: +7 (495) 989-50-50
+            - listitem [ref=e43]:
+              - text: "Скорая помощь:"
+              - strong [ref=e44]: "112"
+          - link "Все экстренные контакты" [ref=e45] [cursor=pointer]:
+            - /url: /emergency
+        - generic [ref=e46]:
+          - heading "Юридическая информация" [level=3] [ref=e47]
+          - navigation [ref=e48]:
+            - link "Политика конфиденциальности" [ref=e49] [cursor=pointer]:
+              - /url: /legal/privacy
+            - link "Согласие на обработку ПДн" [ref=e50] [cursor=pointer]:
+              - /url: /legal/personal-data-consent
+            - link "Публичная оферта" [ref=e51] [cursor=pointer]:
+              - /url: /legal/offer
+            - link "Отказ от ответственности" [ref=e52] [cursor=pointer]:
+              - /url: /legal/disclaimer
+            - link "Cookie Policy" [ref=e53] [cursor=pointer]:
+              - /url: /legal/cookies
+      - generic [ref=e54]:
+        - paragraph [ref=e55]: © 2026 Эмоциональный баланс. Все права защищены.
+        - paragraph [ref=e56]: Информация на сайте не является публичной офертой и носит информационный характер.
+  - alert [ref=e57]
 ```

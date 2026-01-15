@@ -156,6 +156,7 @@ model Topic {
   content_items ContentItemTopic[]
   interactives  InteractiveDefinition[]
   leads         Lead[]
+  services      Service[]
 
   @@map("topics")
 }
@@ -326,16 +327,22 @@ model Service {
   title                String
   description_markdown String
   format               ServiceFormat
+  offline_address      String?
   duration_minutes     Int
   price_amount         Int
   deposit_amount       Int?
   cancel_free_hours    Int?
+  cancel_partial_hours Int?
+  reschedule_min_hours Int?
+  reschedule_max_count Int?
   status               ServiceStatus      @default(draft)
+  topic_code           String?
   created_at           DateTime           @default(now())
   updated_at           DateTime           @updatedAt
   appointments         Appointment[]
   slots                AvailabilitySlot[]
   waitlist_requests    WaitlistRequest[]
+  topic                Topic?             @relation(fields: [topic_code], references: [code])
 
   @@map("services")
 }

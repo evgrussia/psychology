@@ -2,8 +2,10 @@ import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { ITopicRepository } from '@domain/content/repositories/ITopicRepository';
 import { IContentItemRepository } from '@domain/content/repositories/IContentItemRepository';
 import { IInteractiveDefinitionRepository } from '@domain/interactive/repositories/IInteractiveDefinitionRepository';
+import { IServiceRepository } from '@domain/booking/repositories/IServiceRepository';
 import { TopicLandingDto } from '../dto/topics.dto';
 import { ContentType, ContentStatus } from '@domain/content/value-objects/ContentEnums';
+import { ServiceStatus } from '@domain/booking/value-objects/ServiceEnums';
 
 @Injectable()
 export class GetTopicLandingUseCase {
@@ -14,6 +16,8 @@ export class GetTopicLandingUseCase {
     private readonly contentItemRepository: IContentItemRepository,
     @Inject('IInteractiveDefinitionRepository')
     private readonly interactiveRepository: IInteractiveDefinitionRepository,
+    @Inject('IServiceRepository')
+    private readonly serviceRepository: IServiceRepository,
   ) {}
 
   async execute(params: { topicSlug: string }): Promise<TopicLandingDto> {
@@ -41,6 +45,9 @@ export class GetTopicLandingUseCase {
     // 3. Get related interactives
     const relatedInteractives = await this.interactiveRepository.findByTopic(topic.code);
 
+    // 4. Get related services
+    const relatedServices = await this.serviceRepository.findByTopic(topic.code, ServiceStatus.published);
+
     return {
       topic: {
         code: topic.code,
@@ -55,7 +62,14 @@ export class GetTopicLandingUseCase {
         title: interactive.title,
         type: interactive.type,
       })),
-      relatedServices: [], // Planned for later
+      relatedServices: relatedServices.map(service => ({
+        id: service.id,
+        slug: service.slug,
+        title: service.title,
+        format: service.format,
+        duration_minutes: service.durationMinutes,
+        price_amount: service.priceAmount,
+      })),
     };
   }
 }

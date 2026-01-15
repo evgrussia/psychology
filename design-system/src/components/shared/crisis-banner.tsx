@@ -34,6 +34,7 @@ export function CrisisBanner({
       <a
         href={`tel:${phone.replace(/\D/g, "")}`}
         className="flex items-center gap-2 bg-white text-destructive px-6 py-3 rounded-lg font-bold hover:bg-opacity-90 transition-all"
+        aria-label={`Позвонить по номеру ${phone}`}
       >
         <Phone className="w-5 h-5" />
         {phone}

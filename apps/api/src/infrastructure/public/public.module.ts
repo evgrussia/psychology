@@ -10,7 +10,10 @@ import { ListPublicGlossaryTermsUseCase } from '@application/public/use-cases/Li
 import { GetPublicGlossaryTermUseCase } from '@application/public/use-cases/GetPublicGlossaryTermUseCase';
 import { ListCuratedCollectionsUseCase } from '@application/public/use-cases/ListCuratedCollectionsUseCase';
 import { GetCuratedCollectionUseCase } from '@application/public/use-cases/GetCuratedCollectionUseCase';
+import { ListServicesUseCase } from '@application/public/use-cases/ListServicesUseCase';
+import { GetServiceBySlugUseCase } from '@application/public/use-cases/GetServiceBySlugUseCase';
 import { PrismaInteractiveDefinitionRepository } from '../persistence/prisma/interactive/prisma-interactive-definition.repository';
+import { PrismaServiceRepository } from '../persistence/prisma/booking/prisma-service.repository';
 import { DatabaseModule } from '../database/database.module';
 import { ContentModule } from '../content/content.module';
 
@@ -28,9 +31,15 @@ import { ContentModule } from '../content/content.module';
     GetPublicGlossaryTermUseCase,
     ListCuratedCollectionsUseCase,
     GetCuratedCollectionUseCase,
+    ListServicesUseCase,
+    GetServiceBySlugUseCase,
     {
       provide: 'IInteractiveDefinitionRepository',
       useClass: PrismaInteractiveDefinitionRepository,
+    },
+    {
+      provide: 'IServiceRepository',
+      useClass: PrismaServiceRepository,
     },
   ],
 })

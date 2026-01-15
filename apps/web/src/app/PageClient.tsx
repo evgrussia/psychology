@@ -74,7 +74,29 @@ export default function PageClient({ slug, data }: PageClientProps) {
         <Section className="bg-muted">
           <Container>
             <h2 className="text-3xl font-bold text-center mb-12">Мои принципы и этика</h2>
-            <TrustBlocks viewport="desktop" />
+            <TrustBlocks 
+              viewport="desktop" 
+              items={[
+                {
+                  id: 'confidentiality',
+                  title: 'Конфиденциальность',
+                  description: 'Ваши данные и история остаются строго между нами.',
+                  icon: '🔒'
+                },
+                {
+                  id: 'boundaries',
+                  title: 'Профессиональные границы',
+                  description: 'Работа в рамках этического кодекса и четких договоренностей.',
+                  icon: '🤝'
+                },
+                {
+                  id: 'education',
+                  title: 'Образование и супервизия',
+                  description: 'Постоянное обучение и регулярная супервизия практики.',
+                  icon: '🎓'
+                }
+              ]}
+            />
           </Container>
         </Section>
       )}

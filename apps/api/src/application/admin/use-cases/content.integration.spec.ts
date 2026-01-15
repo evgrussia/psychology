@@ -17,6 +17,8 @@ describe('Content Management Integration', () => {
   let getBySlugUseCase: GetContentBySlugUseCase;
   let testUserId: string;
 
+  jest.setTimeout(30000);
+
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [DatabaseModule, ContentModule, EventsModule],

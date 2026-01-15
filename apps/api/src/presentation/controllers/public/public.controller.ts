@@ -10,10 +10,13 @@ import { ListPublicGlossaryTermsUseCase } from '../../../application/public/use-
 import { GetPublicGlossaryTermUseCase } from '../../../application/public/use-cases/GetPublicGlossaryTermUseCase';
 import { ListCuratedCollectionsUseCase } from '../../../application/public/use-cases/ListCuratedCollectionsUseCase';
 import { GetCuratedCollectionUseCase } from '../../../application/public/use-cases/GetCuratedCollectionUseCase';
+import { ListServicesUseCase } from '../../../application/public/use-cases/ListServicesUseCase';
+import { GetServiceBySlugUseCase } from '../../../application/public/use-cases/GetServiceBySlugUseCase';
 import { HomepageDto } from '../../../application/public/dto/homepage.dto';
 import { TopicDto, TopicLandingDto } from '../../../application/public/dto/topics.dto';
 import { PublicCuratedCollectionDto } from '../../../application/public/dto/curated.dto';
 import { PublicGlossaryListItemDto, PublicGlossaryTermResponseDto } from '../../../application/public/dto/glossary.dto';
+import { ServiceDetailsDto, ServiceListItemDto } from '../../../application/public/dto/services.dto';
 import { ContentType, GlossaryTermCategory } from '../../../domain/content/value-objects/ContentEnums';
 
 @ApiTags('public')
@@ -30,6 +33,8 @@ export class PublicController {
     private readonly getCurated: GetCuratedCollectionUseCase,
     private readonly listPublicGlossaryTerms: ListPublicGlossaryTermsUseCase,
     private readonly getPublicGlossaryTerm: GetPublicGlossaryTermUseCase,
+    private readonly listServices: ListServicesUseCase,
+    private readonly getServiceBySlug: GetServiceBySlugUseCase,
   ) {}
 
   @Get('glossary')
@@ -119,5 +124,20 @@ export class PublicController {
   @ApiResponse({ status: 404, description: 'Topic not found' })
   async getLanding(@Param('topicSlug') topicSlug: string): Promise<TopicLandingDto> {
     return this.getTopicLanding.execute({ topicSlug });
+  }
+
+  @Get('services')
+  @ApiOperation({ summary: 'List published services' })
+  @ApiResponse({ status: 200, description: 'List of services' })
+  async listPublishedServices(): Promise<ServiceListItemDto[]> {
+    return this.listServices.execute();
+  }
+
+  @Get('services/:slug')
+  @ApiOperation({ summary: 'Get published service by slug' })
+  @ApiResponse({ status: 200, description: 'Service details' })
+  @ApiResponse({ status: 404, description: 'Service not found' })
+  async getService(@Param('slug') slug: string): Promise<ServiceDetailsDto> {
+    return this.getServiceBySlug.execute(slug);
   }
 }

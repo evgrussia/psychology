@@ -12,6 +12,8 @@ import { ListCuratedCollectionsUseCase } from '../../../application/public/use-c
 import { GetCuratedCollectionUseCase } from '../../../application/public/use-cases/GetCuratedCollectionUseCase';
 import { ListPublicGlossaryTermsUseCase } from '../../../application/public/use-cases/ListPublicGlossaryTermsUseCase';
 import { GetPublicGlossaryTermUseCase } from '../../../application/public/use-cases/GetPublicGlossaryTermUseCase';
+import { ListServicesUseCase } from '../../../application/public/use-cases/ListServicesUseCase';
+import { GetServiceBySlugUseCase } from '../../../application/public/use-cases/GetServiceBySlugUseCase';
 import { NotFoundException } from '@nestjs/common';
 import { GlossaryTermCategory } from '../../../domain/content/value-objects/ContentEnums';
 
@@ -98,6 +100,14 @@ describe('PublicController - Glossary (Integration)', () => {
         {
           provide: GetPublicGlossaryTermUseCase,
           useValue: mockGetUseCase,
+        },
+        {
+          provide: ListServicesUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: GetServiceBySlugUseCase,
+          useValue: { execute: jest.fn() },
         },
       ],
     }).compile();

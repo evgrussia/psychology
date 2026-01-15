@@ -123,16 +123,14 @@ describe('HomeClient', () => {
   it('tracks topic card click', () => {
     render(<HomeClient data={mockData} />);
 
-    const topicCard = screen.getByText('Тревога').closest('a');
-    if (topicCard) {
-      fireEvent.click(topicCard);
+    const topicCard = screen.getByText('Тревога');
+    fireEvent.click(topicCard);
 
-      expect(tracking.track).toHaveBeenCalledWith('view_problem_card', {
-        topic: 'anxiety',
-        card_slug: 'anxiety',
-        page_path: '/',
-      });
-    }
+    expect(tracking.track).toHaveBeenCalledWith('view_problem_card', {
+      topic: 'anxiety',
+      card_slug: 'anxiety',
+      page_path: '/',
+    });
   });
 
   it('tracks booking CTA click', () => {

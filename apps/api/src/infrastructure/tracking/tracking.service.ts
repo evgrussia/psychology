@@ -39,11 +39,8 @@ export class TrackingService {
     };
 
     // In production, send to analytics provider
-    // For now, log it (in production, this should go to analytics service)
+    // For now, log it
     this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
-
-    // TODO: Integrate with analytics provider
-    // await this.analyticsProvider.track(event);
   }
 
   /**

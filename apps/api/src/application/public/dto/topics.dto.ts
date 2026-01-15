@@ -22,9 +22,20 @@ export class TopicLandingDto {
   @ApiProperty({ type: [ContentItemResponseDto] })
   relatedContent: ContentItemResponseDto[];
 
-  @ApiProperty({ type: [Object] }) // TODO: Add Interactive DTO if available
+  @ApiProperty({ type: [Object], required: false })
   relatedInteractives: any[];
 
-  @ApiProperty({ type: [Object] }) // TODO: Add Service DTO if available
-  relatedServices: any[];
+  @ApiProperty({
+    type: [Object],
+    required: false,
+    example: [{ id: '1', slug: 'session', title: 'Session', format: 'online', duration_minutes: 50, price_amount: 4000 }]
+  })
+  relatedServices: {
+    id: string;
+    slug: string;
+    title: string;
+    format: string;
+    duration_minutes: number;
+    price_amount: number;
+  }[];
 }

@@ -113,7 +113,7 @@ export default function HomeClient({ data }: HomeClientProps) {
       <Section>
         <Container>
           <h2 className="text-3xl font-bold text-center mb-12">Почему мне можно доверять</h2>
-          <TrustBlocks viewport="desktop" />
+          <TrustBlocks viewport="desktop" items={data.trust_blocks} />
         </Container>
       </Section>
 

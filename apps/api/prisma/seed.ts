@@ -273,6 +273,66 @@ async function main() {
   }
   console.log('Interactive Definitions seeded.');
 
+  // --- Services ---
+  const services = [
+    {
+      slug: 'intro-session',
+      title: 'Ознакомительная сессия',
+      description_markdown: 'Короткая встреча, чтобы прояснить запрос и понять, как я могу помочь.',
+      format: 'online',
+      duration_minutes: 50,
+      price_amount: 4000,
+      deposit_amount: 1000,
+      cancel_free_hours: 24,
+      cancel_partial_hours: 12,
+      reschedule_min_hours: 24,
+      reschedule_max_count: 1,
+      status: 'published',
+      topic_code: 'anxiety',
+    },
+    {
+      slug: 'full-session',
+      title: 'Полноценная консультация',
+      description_markdown: 'Глубокая работа с запросом в бережном темпе и с опорой на ваши ресурсы.',
+      format: 'hybrid',
+      offline_address: 'Москва, м. Черкизовская (точный адрес уточняется после записи)',
+      duration_minutes: 60,
+      price_amount: 6000,
+      deposit_amount: 1500,
+      cancel_free_hours: 24,
+      cancel_partial_hours: 12,
+      reschedule_min_hours: 24,
+      reschedule_max_count: 1,
+      status: 'published',
+      topic_code: 'burnout',
+    },
+    {
+      slug: 'offline-session',
+      title: 'Офлайн-встреча',
+      description_markdown: 'Личная встреча в кабинете в спокойной атмосфере и без спешки.',
+      format: 'offline',
+      offline_address: 'Москва, м. Черкизовская',
+      duration_minutes: 60,
+      price_amount: 6500,
+      deposit_amount: 1500,
+      cancel_free_hours: 24,
+      cancel_partial_hours: 12,
+      reschedule_min_hours: 24,
+      reschedule_max_count: 1,
+      status: 'published',
+      topic_code: 'relationships',
+    },
+  ];
+
+  for (const service of services) {
+    await prisma.service.upsert({
+      where: { slug: service.slug },
+      update: service as any,
+      create: service as any,
+    });
+  }
+  console.log('Services seeded.');
+
   // --- Pages ---
   const pages = [
     { slug: 'about', title: 'О психологе', body: 'Я — профессиональный психолог. Помогаю справиться с тревогой и выгоранием. Мои услуги включают индивидуальные консультации.' },

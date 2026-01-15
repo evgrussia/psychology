@@ -78,12 +78,18 @@ export default function EmergencyClient() {
                     {service.desc}
                   </p>
                   <Button 
+                    asChild
                     variant={service.primary ? "destructive" : "outline"}
                     className="w-full"
-                    onClick={() => handleCall(service.number, service.title)}
-                    aria-label={`Позвонить ${service.title} ${service.number}`}
                   >
-                    Позвонить {service.number}
+                    <a
+                      href={`tel:${service.number.replace(/[^0-9+]/g, '')}`}
+                      onClick={() => track('crisis_help_click', { action: `call_${service.title.toLowerCase().replace(/\s+/g, '_')}` })}
+                      aria-label={`Позвонить ${service.title} ${service.number}`}
+                      role="button"
+                    >
+                      Позвонить {service.number}
+                    </a>
                   </Button>
                 </div>
               </Card>

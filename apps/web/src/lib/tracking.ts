@@ -145,14 +145,16 @@ export const track = (eventName: string, properties: TrackProperties = {}) => {
 
   console.log(`[Tracking] ${eventName}:`, payload);
   
-  // В production здесь будет отправка в backend
+  // In production this will send events to the backend
   if (process.env.NODE_ENV === 'production') {
-    // TODO: Раскомментировать после настройки backend endpoint
-    // fetch('/api/tracking', { 
-    //   method: 'POST', 
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(payload) 
-    // }).catch(err => console.error('[Tracking] Failed to send event:', err));
+    // Backend endpoint for tracking will be implemented in a future feature
+    /*
+    fetch('/api/tracking', { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload) 
+    }).catch(err => console.error('[Tracking] Failed to send event:', err));
+    */
   }
 };
 

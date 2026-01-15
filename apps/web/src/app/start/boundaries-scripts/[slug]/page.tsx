@@ -6,7 +6,7 @@ async function getBoundaryScripts(slug: string) {
   
   try {
     const res = await fetch(`${API_BASE_URL}/public/interactive/boundaries-scripts/${slug}`, {
-      next: { revalidate: 60 }
+      next: { revalidate: 0 }
     });
     
     if (!res.ok) return null;
