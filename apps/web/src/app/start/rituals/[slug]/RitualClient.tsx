@@ -3,8 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { InteractivePlatform } from '@/lib/interactive';
-import { Button, Card, ProgressBar, Section, Container } from '@psychology/design-system/components';
-import { typography } from '@psychology/design-system/tokens';
+import { Button, Card, ProgressBar, Section, Container } from '@psychology/design-system';
 import SafeMarkdownRenderer from '@/components/SafeMarkdownRenderer';
 
 interface RitualStep {
@@ -164,26 +163,24 @@ export function RitualClient({ initialRitual }: { initialRitual: Ritual }) {
   if (isCompleted) {
     return (
       <Section>
-        <Container maxWidth="600px">
-          <Card style={{ padding: 'var(--space-8)', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }} variant="elevated">
-            <div style={{ width: '80px', height: 'var(--space-20)', backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-brand-primary)', borderRadius: 'var(--radius-circle)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
-              <svg xmlns="http://www.w3.org/2000/svg" style={{ height: 'var(--space-10)', width: 'var(--space-10)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <Container className="max-w-xl">
+          <Card className="p-8 text-center flex flex-col gap-6 items-center">
+            <div className="w-20 h-20 bg-muted text-primary rounded-full flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 style={{ ...typography.h2, color: 'var(--color-text-primary)' }}>Ритуал завершен!</h2>
-            <p style={{ ...typography.body.lg, color: 'var(--color-text-secondary)' }}>
+            <h2 className="text-3xl font-bold text-foreground">Ритуал завершен!</h2>
+            <p className="text-lg text-muted-foreground leading-relaxed">
               Вы уделили время себе и своему состоянию. Это важный шаг к эмоциональному балансу.
             </p>
-            <div style={{ paddingTop: 'var(--space-4)' }}>
-              <Button 
-                onClick={() => router.push('/start/rituals')} 
-                fullWidth
-                aria-label="Вернуться в библиотеку ритуалов"
-              >
-                Вернуться в библиотеку
-              </Button>
-            </div>
+            <Button 
+              className="w-full mt-4"
+              onClick={() => router.push('/start/rituals')} 
+              aria-label="Вернуться в библиотеку ритуалов"
+            >
+              Вернуться в библиотеку
+            </Button>
           </Card>
         </Container>
       </Section>
@@ -193,39 +190,39 @@ export function RitualClient({ initialRitual }: { initialRitual: Ritual }) {
   if (currentStepIndex === -1) {
     return (
       <Section>
-        <Container maxWidth="600px">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
-            <header style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        <Container className="max-w-xl">
+          <div className="flex flex-col gap-8">
+            <header className="flex flex-col gap-4">
               <Button 
-                variant="tertiary" 
+                variant="ghost" 
                 size="sm" 
                 onClick={() => router.push('/start/rituals')} 
-                style={{ alignSelf: 'flex-start' }}
+                className="self-start"
                 aria-label="Вернуться к списку ритуалов"
               >
                 ← Назад к списку
               </Button>
-              <h1 style={{ ...typography.hero, color: 'var(--color-text-primary)' }}>{initialRitual.title}</h1>
+              <h1 className="text-4xl font-bold text-foreground">{initialRitual.title}</h1>
             </header>
 
-            <Card style={{ padding: 'var(--space-8)', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }} variant="elevated">
-              <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                <h2 style={{ ...typography.h3, color: 'var(--color-text-primary)' }}>Зачем это нужно?</h2>
-                <p style={{ ...typography.body.lg, color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
+            <Card className="p-8 flex flex-col gap-6">
+              <section className="flex flex-col gap-2">
+                <h2 className="text-2xl font-bold text-foreground">Зачем это нужно?</h2>
+                <p className="text-lg text-muted-foreground leading-relaxed">
                   {initialRitual.config.why}
                 </p>
               </section>
 
-              <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', paddingTop: 'var(--space-4)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', color: 'var(--color-text-secondary)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" style={{ height: 'var(--space-5)', width: 'var(--space-5)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <section className="flex flex-col gap-6 pt-4">
+                <div className="flex items-center gap-6 text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <span>~{Math.round((initialRitual.config.totalDurationSeconds || 0) / 60)} минут</span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" style={{ height: 'var(--space-5)', width: 'var(--space-5)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
                     <span>{initialRitual.config.steps.length} шагов</span>
@@ -235,7 +232,7 @@ export function RitualClient({ initialRitual }: { initialRitual: Ritual }) {
                 <Button 
                   onClick={handleStart} 
                   size="lg" 
-                  fullWidth
+                  className="w-full"
                   aria-label="Начать ритуал"
                 >
                   Начать ритуал
@@ -252,28 +249,26 @@ export function RitualClient({ initialRitual }: { initialRitual: Ritual }) {
 
   return (
     <Section>
-      <Container maxWidth="600px">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--font-size-body-sm)', fontWeight: 500, color: 'var(--color-text-tertiary)' }}>
-              <span>Шаг {currentStepIndex + 1} из {initialRitual.config.steps.length}</span>
-              <span>{Math.round(progress)}%</span>
-            </div>
-            <ProgressBar current={currentStepIndex + 1} total={initialRitual.config.steps.length} />
-          </div>
+      <Container className="max-w-xl">
+        <div className="flex flex-col gap-6">
+          <ProgressBar 
+            value={progress} 
+            label={`Шаг ${currentStepIndex + 1} из ${initialRitual.config.steps.length}`}
+            showValue
+          />
 
-          <Card style={{ padding: 'var(--space-8)', minHeight: '400px', display: 'flex', flexDirection: 'column' }} variant="elevated">
-            <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-              <h2 style={{ ...typography.h2, color: 'var(--color-text-primary)' }}>{currentStep?.title}</h2>
+          <Card className="p-8 min-h-[400px] flex flex-col">
+            <div className="flex-1 flex flex-col gap-6">
+              <h2 className="text-3xl font-bold text-foreground">{currentStep?.title}</h2>
               
-              <div style={{ color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
+              <div className="text-muted-foreground leading-relaxed">
                 <SafeMarkdownRenderer content={currentStep?.content || ''} />
               </div>
 
               {currentStep?.durationSeconds && currentStep.durationSeconds > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-8)', backgroundColor: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border-primary)' }}>
+                <div className="flex flex-col items-center justify-center p-8 bg-muted rounded-2xl border border-border">
                   <div 
-                    style={{ fontSize: 'var(--space-16)', fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--color-brand-primary)', marginBottom: 'var(--space-4)', fontVariantNumeric: 'tabular-nums' }}
+                    className="text-6xl font-mono font-bold text-primary mb-6 tabular-nums"
                     role="timer"
                     aria-live="polite"
                     aria-atomic="true"
@@ -281,12 +276,12 @@ export function RitualClient({ initialRitual }: { initialRitual: Ritual }) {
                   >
                     {formatTime(timeLeft)}
                   </div>
-                  <div style={{ display: 'flex', gap: 'var(--space-4)' }}>
+                  <div className="flex gap-4">
                     <Button 
-                      variant="tertiary" 
+                      variant="outline" 
                       size="sm" 
                       onClick={() => setIsPaused(!isPaused)}
-                      style={{ width: '120px' }}
+                      className="w-32"
                       aria-label={isPaused ? 'Продолжить таймер' : 'Поставить таймер на паузу'}
                     >
                       {isPaused ? 'Продолжить' : 'Пауза'}
@@ -304,7 +299,7 @@ export function RitualClient({ initialRitual }: { initialRitual: Ritual }) {
               )}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 'var(--space-8)', gap: 'var(--space-4)' }}>
+            <div className="flex justify-between pt-8 gap-4">
               <Button 
                 variant="ghost" 
                 onClick={handleBack}
@@ -314,7 +309,7 @@ export function RitualClient({ initialRitual }: { initialRitual: Ritual }) {
               </Button>
               <Button 
                 onClick={handleNext} 
-                style={{ width: '120px' }}
+                className="w-32"
                 aria-label={currentStepIndex === initialRitual.config.steps.length - 1 ? 'Завершить ритуал' : 'Перейти к следующему шагу'}
               >
                 {currentStepIndex === initialRitual.config.steps.length - 1 ? 'Завершить' : 'Далее'}
@@ -323,7 +318,7 @@ export function RitualClient({ initialRitual }: { initialRitual: Ritual }) {
           </Card>
 
           {hasAudio && (
-            <div style={{ padding: 'var(--space-4)', backgroundColor: 'var(--color-bg-tertiary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-primary)', display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+            <div className="p-4 bg-muted rounded-xl border border-border flex items-center gap-4">
               {audioRef.current === null && (
                 <audio
                   ref={audioRef}
@@ -333,17 +328,17 @@ export function RitualClient({ initialRitual }: { initialRitual: Ritual }) {
                   preload="metadata"
                 />
               )}
-              <div style={{ width: '40px', height: '40px', backgroundColor: 'var(--color-bg-primary)', color: 'var(--color-brand-primary)', borderRadius: 'var(--radius-circle)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" style={{ height: 'var(--space-6)', width: 'var(--space-6)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <div className="w-10 h-10 bg-background text-primary rounded-full flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                 </svg>
               </div>
-              <div style={{ flexGrow: 1 }}>
-                <p style={{ fontSize: 'var(--font-size-body-sm)', fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>Фоновое сопровождение</p>
-                <p style={{ fontSize: 'var(--font-size-caption)', color: 'var(--color-text-secondary)', margin: 0 }}>Аудио поможет лучше погрузиться в практику</p>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-foreground m-0">Фоновое сопровождение</p>
+                <p className="text-xs text-muted-foreground m-0">Аудио поможет лучше погрузиться в практику</p>
               </div>
               <Button 
-                variant="tertiary"
+                variant="outline"
                 size="sm"
                 onClick={handleAudioToggle}
                 aria-label={isAudioPlaying ? 'Остановить аудио' : 'Включить аудио'}

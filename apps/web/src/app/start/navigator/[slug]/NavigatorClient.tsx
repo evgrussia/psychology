@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ProgressBar, ResultCard, CrisisBanner, Button, Section, Container, Card } from '@psychology/design-system/components';
-import { typography } from '@psychology/design-system/tokens';
+import { ProgressBar, ResultCard, CrisisBanner, Button, Section, Container, Card } from '@psychology/design-system';
 import { InteractivePlatform, ResultLevel } from '@/lib/interactive';
 import SafeMarkdownRenderer from '@/components/SafeMarkdownRenderer';
 
@@ -35,7 +34,6 @@ export const NavigatorClient: React.FC<NavigatorClientProps> = ({ definition, sl
   };
 
   const handleChoice = (choice: any) => {
-    // step_index начинается с 1 (первый шаг после старта)
     const stepIndex = history.length + 1;
     InteractivePlatform.trackNavigatorStepCompleted(slug, stepIndex, choice.choice_id);
 
@@ -86,16 +84,14 @@ export const NavigatorClient: React.FC<NavigatorClientProps> = ({ definition, sl
   if (step === 'start') {
     return (
       <Section>
-        <Container maxWidth="600px">
-          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
-            <h1 style={{ ...typography.hero, color: 'var(--color-text-primary)' }}>{definition.title || 'Навигатор состояния'}</h1>
-            <p style={{ ...typography.body.lg, color: 'var(--color-text-secondary)' }}>
-              Ответьте на несколько вопросов, чтобы мы могли подобрать для вас наиболее подходящие ресурсы и план действий.
-            </p>
-            <Button onClick={startNavigator} size="lg" variant="primary" fullWidth>
-              Начать
-            </Button>
-          </div>
+        <Container className="max-w-xl text-center flex flex-col gap-8">
+          <h1 className="text-4xl font-bold text-foreground">{definition.title || 'Навигатор состояния'}</h1>
+          <p className="text-lg text-muted-foreground">
+            Ответьте на несколько вопросов, чтобы мы могли подобрать для вас наиболее подходящие ресурсы и план действий.
+          </p>
+          <Button onClick={startNavigator} size="lg" className="w-full">
+            Начать
+          </Button>
         </Container>
       </Section>
     );
@@ -104,56 +100,33 @@ export const NavigatorClient: React.FC<NavigatorClientProps> = ({ definition, sl
   if (step === 'progress' && currentStep) {
     return (
       <Section>
-        <Container maxWidth="600px">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-4)' }}>
+        <Container className="max-w-xl">
+          <div className="flex flex-col gap-6">
+            <div className="flex items-center justify-between mb-4">
               <Button variant="ghost" onClick={handleBack} disabled={history.length === 0} size="sm">
                 ← Назад
               </Button>
-              <div style={{ fontSize: 'var(--font-size-body-sm)', color: 'var(--color-text-tertiary)', fontWeight: 500 }}>
+              <div className="text-sm font-medium text-muted-foreground">
                 Шаг {history.length + 1}
               </div>
             </div>
             
-            <Card style={{ padding: 'var(--space-8)' }} variant="elevated">
-              <fieldset style={{ border: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
-                <legend style={{ ...typography.h3, color: 'var(--color-text-primary)', marginBottom: 0 }}>
+            <Card className="p-8">
+              <fieldset className="border-none p-0 m-0 flex flex-col gap-8">
+                <legend className="text-2xl font-bold text-foreground mb-4">
                   {currentStep.question_text}
                 </legend>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--space-3)' }} role="radiogroup" aria-labelledby="navigator-question">
+                <div className="grid grid-cols-1 gap-3" role="radiogroup">
                   {currentStep.choices.map((choice: any, index: number) => (
-                    <button
+                    <Button
                       key={choice.choice_id}
+                      variant="outline"
+                      className="justify-start h-auto py-4 px-6 text-left whitespace-normal font-medium"
                       onClick={() => handleChoice(choice)}
-                      role="radio"
-                      aria-checked="false"
-                      aria-label={choice.text}
-                      aria-describedby={`choice-${choice.choice_id}-desc`}
-                      style={{
-                        textAlign: 'left',
-                        padding: 'var(--space-4) var(--space-6)',
-                        borderRadius: 'var(--radius-md)',
-                        border: '1px solid var(--color-border-primary)',
-                        backgroundColor: 'var(--color-bg-primary)',
-                        transition: 'var(--transition-normal)',
-                        color: 'var(--color-text-primary)',
-                        fontWeight: 500,
-                        fontSize: 'var(--font-size-body)',
-                        cursor: 'pointer'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = 'var(--color-brand-primary)';
-                        e.currentTarget.style.backgroundColor = 'var(--color-bg-secondary)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = 'var(--color-border-primary)';
-                        e.currentTarget.style.backgroundColor = 'var(--color-bg-primary)';
-                      }}
-                      tabIndex={index === 0 ? 0 : -1}
                     >
-                      <span id={`choice-${choice.choice_id}-desc`}>{choice.text}</span>
-                    </button>
+                      {choice.text}
+                    </Button>
                   ))}
                 </div>
               </fieldset>
@@ -161,9 +134,8 @@ export const NavigatorClient: React.FC<NavigatorClientProps> = ({ definition, sl
 
             {crisisTriggered && isCrisisVisible && (
               <CrisisBanner 
-                surface="navigator" 
-                triggerType="panic_like" 
-                onBackToResources={() => setIsCrisisVisible(false)}
+                className="mt-4"
+                message="Похоже, вы переживаете сложный момент. Пожалуйста, рассмотрите возможность обращения за экстренной помощью."
               />
             )}
           </div>
@@ -173,81 +145,57 @@ export const NavigatorClient: React.FC<NavigatorClientProps> = ({ definition, sl
   }
 
   if (step === 'result' && finalResultProfile) {
+    const steps = [];
+    if (finalResultProfile.recommendations) {
+      if (finalResultProfile.recommendations.articles?.length) {
+        steps.push({ title: 'Статьи', items: finalResultProfile.recommendations.articles });
+      }
+      if (finalResultProfile.recommendations.exercises?.length) {
+        steps.push({ title: 'Упражнения', items: finalResultProfile.recommendations.exercises });
+      }
+    }
+
     return (
       <Section>
-        <Container maxWidth="800px">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
+        <Container className="max-w-3xl">
+          <div className="flex flex-col gap-8">
             {crisisTriggered && isCrisisVisible && (
               <CrisisBanner 
-                surface="navigator_result" 
-                triggerType="panic_like" 
-                onBackToResources={() => setIsCrisisVisible(false)}
+                className="mb-4"
+                message="Ваш результат указывает на необходимость профессиональной поддержки."
               />
             )}
             
             <ResultCard
               title={finalResultProfile.title}
               description={finalResultProfile.description}
+              steps={steps}
+              level={crisisTriggered ? 'high' : 'low'}
             >
-              <div style={{ marginTop: 'var(--space-8)', display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
-                {finalResultProfile.recommendations && (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 'var(--space-8)' }}>
-                    {finalResultProfile.recommendations.articles && finalResultProfile.recommendations.articles.length > 0 && (
-                      <div>
-                        <h4 style={{ ...typography.h4, color: 'var(--color-text-primary)', marginBottom: 'var(--space-3)' }}>Статьи</h4>
-                        <ul style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', listStyle: 'none' }}>
-                          {finalResultProfile.recommendations.articles.map((item: string, i: number) => (
-                            <li key={i} style={{ color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'flex-start', gap: 'var(--space-2)' }}>
-                              <span style={{ color: 'var(--color-brand-primary)' }}>•</span>
-                              {item}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {finalResultProfile.recommendations.exercises && finalResultProfile.recommendations.exercises.length > 0 && (
-                      <div>
-                        <h4 style={{ ...typography.h4, color: 'var(--color-text-primary)', marginBottom: 'var(--space-3)' }}>Упражнения</h4>
-                        <ul style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', listStyle: 'none' }}>
-                          {finalResultProfile.recommendations.exercises.map((item: string, i: number) => (
-                            <li key={i} style={{ color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'flex-start', gap: 'var(--space-2)' }}>
-                              <span style={{ color: 'var(--color-brand-primary)' }}>•</span>
-                              {item}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <div style={{ marginTop: 'var(--space-8)', display: 'flex', flexDirection: 'row', gap: 'var(--space-4)', justifyContent: 'center', flexWrap: 'wrap' }}>
-                  {finalResultProfile.cta ? (
-                    <Button 
-                      variant={crisisTriggered ? "tertiary" : "primary"} 
-                      onClick={() => window.location.href = finalResultProfile.cta.link}
-                    >
-                      {finalResultProfile.cta.text}
-                    </Button>
-                  ) : (
-                    <Button 
-                      variant={crisisTriggered ? "tertiary" : "primary"} 
-                      onClick={() => window.location.href = 'https://t.me/psy_balance_bot'}
-                    >
-                      Получить план в Telegram
-                    </Button>
-                  )}
+              <div className="mt-8 flex flex-wrap gap-4 justify-center">
+                {finalResultProfile.cta ? (
                   <Button 
-                    variant="secondary" 
-                    onClick={() => window.location.href = '/booking'}
+                    onClick={() => window.location.href = finalResultProfile.cta.link}
                   >
-                    Записаться к психологу
+                    {finalResultProfile.cta.text}
                   </Button>
-                </div>
+                ) : (
+                  <Button 
+                    onClick={() => window.location.href = 'https://t.me/psy_balance_bot'}
+                  >
+                    Получить план в Telegram
+                  </Button>
+                )}
+                <Button 
+                  variant="outline" 
+                  onClick={() => window.location.href = '/booking'}
+                >
+                  Записаться к психологу
+                </Button>
               </div>
             </ResultCard>
 
-            <div style={{ textAlign: 'center', paddingTop: 'var(--space-8)' }}>
+            <div className="text-center pt-8">
               <Button variant="ghost" onClick={() => window.location.href = '/start'}>
                 ← Вернуться к началу
               </Button>

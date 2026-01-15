@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ProgressBar, Button, CrisisBanner, Card, Section, Container } from '@psychology/design-system/components';
-import { typography } from '@psychology/design-system/tokens';
+import { ProgressBar, Button, CrisisBanner, Card, Section, Container } from '@psychology/design-system';
 import { InteractivePlatform } from '@/lib/interactive';
 
 interface BoundaryScriptsClientProps {
@@ -28,7 +27,6 @@ export const BoundaryScriptsClient: React.FC<BoundaryScriptsClientProps> = ({ da
   const headingRef = React.useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
-    // Focus heading on step change for accessibility and E2E tests
     if (headingRef.current) {
       headingRef.current.focus();
     }
@@ -57,7 +55,6 @@ export const BoundaryScriptsClient: React.FC<BoundaryScriptsClientProps> = ({ da
   };
 
   const handleCopy = async (variantId: string, text: string) => {
-    // Set UI state and track immediately to provide feedback even if clipboard fails
     setCopiedVariantId(variantId);
     InteractivePlatform.trackBoundariesCopied(variantId);
     setTimeout(() => setCopiedVariantId(null), 2000);
@@ -82,15 +79,13 @@ export const BoundaryScriptsClient: React.FC<BoundaryScriptsClientProps> = ({ da
   if (isCrisisVisible) {
     return (
       <Section>
-        <Container maxWidth="800px">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+        <Container className="max-w-3xl">
+          <div className="flex flex-col gap-6">
             <CrisisBanner 
-              surface="boundaries_script" 
-              triggerType="violence" 
-              onBackToResources={() => reset()}
+              message="Ваша ситуация может быть опасной. Пожалуйста, обратитесь за помощью к специалистам или в службы поддержки."
             />
-            <div style={{ textAlign: 'center', paddingTop: 'var(--space-8)' }}>
-              <Button variant="secondary" onClick={reset}>
+            <div className="text-center pt-8">
+              <Button variant="outline" onClick={reset}>
                 Вернуться к выбору сценария
               </Button>
             </div>
@@ -104,28 +99,17 @@ export const BoundaryScriptsClient: React.FC<BoundaryScriptsClientProps> = ({ da
     switch (step) {
       case 'scenario':
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-            <h2 ref={headingRef} tabIndex={-1} style={{ ...typography.h2, textAlign: 'center', outline: 'none' }}>Выберите ситуацию</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-4)' }}>
+          <div className="flex flex-col gap-8">
+            <h2 ref={headingRef} tabIndex={-1} className="text-3xl font-bold text-center outline-none">Выберите ситуацию</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {config.scenarios.map((s: any) => (
                 <button
                   key={s.id}
                   onClick={() => handleScenarioSelect(s.id)}
-                  style={{
-                    padding: 'var(--space-6)',
-                    textAlign: 'left',
-                    border: '1px solid var(--color-border-primary)',
-                    borderRadius: 'var(--radius-md)',
-                    transition: 'var(--transition-normal)',
-                    backgroundColor: 'var(--color-bg-primary)',
-                    boxShadow: 'var(--shadow-sm)',
-                    cursor: 'pointer'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--color-brand-primary)'}
-                  onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--color-border-primary)'}
+                  className="p-6 text-left border border-border rounded-xl transition-all bg-card hover:border-primary shadow-sm group"
                 >
-                  <div style={{ ...typography.h4, color: 'var(--color-text-primary)' }}>{s.name}</div>
-                  {s.description && <div style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-body-sm)', marginTop: 'var(--space-1)' }}>{s.description}</div>}
+                  <div className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">{s.name}</div>
+                  {s.description && <div className="text-muted-foreground text-sm mt-2 leading-relaxed">{s.description}</div>}
                 </button>
               ))}
             </div>
@@ -133,17 +117,17 @@ export const BoundaryScriptsClient: React.FC<BoundaryScriptsClientProps> = ({ da
         );
       case 'tone':
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-            <h2 style={{ ...typography.h2, textAlign: 'center' }}>Выберите стиль общения</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+          <div className="flex flex-col gap-8">
+            <h2 className="text-3xl font-bold text-center">Выберите стиль общения</h2>
+            <div className="flex flex-col gap-3 max-w-md mx-auto w-full">
               {config.tones.map((t: any) => (
-                <Button key={t.id} onClick={() => handleToneSelect(t.id)} variant="secondary" size="lg" fullWidth>
+                <Button key={t.id} onClick={() => handleToneSelect(t.id)} variant="outline" size="lg" className="w-full justify-start h-auto py-4">
                   {t.name}
                 </Button>
               ))}
             </div>
-            <div style={{ textAlign: 'center' }}>
-               <button onClick={() => setStep('scenario')} style={{ color: 'var(--color-brand-primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>
+            <div className="text-center">
+               <button onClick={() => setStep('scenario')} className="text-primary hover:underline font-medium">
                   ← Назад к выбору ситуации
                </button>
             </div>
@@ -151,17 +135,17 @@ export const BoundaryScriptsClient: React.FC<BoundaryScriptsClientProps> = ({ da
         );
       case 'goal':
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-            <h2 style={{ ...typography.h2, textAlign: 'center' }}>Чего хотите добиться?</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+          <div className="flex flex-col gap-8">
+            <h2 className="text-3xl font-bold text-center">Чего хотите добиться?</h2>
+            <div className="flex flex-col gap-3 max-w-md mx-auto w-full">
               {config.goals.map((g: any) => (
-                <Button key={g.id} onClick={() => handleGoalSelect(g.id)} variant="secondary" size="lg" fullWidth>
+                <Button key={g.id} onClick={() => handleGoalSelect(g.id)} variant="outline" size="lg" className="w-full justify-start h-auto py-4">
                   {g.name}
                 </Button>
               ))}
             </div>
-            <div style={{ textAlign: 'center' }}>
-               <button onClick={() => setStep('tone')} style={{ color: 'var(--color-brand-primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>
+            <div className="text-center">
+               <button onClick={() => setStep('tone')} className="text-primary hover:underline font-medium">
                   ← Назад к выбору стиля
                </button>
             </div>
@@ -192,28 +176,27 @@ export const BoundaryScriptsClient: React.FC<BoundaryScriptsClientProps> = ({ da
   };
 
   const stepToProgress = {
-    scenario: 1,
-    tone: 2,
-    goal: 3,
-    result: 4,
+    scenario: 25,
+    tone: 50,
+    goal: 75,
+    result: 100,
   };
 
   return (
     <Section>
-      <Container maxWidth="800px">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
-          {/* A11y: aria-live region for toast notifications */}
+      <Container className="max-w-3xl">
+        <div className="flex flex-col gap-12">
           <div 
             aria-live="polite" 
             aria-atomic="true" 
-            style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', border: 0 }}
+            className="sr-only"
           >
             {copiedVariantId && 'Фраза скопирована'}
           </div>
-          <div style={{ padding: '0 var(--space-4)' }}>
-            <ProgressBar current={stepToProgress[step]} total={4} />
+          <div className="px-4">
+            <ProgressBar value={stepToProgress[step]} label={`Шаг ${step === 'result' ? '4' : step === 'goal' ? '3' : step === 'tone' ? '2' : '1'} из 4`} showValue />
           </div>
-          <div style={{ padding: '0 var(--space-4)' }}>
+          <div className="px-4">
             {renderStep()}
           </div>
         </div>
@@ -240,17 +223,17 @@ const ResultView: React.FC<ResultViewProps> = ({ variants, scenario, tone, safet
   }, [variants, scenario, tone]);
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-center">Варианты фраз</h2>
+    <div className="space-y-8">
+      <h2 className="text-3xl font-bold text-center">Варианты фраз</h2>
       {variants.length > 0 ? (
         <div className="space-y-4">
           {variants.map((v: any) => (
             <Card key={v.variant_id} className="p-6">
-              <p className="text-lg text-slate-800 mb-4 italic">"{v.text}"</p>
+              <p className="text-xl text-foreground mb-6 italic leading-relaxed text-balance">"{v.text}"</p>
               <div className="flex justify-end">
                 <Button
                   onClick={() => onCopy(v.variant_id, v.text)}
-                  variant={copiedVariantId === v.variant_id ? 'primary' : 'secondary'}
+                  variant={copiedVariantId === v.variant_id ? 'default' : 'outline'}
                   size="sm"
                 >
                   {copiedVariantId === v.variant_id ? 'Скопировано!' : 'Скопировать'}
@@ -260,21 +243,21 @@ const ResultView: React.FC<ResultViewProps> = ({ variants, scenario, tone, safet
           ))}
         </div>
       ) : (
-        <div className="text-center py-12 text-slate-500 bg-white rounded-xl border border-dashed border-slate-300">
+        <div className="text-center py-16 text-muted-foreground bg-muted/50 rounded-2xl border border-dashed border-border">
           К сожалению, для этой комбинации нет готовых фраз. Попробуйте сменить стиль или цель.
         </div>
       )}
 
-      <div className="p-6 bg-indigo-50 border border-indigo-100 rounded-xl">
-        <h3 className="font-bold text-indigo-900 mb-2">Что делать, если продолжают давить?</h3>
-        <p className="text-indigo-800">{safetyText}</p>
+      <div className="p-6 bg-primary/5 border border-primary/10 rounded-2xl">
+        <h3 className="text-lg font-bold text-primary mb-3">Что делать, если продолжают давить?</h3>
+        <p className="text-muted-foreground leading-relaxed">{safetyText}</p>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
-        <Button onClick={onReset} variant="secondary">
+      <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
+        <Button onClick={onReset} variant="outline">
           Попробовать другой вариант
         </Button>
-        <Button onClick={() => (window.location.href = 'https://t.me/psy_balance_bot')} variant="secondary">
+        <Button onClick={() => (window.location.href = 'https://t.me/psy_balance_bot')}>
           Больше техник в Telegram
         </Button>
       </div>

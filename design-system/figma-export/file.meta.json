@@ -1,7 +1,0 @@
-{
-  "error": true,
-  "fileKey": "ls1ACoHXpuzTb3hkMuGrsB",
-  "exportedAt": "2026-01-14T08:38:39.977Z",
-  "status": 400,
-  "message": "Figma API error 400 for https://api.figma.com/v1/files/ls1ACoHXpuzTb3hkMuGrsB?depth=1\nerr: File type not supported by this endpoint\nПроверьте URL/статус и повторите попытку."
-}

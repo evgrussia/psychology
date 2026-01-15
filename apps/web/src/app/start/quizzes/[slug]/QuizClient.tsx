@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ProgressBar, ResultCard, CrisisBanner, Button, Section, Container, Card } from '@psychology/design-system/components';
-import { typography } from '@psychology/design-system/tokens';
+import { ProgressBar, ResultCard, CrisisBanner, Button, Section, Container, Card } from '@psychology/design-system';
 import { InteractivePlatform, ResultLevel } from '@/lib/interactive';
 
 interface QuizClientProps {
@@ -92,9 +91,7 @@ export const QuizClient: React.FC<QuizClientProps> = ({ quiz }) => {
       if (crisisTrigger.thresholdScore !== undefined && score >= crisisTrigger.thresholdScore) {
         crisisTriggered = true;
       }
-      // question-based trigger could be added here if needed
     } else if (finalResultLevel === ResultLevel.HIGH) {
-      // Default fallback: HIGH level triggers crisis banner for certain topics
       if (['anxiety', 'burnout'].includes(quiz.slug)) {
         crisisTriggered = true;
       }
@@ -125,16 +122,14 @@ export const QuizClient: React.FC<QuizClientProps> = ({ quiz }) => {
   if (step === 'start') {
     return (
       <Section>
-        <Container maxWidth="600px">
-          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
-            <h1 style={{ ...typography.hero, color: 'var(--color-text-primary)' }}>{quiz.title}</h1>
-            <p style={{ ...typography.body.lg, color: 'var(--color-text-secondary)' }}>
-              {quiz.description || 'Пройдите этот тест, чтобы лучше понять свое состояние.'}
-            </p>
-            <Button onClick={startQuiz} size="lg" variant="primary" fullWidth>
-              Начать тест
-            </Button>
-          </div>
+        <Container className="max-w-xl text-center flex flex-col gap-8">
+          <h1 className="text-4xl font-bold text-foreground">{quiz.title}</h1>
+          <p className="text-lg text-muted-foreground">
+            {quiz.description || 'Пройдите этот тест, чтобы лучше понять свое состояние.'}
+          </p>
+          <Button onClick={startQuiz} size="lg" className="w-full">
+            Начать тест
+          </Button>
         </Container>
       </Section>
     );
@@ -142,51 +137,33 @@ export const QuizClient: React.FC<QuizClientProps> = ({ quiz }) => {
 
   if (step === 'progress') {
     const currentQuestion = questions[currentQuestionIdx];
+    const progress = ((currentQuestionIdx + 1) / questions.length) * 100;
+    
     return (
       <Section>
-        <Container maxWidth="600px">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--font-size-body-sm)', fontWeight: 500, color: 'var(--color-text-tertiary)' }}>
-                <span>Вопрос {currentQuestionIdx + 1} из {questions.length}</span>
-                <span>{Math.round(((currentQuestionIdx + 1) / questions.length) * 100)}%</span>
-              </div>
-              <ProgressBar current={currentQuestionIdx + 1} total={questions.length} />
-            </div>
+        <Container className="max-w-xl">
+          <div className="flex flex-col gap-6">
+            <ProgressBar 
+              value={progress} 
+              label={`Вопрос ${currentQuestionIdx + 1} из ${questions.length}`}
+              showValue
+            />
             
-            <Card style={{ padding: 'var(--space-8)' }} variant="elevated">
-              <h2 style={{ ...typography.h3, color: 'var(--color-text-primary)', marginBottom: 'var(--space-8)' }}>
+            <Card className="p-8">
+              <h2 className="text-2xl font-bold text-foreground mb-8">
                 {currentQuestion.text}
               </h2>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--space-3)' }}>
+              <div className="grid grid-cols-1 gap-3">
                 {currentQuestion.options.map((option) => (
-                  <button
+                  <Button
                     key={option.value}
+                    variant="outline"
+                    className="justify-start h-auto py-4 px-6 text-left whitespace-normal font-medium"
                     onClick={() => handleAnswer(option.value)}
-                    style={{
-                      textAlign: 'left',
-                      padding: 'var(--space-4) var(--space-6)',
-                      borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--color-border-primary)',
-                      backgroundColor: 'var(--color-bg-primary)',
-                      transition: 'var(--transition-normal)',
-                      color: 'var(--color-text-primary)',
-                      fontWeight: 500,
-                      fontSize: 'var(--font-size-body)',
-                      cursor: 'pointer'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--color-brand-primary)';
-                      e.currentTarget.style.backgroundColor = 'var(--color-bg-secondary)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--color-border-primary)';
-                      e.currentTarget.style.backgroundColor = 'var(--color-bg-primary)';
-                    }}
                   >
                     {option.text}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </Card>
@@ -196,7 +173,6 @@ export const QuizClient: React.FC<QuizClientProps> = ({ quiz }) => {
     );
   }
 
-  const score = answers.reduce((a, b) => a + b, 0);
   const resultData = results.find(r => r.level === resultLevel) || results[0];
   const isHighRisk = resultLevel === ResultLevel.HIGH;
 
@@ -211,31 +187,29 @@ export const QuizClient: React.FC<QuizClientProps> = ({ quiz }) => {
 
   return (
     <Section>
-      <Container maxWidth="800px">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
+      <Container className="max-w-3xl">
+        <div className="flex flex-col gap-8">
           {isHighRisk && isCrisisVisible && (
             <CrisisBanner 
-              surface="quiz_result" 
-              triggerType="panic_like" 
-              onBackToResources={() => setIsCrisisVisible(false)}
+              className="mb-4"
+              message="Ваш результат указывает на высокий уровень напряжения. Пожалуйста, обратитесь за поддержкой."
             />
           )}
           
           <ResultCard
             title={resultData.title}
-            level={resultLevel as any}
+            level={isHighRisk ? 'high' : 'low'}
             description={resultData.description}
             steps={steps}
           >
-            <div style={{ marginTop: 'var(--space-8)', display: 'flex', flexDirection: 'row', gap: 'var(--space-4)', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <div className="mt-8 flex flex-wrap gap-4 justify-center">
               <Button 
-                variant={isHighRisk ? "tertiary" : "primary"} 
                 onClick={() => window.location.href = 'https://t.me/psy_balance_bot'}
               >
                 {resultData.ctaText || 'Получить план в Telegram'}
               </Button>
               <Button 
-                variant="secondary" 
+                variant="outline" 
                 onClick={() => window.location.href = '/booking'}
               >
                 Записаться к психологу
@@ -243,7 +217,7 @@ export const QuizClient: React.FC<QuizClientProps> = ({ quiz }) => {
             </div>
           </ResultCard>
 
-          <div style={{ textAlign: 'center', paddingTop: 'var(--space-8)' }}>
+          <div className="text-center pt-8">
             <Button variant="ghost" onClick={() => window.location.href = '/start'}>
               ← Вернуться к списку тестов
             </Button>

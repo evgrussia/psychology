@@ -3,8 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { InteractivePlatform } from '@/lib/interactive';
-import { Card, Button, TopicCard, Container, Section } from '@psychology/design-system/components';
-import { typography } from '@psychology/design-system/tokens';
+import { Card, Button, Section, Container } from '@psychology/design-system';
 
 interface Ritual {
   id: string;
@@ -82,23 +81,23 @@ export function RitualsCatalogClient() {
   const topics = Array.from(new Set(rituals.map(r => r.topicCode).filter(Boolean))) as string[];
 
   if (loading) {
-    return <div className="text-center py-12">Загрузка ритуалов...</div>;
+    return <div className="text-center py-12 text-muted-foreground">Загрузка ритуалов...</div>;
   }
 
   return (
     <Section>
       <Container>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
-          <header style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-            <h1 style={{ ...typography.hero, color: 'var(--color-text-primary)' }}>Библиотека мини-ритуалов</h1>
-            <p style={{ ...typography.body.lg, color: 'var(--color-text-secondary)', maxWidth: '800px', margin: '0 auto' }}>
+        <div className="flex flex-col gap-8">
+          <header className="text-center flex flex-col gap-4">
+            <h1 className="text-4xl font-bold text-foreground text-balance">Библиотека мини-ритуалов</h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-balance">
               Короткие практики на 2–5 минут, которые помогут восстановить баланс и почувствовать себя лучше.
             </p>
           </header>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)', justifyContent: 'center' }}>
+          <div className="flex flex-wrap gap-2 justify-center">
             <Button 
-              variant={selectedTopic === null ? 'primary' : 'tertiary'}
+              variant={selectedTopic === null ? 'default' : 'outline'}
               onClick={() => setSelectedTopic(null)}
               size="sm"
             >
@@ -107,7 +106,7 @@ export function RitualsCatalogClient() {
             {topics.map(topic => (
               <Button
                 key={topic}
-                variant={selectedTopic === topic ? 'primary' : 'tertiary'}
+                variant={selectedTopic === topic ? 'default' : 'outline'}
                 onClick={() => setSelectedTopic(topic)}
                 size="sm"
               >
@@ -116,24 +115,24 @@ export function RitualsCatalogClient() {
             ))}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 'var(--space-6)' }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredRituals.map(ritual => (
-              <Card key={ritual.id} style={{ height: '100%', display: 'flex', flexDirection: 'column' }} variant="elevated">
-                <div style={{ padding: 'var(--space-6)', flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                  <h3 style={{ ...typography.h3, color: 'var(--color-text-primary)' }}>{ritual.title}</h3>
-                  <p style={{ ...typography.body.md, color: 'var(--color-text-secondary)', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{ritual.config.why}</p>
+              <Card key={ritual.id} className="h-full flex flex-col hover:shadow-lg transition-shadow">
+                <div className="p-6 flex-1 flex flex-col gap-4">
+                  <h3 className="text-xl font-bold text-foreground">{ritual.title}</h3>
+                  <p className="text-muted-foreground line-clamp-3 leading-relaxed">{ritual.config.why}</p>
                   {ritual.config.totalDurationSeconds && (
-                    <div style={{ fontSize: 'var(--font-size-body-sm)', color: 'var(--color-text-tertiary)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                      <svg xmlns="http://www.w3.org/2000/svg" style={{ height: '1rem', width: '1rem' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div className="text-sm text-muted-foreground flex items-center gap-2 mt-auto">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       ~{Math.round(ritual.config.totalDurationSeconds / 60)} минут
                     </div>
                   )}
                 </div>
-                <div style={{ padding: 'var(--space-6)', paddingTop: 0 }}>
-                  <Link href={`/start/rituals/${ritual.slug}`} style={{ display: 'block' }}>
-                    <Button variant="tertiary" fullWidth>Начать</Button>
+                <div className="p-6 pt-0 mt-auto">
+                  <Link href={`/start/rituals/${ritual.slug}`} className="block">
+                    <Button variant="outline" className="w-full">Начать</Button>
                   </Link>
                 </div>
               </Card>
@@ -141,7 +140,7 @@ export function RitualsCatalogClient() {
           </div>
 
           {filteredRituals.length === 0 && (
-            <div style={{ textAlign: 'center', padding: 'var(--space-12)', color: 'var(--color-text-tertiary)' }}>
+            <div className="text-center py-12 text-muted-foreground">
               Ритуалов по данной теме пока нет.
             </div>
           )}

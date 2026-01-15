@@ -1,9 +1,7 @@
 'use client';
 
 import React from 'react';
-import { HeroSection, TopicCard, CTABlock, Button, Section, Container } from '@psychology/design-system/components';
-import { spacing, typography, colors } from '@psychology/design-system/tokens';
-import Link from 'next/link';
+import { HeroSection, TopicCard, CTABlock, Button, Section, Container } from '@psychology/design-system';
 
 export default function StartHubPage() {
   const interactives = [
@@ -51,21 +49,15 @@ export default function StartHubPage() {
 
   return (
     <main>
-      <Section variant="secondary" spacingSize="none">
-        <HeroSection
-          title="С чего начнём?"
-          subtitle="Выберите инструмент"
-          description="Выберите подходящий инструмент, чтобы лучше понять своё состояние и получить практические рекомендации. Это анонимно и бесплатно."
-        />
-      </Section>
+      <HeroSection
+        title="С чего начнём?"
+        subtitle="Выберите инструмент"
+        description="Выберите подходящий инструмент, чтобы лучше понять своё состояние и получить практические рекомендации. Это анонимно и бесплатно."
+      />
 
       <Section>
         <Container>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
-            gap: 'var(--space-6)' 
-          }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {interactives.map((item) => (
               <TopicCard
                 key={item.id}
@@ -78,22 +70,21 @@ export default function StartHubPage() {
         </Container>
       </Section>
 
-      <Section variant="primary" spacingSize="none">
-        <CTABlock
-          title="Нужна помощь специалиста?"
-          description="Если вы чувствуете, что самопомощи недостаточно, наши психологи всегда готовы поддержать вас."
-          primaryCTA={
-            <Button variant="primary" onClick={() => window.location.href = '/booking'}>
-              Подобрать психолога
-            </Button>
-          }
-          secondaryCTA={
-            <Button variant="secondary" onClick={() => window.location.href = '/services'}>
-              Посмотреть услуги
-            </Button>
-          }
-        />
-      </Section>
+      <CTABlock
+        className="mx-4 mb-16"
+        title="Нужна помощь специалиста?"
+        description="Если вы чувствуете, что самопомощи недостаточно, наши психологи всегда готовы поддержать вас."
+        primaryCTA={
+          <Button onClick={() => window.location.href = '/booking'}>
+            Подобрать психолога
+          </Button>
+        }
+        secondaryCTA={
+          <Button variant="outline" onClick={() => window.location.href = '/services'}>
+            Посмотреть услуги
+          </Button>
+        }
+      />
     </main>
   );
 }

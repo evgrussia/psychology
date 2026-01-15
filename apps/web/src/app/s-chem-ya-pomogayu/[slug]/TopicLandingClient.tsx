@@ -9,8 +9,7 @@ import {
   Card,
   Section,
   Container
-} from '@psychology/design-system/components';
-import { spacing, typography, colors } from '@psychology/design-system/tokens';
+} from '@psychology/design-system';
 import SafeMarkdownRenderer from '../../../components/SafeMarkdownRenderer';
 import { track } from '../../../lib/tracking';
 
@@ -94,62 +93,49 @@ export default function TopicLandingClient({ data }: TopicLandingClientProps) {
 
   return (
     <main>
-      <Section variant="secondary" spacingSize="none">
-        <HeroSection
-          title={landing?.title || topic.title}
-          subtitle="С чем я помогаю"
-          description={landing?.excerpt || `Узнайте больше о работе с темой "${topic.title}" и найдите полезные инструменты.`}
-          primaryCTA={
-            primaryInteractive ? (
-              <Button 
-                variant="primary" 
-                size="lg" 
-                onClick={() => window.location.href = getInteractiveUrl(primaryInteractive)}
-              >
-                Попробовать сейчас: {primaryInteractive.title}
-              </Button>
-            ) : (
-              <Button 
-                variant="primary" 
-                size="lg" 
-                onClick={() => window.location.href = '/start'}
-              >
-                Начать диагностику
-              </Button>
-            )
-          }
-          secondaryCTA={
+      <HeroSection
+        title={landing?.title || topic.title}
+        subtitle="С чем я помогаю"
+        description={landing?.excerpt || `Узнайте больше о работе с темой "${topic.title}" и найдите полезные инструменты.`}
+        primaryCTA={
+          primaryInteractive ? (
             <Button 
-              variant="secondary" 
               size="lg" 
-              onClick={() => window.location.href = '/booking'}
+              onClick={() => window.location.href = getInteractiveUrl(primaryInteractive)}
             >
-              Записаться на сессию
+              Попробовать сейчас: {primaryInteractive.title}
             </Button>
-          }
-        />
-      </Section>
+          ) : (
+            <Button 
+              size="lg" 
+              onClick={() => window.location.href = '/start'}
+            >
+              Начать диагностику
+            </Button>
+          )
+        }
+        secondaryCTA={
+          <Button 
+            variant="outline" 
+            size="lg" 
+            onClick={() => window.location.href = '/booking'}
+          >
+            Записаться на сессию
+          </Button>
+        }
+      />
 
       {/* Блок "Признаки" */}
       {signsContent && (
-        <Section variant="secondary">
-          <Container maxWidth="800px">
-            <h2 style={{ ...typography.h2, marginBottom: 'var(--space-6)', color: 'var(--color-text-primary)' }}>
+        <Section className="bg-muted">
+          <Container className="max-w-3xl">
+            <h2 className="text-3xl font-bold mb-6 text-foreground">
               Признаки и симптомы
             </h2>
-            <div style={{ 
-              ...typography.body.lg, 
-              color: 'var(--color-text-primary)',
-              lineHeight: 1.7,
-            }}>
+            <div className="text-lg text-foreground leading-relaxed">
               <SafeMarkdownRenderer content={signsContent} />
             </div>
-            <p style={{ 
-              ...typography.body.sm, 
-              color: 'var(--color-text-secondary)', 
-              marginTop: 'var(--space-6)',
-              fontStyle: 'italic',
-            }}>
+            <p className="text-sm text-muted-foreground mt-6 italic">
               Это не диагноз — скорее ориентиры, которые могут помочь понять, стоит ли обратить внимание на эту тему.
             </p>
           </Container>
@@ -158,11 +144,13 @@ export default function TopicLandingClient({ data }: TopicLandingClientProps) {
 
       {/* Основной контент лендинга */}
       <Section>
-        <Container maxWidth="800px">
+        <Container className="max-w-3xl">
           {landing?.bodyMarkdown ? (
-            <SafeMarkdownRenderer content={landing.bodyMarkdown} />
+            <div className="prose prose-slate dark:prose-invert max-w-none">
+              <SafeMarkdownRenderer content={landing.bodyMarkdown} />
+            </div>
           ) : (
-            <div style={{ textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+            <div className="text-center text-muted-foreground">
               <p>Здесь скоро появится подробное описание работы с этой темой.</p>
             </div>
           )}
@@ -171,16 +159,12 @@ export default function TopicLandingClient({ data }: TopicLandingClientProps) {
 
       {/* Блок "Как я работаю" */}
       {howIWorkContent && (
-        <Section variant="secondary">
-          <Container maxWidth="800px">
-            <h2 style={{ ...typography.h2, marginBottom: 'var(--space-6)', color: 'var(--color-text-primary)' }}>
+        <Section className="bg-muted">
+          <Container className="max-w-3xl">
+            <h2 className="text-3xl font-bold mb-6 text-foreground">
               Как я работаю с этим
             </h2>
-            <div style={{ 
-              ...typography.body.lg, 
-              color: 'var(--color-text-primary)',
-              lineHeight: 1.7,
-            }}>
+            <div className="text-lg text-foreground leading-relaxed">
               <SafeMarkdownRenderer content={howIWorkContent} />
             </div>
           </Container>
@@ -188,48 +172,57 @@ export default function TopicLandingClient({ data }: TopicLandingClientProps) {
       )}
 
       <Section>
-        <TrustBlocks />
+        <Container>
+          <h2 className="text-3xl font-bold text-center mb-12">Почему мне можно доверять</h2>
+          <TrustBlocks viewport="desktop" />
+        </Container>
       </Section>
 
       {(relatedContent.length > 0 || relatedInteractives.length > 1) && (
-        <Section variant="secondary">
+        <Section className="bg-muted">
           <Container>
-            <h2 style={{ ...typography.h2, marginBottom: 'var(--space-12)', textAlign: 'center', color: 'var(--color-text-primary)' }}>
+            <h2 className="text-3xl font-bold mb-12 text-center text-foreground">
               Полезные материалы по теме {topic.title}
             </h2>
             
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
-              gap: 'var(--space-6)' 
-            }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {relatedInteractives.slice(1).map(interactive => (
-                <Card key={interactive.id} variant="elevated">
-                  <h3 style={{ ...typography.h3, marginBottom: 'var(--space-4)', color: 'var(--color-text-primary)' }}>{interactive.title}</h3>
-                  <p style={{ ...typography.body.md, color: 'var(--color-text-secondary)', marginBottom: 'var(--space-6)' }}>
-                    Интерактивное упражнение или тест
-                  </p>
-                  <Button 
-                    variant="tertiary" 
-                    onClick={() => window.location.href = getInteractiveUrl(interactive)}
-                  >
-                    Запустить
-                  </Button>
+                <Card key={interactive.id} className="h-full flex flex-col">
+                  <div className="p-6 flex-1">
+                    <h3 className="text-xl font-bold mb-4 text-foreground">{interactive.title}</h3>
+                    <p className="text-muted-foreground mb-6">
+                      Интерактивное упражнение или тест
+                    </p>
+                  </div>
+                  <div className="p-6 pt-0 mt-auto">
+                    <Button 
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => window.location.href = getInteractiveUrl(interactive)}
+                    >
+                      Запустить
+                    </Button>
+                  </div>
                 </Card>
               ))}
               
               {relatedContent.map(content => (
-                <Card key={content.id} variant="elevated">
-                  <h3 style={{ ...typography.h3, marginBottom: 'var(--space-4)', color: 'var(--color-text-primary)' }}>{content.title}</h3>
-                  <p style={{ ...typography.body.md, color: 'var(--color-text-secondary)', marginBottom: 'var(--space-6)' }}>
-                    {content.excerpt || 'Статья или ресурс'}
-                  </p>
-                  <Button 
-                    variant="tertiary" 
-                    onClick={() => window.location.href = `/blog/${content.slug}`}
-                  >
-                    Читать далее
-                  </Button>
+                <Card key={content.id} className="h-full flex flex-col">
+                  <div className="p-6 flex-1">
+                    <h3 className="text-xl font-bold mb-4 text-foreground">{content.title}</h3>
+                    <p className="text-muted-foreground mb-6">
+                      {content.excerpt || 'Статья или ресурс'}
+                    </p>
+                  </div>
+                  <div className="p-6 pt-0 mt-auto">
+                    <Button 
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => window.location.href = `/blog/${content.slug}`}
+                    >
+                      Читать далее
+                    </Button>
+                  </div>
                 </Card>
               ))}
             </div>
@@ -237,30 +230,28 @@ export default function TopicLandingClient({ data }: TopicLandingClientProps) {
         </Section>
       )}
 
-      <Section variant="primary" spacingSize="none">
-        <CTABlock
-          title="Нужна персональная помощь?"
-          description="Вы можете записаться на ознакомительную сессию или написать мне в Telegram для уточнения вопросов."
-          primaryCTA={
-            <Button 
-              variant="primary" 
-              size="lg" 
-              onClick={() => window.location.href = 'https://t.me/your_bot'}
-            >
-              Написать в Telegram
-            </Button>
-          }
-          secondaryCTA={
-            <Button 
-              variant="secondary" 
-              size="lg" 
-              onClick={() => window.location.href = '/booking'}
-            >
-              Запись на сессию
-            </Button>
-          }
-        />
-      </Section>
+      <CTABlock
+        className="mx-4 mb-16"
+        title="Нужна персональная помощь?"
+        description="Вы можете записаться на ознакомительную сессию или написать мне в Telegram для уточнения вопросов."
+        primaryCTA={
+          <Button 
+            size="lg" 
+            onClick={() => window.location.href = 'https://t.me/your_bot'}
+          >
+            Написать в Telegram
+          </Button>
+        }
+        secondaryCTA={
+          <Button 
+            variant="outline" 
+            size="lg" 
+            onClick={() => window.location.href = '/booking'}
+          >
+            Запись на сессию
+          </Button>
+        }
+      />
     </main>
   );
 }

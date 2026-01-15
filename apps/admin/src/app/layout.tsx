@@ -1,5 +1,8 @@
 import './globals.css';
+import '@psychology/design-system/styles.css';
 import type { Metadata } from 'next';
+import { ThemeProvider } from '@/components/theme-provider';
+import { AdminLayoutClientWrapper } from '@/components/admin-layout-client-wrapper';
 
 export const metadata: Metadata = {
   title: 'Эмоциональный баланс - Админ-панель',
@@ -12,23 +15,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ru">
+    <html lang="ru" suppressHydrationWarning>
       <body>
-        <div className="admin-layout">
-          <nav className="admin-nav">
-            <div className="nav-logo">Admin</div>
-            <ul>
-              <li><a href="/admin">Дашборд</a></li>
-              <li><a href="/admin/content">Контент</a></li>
-              <li><a href="/admin/interactive/quizzes">Квизы</a></li>
-              <li><a href="/admin/glossary">Словарь</a></li>
-              <li><a href="/admin/audit-log">Логи аудита</a></li>
-            </ul>
-          </nav>
-          <main className="admin-main">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AdminLayoutClientWrapper>
             {children}
-          </main>
-        </div>
+          </AdminLayoutClientWrapper>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -11,8 +11,7 @@ import {
   Disclaimer,
   Container,
   Section
-} from '@psychology/design-system/components';
-import { spacing, typography, colors } from '@psychology/design-system/tokens';
+} from '@psychology/design-system';
 import { track } from '../lib/tracking';
 import { useFeatureFlag } from '../lib/feature-flags';
 
@@ -59,44 +58,29 @@ export default function PageClient({ slug, data }: PageClientProps) {
     }
   }, [slug, data.title]);
 
-  // Extract FAQ items from markdown if any, or use fallback
-  // For simplicity, we assume pages might have structured blocks in the future
-  // For now, we just render the markdown body
-  
   return (
     <main>
       <Section>
-        <Container maxWidth="800px">
-          <h1 style={{
-            ...typography.h1,
-            marginBottom: spacing.space[8],
-            color: colors.text.primary,
-          }}>{data.title}</h1>
+        <Container className="max-w-3xl">
+          <h1 className="text-4xl font-bold mb-8 text-foreground">{data.title}</h1>
           
-          <div className="prose" style={{
-            ...typography.body.md,
-            color: colors.text.secondary,
-          }}>
+          <div className="prose prose-slate dark:prose-invert max-w-none text-muted-foreground">
             <SafeMarkdownRenderer content={data.body_markdown} />
           </div>
         </Container>
       </Section>
 
       {trustPagesEnabled && slug === 'about' && (
-        <Section variant="secondary">
-          <TrustBlocks 
-            title="Мои принципы и этика"
-            items={[
-              { id: 'confidentiality', title: 'Конфиденциальность', description: 'Соблюдаю профессиональную тайну и этический кодекс.', icon: '🔒' },
-              { id: 'boundaries', title: 'Границы', description: 'Создаю безопасное и предсказуемое пространство.', icon: '🛡️' },
-              { id: 'education', title: 'Образование', description: 'Регулярная супервизия и повышение квалификации.', icon: '🎓' },
-            ]}
-          />
+        <Section className="bg-muted">
+          <Container>
+            <h2 className="text-3xl font-bold text-center mb-12">Мои принципы и этика</h2>
+            <TrustBlocks viewport="desktop" />
+          </Container>
         </Section>
       )}
 
       {trustPagesEnabled && slug === 'how-it-works' && (
-        <Section variant="secondary">
+        <Section className="bg-muted">
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
@@ -157,8 +141,8 @@ export default function PageClient({ slug, data }: PageClientProps) {
       )}
 
       {slug === 'how-it-works' && (
-        <Section spacingSize="sm">
-          <Container maxWidth="800px">
+        <Section className="py-8">
+          <Container className="max-w-3xl">
             <Disclaimer variant="info" showEmergencyLink title="Важно понимать">
               Психологическая консультация не является медицинской услугой. Если вы находитесь в остром кризисном состоянии, пожалуйста, обратитесь в специализированные службы.
             </Disclaimer>
@@ -166,17 +150,18 @@ export default function PageClient({ slug, data }: PageClientProps) {
         </Section>
       )}
 
-      <Section variant="primary">
+      <Section className="bg-muted py-0">
         <CTABlock 
+          className="mx-4"
           title="С чего начнём?"
           description="Вы можете записаться на ознакомительную сессию или задать вопрос в Telegram."
           primaryCTA={
-            <Button variant="primary" size="lg" onClick={() => handleBookingClick(`${slug}_footer_booking`)}>
+            <Button size="lg" onClick={() => handleBookingClick(`${slug}_footer_booking`)}>
               Записаться
             </Button>
           }
           secondaryCTA={
-            <Button variant="secondary" size="lg" onClick={() => handleTGClick(`${slug}_footer_tg`)}>
+            <Button variant="outline" size="lg" onClick={() => handleTGClick(`${slug}_footer_tg`)}>
               Написать в Telegram
             </Button>
           }

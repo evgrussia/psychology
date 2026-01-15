@@ -5,7 +5,8 @@
 **Дата:** 2026-01-06  
 **Основано на:** `docs/information-architecture.md`, `docs/user-flows-cjm.md`, `docs/PRD.md`, исследования `docs/research/01–13`
 
-> **📌 Важно:** Для финального дизайна используйте [UI Kit и Design System](./UI-Kit-Design-System.md) и [Figma Design System](https://www.figma.com/make/ls1ACoHXpuzTb3hkMuGrsB/Emotional-Balance-Design-System?t=aP31NKbERGrs98Ho-1)
+> **📌 Важно:** Для финального дизайна используйте **новую** дизайн‑систему из репозитория: [Design System (v2, `fin_des_sys`)](./UI-Kit-Design-System.md)  
+> Источник истины и примеры: `fin_des_sys/docs/*` и `fin_des_sys/src/app/components/*`. Старые ссылки/системы не использовать.
 
 ## 0) Зачем нужны wireframes/прототипы
 

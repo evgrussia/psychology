@@ -5,16 +5,16 @@ services:
     container_name: psychology-prod-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-postgres}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backups:/backups
     networks:
       - psychology-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-postgres}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -24,13 +24,20 @@ services:
     image: redis:7-alpine
     container_name: psychology-prod-redis
     restart: unless-stopped
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    command: >
+      sh -c 'if [ -n "$$REDIS_PASSWORD" ]; then
+        exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD";
+      else
+        exec redis-server --appendonly yes;
+      fi'
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_password}
     volumes:
       - redis_data:/data
     networks:
       - psychology-network
     healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      test: ["CMD-SHELL", "if [ -n \"$$REDIS_PASSWORD\" ]; then redis-cli -a \"$$REDIS_PASSWORD\" --raw ping; else redis-cli --raw ping; fi"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -50,12 +57,12 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}?schema=public
-      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
-      JWT_SECRET: ${JWT_SECRET}
-      SESSION_SECRET: ${SESSION_SECRET}
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-postgres}?schema=public
+      REDIS_URL: redis://:${REDIS_PASSWORD:-redis_password}@redis:6379
+      JWT_SECRET: ${JWT_SECRET:-local_jwt_secret}
+      SESSION_SECRET: ${SESSION_SECRET:-local_session_secret}
       MEDIA_STORAGE_PATH: /app/media
-      MEDIA_PUBLIC_URL_BASE: ${API_URL}/media
+      MEDIA_PUBLIC_URL_BASE: ${API_URL:-http://localhost:8080/api}/media
       MEDIA_UPLOAD_ENABLED: true
       HTTP_TIMEOUT_MS: ${HTTP_TIMEOUT_MS:-30000}
       HTTP_RETRY_ATTEMPTS: ${HTTP_RETRY_ATTEMPTS:-3}
@@ -78,8 +85,8 @@ services:
       - api
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_API_URL: ${API_URL}
-      NEXT_PUBLIC_SITE_URL: ${SITE_URL}
+      NEXT_PUBLIC_API_URL: ${API_URL:-http://localhost:8080/api}
+      NEXT_PUBLIC_SITE_URL: ${SITE_URL:-http://localhost:8080}
     networks:
       - psychology-network
     labels:
@@ -96,8 +103,8 @@ services:
       - api
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_API_URL: ${API_URL}
-      NEXT_PUBLIC_ADMIN_URL: ${ADMIN_URL}
+      NEXT_PUBLIC_API_URL: ${API_URL:-http://localhost:8080/api}
+      NEXT_PUBLIC_ADMIN_URL: ${ADMIN_URL:-http://localhost:8081}
     networks:
       - psychology-network
     labels:

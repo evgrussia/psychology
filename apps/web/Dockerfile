@@ -35,11 +35,14 @@ COPY design-system ./design-system
 
 RUN npm install -g pnpm
 
-# Устанавливаем зависимости в workspace (для правильной работы symlinks)
-RUN pnpm install --frozen-lockfile --offline
-
-# Сборка Next.js приложения
-WORKDIR /app/apps/web
+  # Устанавливаем зависимости в workspace (для правильной работы symlinks)
+  RUN pnpm install --frozen-lockfile --offline
+  
+  # Сначала собираем дизайн-систему, так как от нее зависят приложения
+  RUN pnpm --filter @psychology/design-system build
+  
+  # Сборка Next.js приложения
+  WORKDIR /app/apps/web
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 

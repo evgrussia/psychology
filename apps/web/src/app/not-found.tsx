@@ -1,136 +1,48 @@
 'use client';
 
 import React from 'react';
-import { Button } from '@psychology/design-system/components';
-import { spacing, typography, colors } from '@psychology/design-system/tokens';
+import { Button, Container, Section } from '@psychology/design-system';
 
 export default function NotFound() {
   return (
-    <main style={{ 
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '60vh',
-      padding: spacing.space[6],
-      textAlign: 'center',
-    }}>
-      <div style={{ 
-        fontSize: '120px', 
-        fontWeight: 800, 
-        color: colors.brand.primary.light,
-        lineHeight: 1,
-        marginBottom: spacing.space[4]
-      }}>
+    <main className="min-h-[80vh] flex flex-col items-center justify-center text-center px-6">
+      <div className="text-[120px] font-extrabold text-primary/20 leading-none mb-4">
         404
       </div>
       
-      <h1 style={{ ...typography.h1, marginBottom: spacing.space[4] }}>
+      <h1 className="text-4xl font-bold mb-4 text-foreground">
         Страница не найдена
       </h1>
       
-      <p style={{ 
-        ...typography.body, 
-        maxWidth: '500px', 
-        marginBottom: spacing.space[8],
-        color: colors.text.secondary
-      }}>
+      <p className="text-lg text-muted-foreground max-w-lg mb-12 text-balance">
         Похоже, эта страница куда-то ушла. Но не волнуйтесь, мы поможем вам найти дорогу.
       </p>
 
-      <div style={{ 
-        backgroundColor: colors.bg.secondary,
-        padding: spacing.space[8],
-        borderRadius: '24px',
-        width: '100%',
-        maxWidth: '600px',
-        marginBottom: spacing.space[8]
-      }}>
-        <h2 style={{ ...typography.h2, marginBottom: spacing.space[6] }}>С чего начать?</h2>
-        <p style={{ ...typography.body.md, marginBottom: spacing.space[6], color: colors.text.secondary }}>
+      <div className="bg-muted p-8 md:p-12 rounded-[2.5rem] w-full max-w-2xl mb-12 border border-border">
+        <h2 className="text-2xl font-bold mb-6 text-foreground text-center">С чего начать?</h2>
+        <p className="text-muted-foreground mb-8 text-center">
           Вы можете начать с руководства, изучить материалы блога или узнать больше об услугах.
         </p>
-        <nav style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-          gap: spacing.space[4] 
-        }} aria-label="Навигация по основным разделам">
-          <a href="/start" style={{ 
-            padding: spacing.space[4], 
-            backgroundColor: 'white', 
-            borderRadius: '12px',
-            textDecoration: 'none',
-            color: colors.text.primary,
-            fontWeight: 500,
-            border: `1px solid ${colors.border.primary}`,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: spacing.space[2],
-            transition: 'box-shadow 0.2s ease'
-          }} onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'}
-            onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}>
-            <span style={{ fontSize: '24px' }}>📖</span>
-            <span>Руководство</span>
-          </a>
-          <a href="/blog" style={{ 
-            padding: spacing.space[4], 
-            backgroundColor: 'white', 
-            borderRadius: '12px',
-            textDecoration: 'none',
-            color: colors.text.primary,
-            fontWeight: 500,
-            border: `1px solid ${colors.border.primary}`,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: spacing.space[2],
-            transition: 'box-shadow 0.2s ease'
-          }} onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'}
-            onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}>
-            <span style={{ fontSize: '24px' }}>📝</span>
-            <span>Читать блог</span>
-          </a>
-          <a href="/services" style={{ 
-            padding: spacing.space[4], 
-            backgroundColor: 'white', 
-            borderRadius: '12px',
-            textDecoration: 'none',
-            color: colors.text.primary,
-            fontWeight: 500,
-            border: `1px solid ${colors.border.primary}`,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: spacing.space[2],
-            transition: 'box-shadow 0.2s ease'
-          }} onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'}
-            onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}>
-            <span style={{ fontSize: '24px' }}>🤝</span>
-            <span>Мои услуги</span>
-          </a>
-          <a href="/about" style={{ 
-            padding: spacing.space[4], 
-            backgroundColor: 'white', 
-            borderRadius: '12px',
-            textDecoration: 'none',
-            color: colors.text.primary,
-            fontWeight: 500,
-            border: `1px solid ${colors.border.primary}`,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: spacing.space[2],
-            transition: 'box-shadow 0.2s ease'
-          }} onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'}
-            onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}>
-            <span style={{ fontSize: '24px' }}>👩‍💼</span>
-            <span>О психологе</span>
-          </a>
+        <nav className="grid grid-cols-1 sm:grid-cols-2 gap-4" aria-label="Навигация по основным разделам">
+          {[
+            { href: '/start', icon: '📖', label: 'Руководство' },
+            { href: '/blog', icon: '📝', label: 'Читать блог' },
+            { href: '/services', icon: '🤝', label: 'Мои услуги' },
+            { href: '/about', icon: '👩‍💼', label: 'О психологе' },
+          ].map((link) => (
+            <a 
+              key={link.href}
+              href={link.href} 
+              className="p-6 bg-background rounded-2xl font-semibold border border-border hover:border-primary hover:shadow-lg transition-all flex flex-col items-center gap-3 group"
+            >
+              <span className="text-3xl group-hover:scale-110 transition-transform">{link.icon}</span>
+              <span className="text-foreground group-hover:text-primary transition-colors">{link.label}</span>
+            </a>
+          ))}
         </nav>
       </div>
 
-      <Button variant="primary" size="lg" onClick={() => window.location.href = '/'}>
+      <Button size="lg" className="px-12" onClick={() => window.location.href = '/'}>
         На главную
       </Button>
     </main>

@@ -11,8 +11,7 @@ import {
   Disclaimer,
   Container,
   Section
-} from '@psychology/design-system/components';
-import { spacing, typography, colors } from '@psychology/design-system/tokens';
+} from '@psychology/design-system';
 import { track, captureUTMParameters } from '../lib/tracking';
 
 interface HomeClientProps {
@@ -59,37 +58,26 @@ export default function HomeClient({ data }: HomeClientProps) {
 
   return (
     <main>
-      <Section variant="secondary" spacingSize="none">
-        <HeroSection 
-          title="Эмоциональный баланс"
-          subtitle="Тёплое пространство профессиональной поддержки"
-          description="Помогаю справиться с тревогой, выгоранием и найти опору в себе за 1–3 клика до первого шага."
-          primaryCTA={
-            <Button variant="primary" size="lg" onClick={() => handleBookingClick('hero_booking')}>
-              Записаться на консультацию
-            </Button>
-          }
-          secondaryCTA={
-            <Button variant="secondary" size="lg" onClick={() => handleTGClick('hero_tg')}>
-              Начать в Telegram
-            </Button>
-          }
-        />
-      </Section>
+      <HeroSection 
+        title="Эмоциональный баланс"
+        subtitle="Тёплое пространство профессиональной поддержки"
+        description="Помогаю справиться с тревогой, выгоранием и найти опору в себе за 1–3 клика до первого шага."
+        primaryCTA={
+          <Button size="lg" onClick={() => handleBookingClick('hero_booking')}>
+            Записаться на консультацию
+          </Button>
+        }
+        secondaryCTA={
+          <Button variant="outline" size="lg" onClick={() => handleTGClick('hero_tg')}>
+            Начать в Telegram
+          </Button>
+        }
+      />
 
       <Section>
         <Container>
-          <h2 style={{
-            ...typography.h2,
-            textAlign: 'center',
-            marginBottom: spacing.space[12],
-            color: colors.text.primary,
-          }}>С чем я помогаю</h2>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: spacing.space[8],
-          }}>
+          <h2 className="text-3xl font-bold text-center mb-12">С чем я помогаю</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {data.topics.map((topic) => (
               <TopicCard 
                 key={topic.code}
@@ -104,21 +92,10 @@ export default function HomeClient({ data }: HomeClientProps) {
       </Section>
 
       {data.featured_interactives.length > 0 && (
-        <Section variant="secondary">
+        <Section className="bg-muted">
           <Container>
-            <h2 style={{
-              ...typography.h2,
-              textAlign: 'center',
-              marginBottom: spacing.space[12],
-              color: colors.text.primary,
-            }}>Первый шаг за 3 минуты</h2>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: spacing.space[6],
-              maxWidth: '800px',
-              margin: '0 auto',
-            }}>
+            <h2 className="text-3xl font-bold text-center mb-12">Первый шаг за 3 минуты</h2>
+            <div className="flex flex-col gap-6 max-w-3xl mx-auto">
               {data.featured_interactives.map((item) => (
                 <TopicCard 
                   key={item.id}
@@ -134,40 +111,36 @@ export default function HomeClient({ data }: HomeClientProps) {
       )}
 
       <Section>
-        <TrustBlocks 
-          title="Почему мне можно доверять"
-          items={data.trust_blocks.map(b => ({
-            ...b,
-            icon: b.id === 'confidentiality' ? '🔒' : b.id === 'how_it_works' ? '🤝' : '🛡️'
-          }))}
-        />
+        <Container>
+          <h2 className="text-3xl font-bold text-center mb-12">Почему мне можно доверять</h2>
+          <TrustBlocks viewport="desktop" />
+        </Container>
       </Section>
 
-      <Section variant="secondary">
-        <FAQSection 
-          title="Частые вопросы"
-          onItemToggle={handleFAQToggle}
-          items={[
-            { 
-              id: '1', 
-              question: 'Как проходит первая встреча?', 
-              answer: 'Мы знакомимся, обсуждаем ваш запрос и определяем цели работы. Это безопасное пространство для ваших чувств.' 
-            },
-            { 
-              id: '2', 
-              question: 'Это конфиденциально?', 
-              answer: 'Да, всё, что обсуждается на сессиях, остается строго между нами, согласно этическому кодексу.' 
-            },
-            { 
-              id: '3', 
-              question: 'Сколько нужно встреч?', 
-              answer: 'Всё индивидуально. Кому-то достаточно 3–5 встреч для решения конкретного вопроса, кто-то выбирает длительную терапию.' 
-            }
-          ]}
-        />
-      </Section>
+      <FAQSection 
+        className="bg-muted"
+        title="Частые вопросы"
+        onItemToggle={handleFAQToggle}
+        items={[
+          { 
+            id: '1', 
+            question: 'Как проходит первая встреча?', 
+            answer: 'Мы знакомимся, обсуждаем ваш запрос и определяем цели работы. Это безопасное пространство для ваших чувств.' 
+          },
+          { 
+            id: '2', 
+            question: 'Это конфиденциально?', 
+            answer: 'Да, всё, что обсуждается на сессиях, остается строго между нами, согласно этическому кодексу.' 
+          },
+          { 
+            id: '3', 
+            question: 'Сколько нужно встреч?', 
+            answer: 'Всё индивидуально. Кому-то достаточно 3–5 встреч для решения конкретного вопроса, кто-то выбирает длительную терапию.' 
+          }
+        ]}
+      />
 
-      <Section spacingSize="sm">
+      <Section className="py-8">
         <Container>
           <Disclaimer variant="info" showEmergencyLink title="Важная информация">
             Сайт «Эмоциональный баланс» предоставляет психологическую поддержку и информационные услуги. 
@@ -176,22 +149,21 @@ export default function HomeClient({ data }: HomeClientProps) {
         </Container>
       </Section>
 
-      <Section variant="primary" spacingSize="none">
-        <CTABlock 
-          title="Готовы сделать первый шаг?"
-          description="Выберите удобный способ начать: записаться на консультацию или получить полезные материалы в Telegram."
-          primaryCTA={
-            <Button variant="primary" size="lg" onClick={() => handleBookingClick('footer_booking')}>
-              Записаться
-            </Button>
-          }
-          secondaryCTA={
-            <Button variant="secondary" size="lg" onClick={() => handleTGClick('footer_tg')}>
-              Telegram-бот
-            </Button>
-          }
-        />
-      </Section>
+      <CTABlock 
+        className="mx-4 mb-16"
+        title="Готовы сделать первый шаг?"
+        description="Выберите удобный способ начать: записаться на консультацию или получить полезные материалы в Telegram."
+        primaryCTA={
+          <Button size="lg" onClick={() => handleBookingClick('footer_booking')}>
+            Записаться
+          </Button>
+        }
+        secondaryCTA={
+          <Button variant="outline" size="lg" onClick={() => handleTGClick('footer_tg')}>
+            Telegram-бот
+          </Button>
+        }
+      />
     </main>
   );
 }

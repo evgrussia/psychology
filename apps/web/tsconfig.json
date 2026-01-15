@@ -32,10 +32,14 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx",
-    "../../design-system/**/*.ts",
-    "../../design-system/**/*.tsx"
+    "../../design-system/src/index.ts",
+    "../../design-system/src/components/**/*.ts",
+    "../../design-system/src/components/**/*.tsx"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "vitest.config.ts",
+    "../../design-system/src/app/**",
+    "../../design-system/LICENSE"
   ]
 }

@@ -23,8 +23,8 @@
 ### Применение в проекте
 
 Все элементы из этих спецификаций интегрированы в:
-- **[UI Kit / Design System](../../UI-Kit-Design-System.md)** - Основная дизайн-система проекта «Эмоциональный баланс»
-- **[Image Generation Prompts](../../design-system/Image-Generation-Prompts.md)** - Промпты для создания всей графики
+- **[Design System (v2, `fin_des_sys`)](../../UI-Kit-Design-System.md)** — актуальная дизайн‑система проекта «Эмоциональный баланс»
+- **[Assets: Graphics](../../assets/graphics/README.md)** — графические ассеты и правила нейминга
 
 ### Адаптация референса
 
@@ -41,10 +41,9 @@
 
 ## 💻 Для разработчиков
 
-1. Используйте токены из [UI Kit](../../UI-Kit-Design-System.md) или напрямую из [`design-system/tokens/`](../../design-system/tokens/)
+1. Используйте токены и правила из [Design System (v2)](../../UI-Kit-Design-System.md) и источника истины `fin_des_sys/docs/*` + `fin_des_sys/src/styles/theme.css`
 2. Компоненты берите из [Complete Design Specification](./QPsychology-Complete-Design-Specification.md)
-3. Структура Design System: [`design-system/README.md`](../../design-system/README.md)
-4. Быстрая справка: [Design System README](../../design-system/README.md)
+3. Эталонная реализация DS в репозитории: `fin_des_sys/src/app/components/*`
 
 ---
 
