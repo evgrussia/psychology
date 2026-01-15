@@ -9,6 +9,8 @@ export enum AuditLogAction {
   ADMIN_ROLE_CHANGED = 'admin_role_changed',
   ADMIN_LOGIN = 'admin_login',
   ADMIN_SETTINGS_CHANGED = 'admin_settings_changed',
+  ADMIN_GOOGLE_CALENDAR_CONNECT_STARTED = 'admin_google_calendar_connect_started',
+  ADMIN_GOOGLE_CALENDAR_CONNECTED = 'admin_google_calendar_connected',
 }
 
 export class ListAuditLogDto {

@@ -47,7 +47,7 @@ export class UserMapper {
       password_hash: user.passwordHash,
       status: user.status.value,
       created_at: user.createdAt,
-      updated_at: user.updatedAt,
+      updated_at: new Date(),
     };
   }
 }

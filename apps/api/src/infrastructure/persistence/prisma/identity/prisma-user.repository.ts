@@ -81,12 +81,14 @@ export class PrismaUserRepository implements IUserRepository {
         await tx.consent.upsert({
           where: { id: consent.id },
           update: {
+            granted: consent.isActive(),
             revoked_at: consent.revokedAt,
           },
           create: {
             id: consent.id,
             user_id: user.id,
             consent_type: consent.type.value,
+            granted: consent.isActive(),
             version: consent.version,
             source: consent.source,
             granted_at: consent.grantedAt,

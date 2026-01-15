@@ -207,8 +207,11 @@ test.describe('Boundaries Scripts E2E Tests', () => {
   test('should be accessible with keyboard navigation', async ({ page }) => {
     await page.goto('/start/boundaries-scripts/default');
 
+    // Wait for hydration/rendering
+    const firstButton = page.locator('button').filter({ hasText: /Работа|Семья/i }).first();
+    await expect(firstButton).toBeVisible({ timeout: 15000 });
+    
     // Focus first button
-    const firstButton = page.locator('button:has-text("Работа"), button:has-text("Семья"), button').filter({ hasText: /Работа|Семья/i }).first();
     await firstButton.focus();
 
     // Should be able to select with Enter

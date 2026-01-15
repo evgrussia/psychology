@@ -6,7 +6,6 @@ import { AdminController } from './presentation/controllers/admin.controller';
 import { AdminAuditLogController } from './presentation/controllers/admin-audit-log.controller';
 import { ClientController } from './presentation/controllers/client.controller';
 import { EventBusService } from './infrastructure/events/event-bus.service';
-import { HttpClientConfig } from './infrastructure/config/http-client.config';
 import { PrismaService } from './infrastructure/database/prisma.service';
 import { IdentityModule } from './infrastructure/identity/identity.module';
 import { MediaModule } from './infrastructure/media/media.module';
@@ -19,6 +18,7 @@ import { validate } from './infrastructure/config/env.validation';
 import { AdminModule } from './infrastructure/admin/admin.module';
 import { PublicModule } from './infrastructure/public/public.module';
 import { InteractiveModule } from './infrastructure/interactive/interactive.module';
+import { CommonModule } from './infrastructure/common/common.module';
 
 @Module({
   imports: [
@@ -36,6 +36,7 @@ import { InteractiveModule } from './infrastructure/interactive/interactive.modu
         },
       ],
     }),
+    CommonModule,
     DatabaseModule,
     EventsModule,
     IdentityModule,
@@ -46,9 +47,6 @@ import { InteractiveModule } from './infrastructure/interactive/interactive.modu
     InteractiveModule,
   ],
   controllers: [HealthController, AdminAuditLogController, ClientController],
-  providers: [
-    HttpClientConfig,
-  ],
-  exports: [HttpClientConfig],
+  providers: [],
 })
 export class AppModule {}

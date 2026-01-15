@@ -12,13 +12,15 @@ import { ListCuratedCollectionsUseCase } from '@application/public/use-cases/Lis
 import { GetCuratedCollectionUseCase } from '@application/public/use-cases/GetCuratedCollectionUseCase';
 import { ListServicesUseCase } from '@application/public/use-cases/ListServicesUseCase';
 import { GetServiceBySlugUseCase } from '@application/public/use-cases/GetServiceBySlugUseCase';
+import { ListAvailableSlotsUseCase } from '@application/booking/use-cases/ListAvailableSlotsUseCase';
 import { PrismaInteractiveDefinitionRepository } from '../persistence/prisma/interactive/prisma-interactive-definition.repository';
-import { PrismaServiceRepository } from '../persistence/prisma/booking/prisma-service.repository';
 import { DatabaseModule } from '../database/database.module';
 import { ContentModule } from '../content/content.module';
+import { BookingModule } from '../booking/booking.module';
+import { IntegrationsModule } from '../integrations/integrations.module';
 
 @Module({
-  imports: [DatabaseModule, ContentModule],
+  imports: [DatabaseModule, ContentModule, BookingModule, IntegrationsModule],
   controllers: [PublicController],
   providers: [
     GetHomepageModelUseCase,
@@ -33,13 +35,10 @@ import { ContentModule } from '../content/content.module';
     GetCuratedCollectionUseCase,
     ListServicesUseCase,
     GetServiceBySlugUseCase,
+    ListAvailableSlotsUseCase,
     {
       provide: 'IInteractiveDefinitionRepository',
       useClass: PrismaInteractiveDefinitionRepository,
-    },
-    {
-      provide: 'IServiceRepository',
-      useClass: PrismaServiceRepository,
     },
   ],
 })

@@ -15,6 +15,9 @@
 ## Отчёты о реализации
 
 - `FEAT-BKG-01-Implementation-Report.md`
+- `FEAT-BKG-02-Implementation-Report.md`
+- `FEAT-BKG-03-Implementation-Report.md`
+- `FEAT-BKG-04-Implementation-Report.md`
 
 ## Список фич (P0) и оценки токенов
 

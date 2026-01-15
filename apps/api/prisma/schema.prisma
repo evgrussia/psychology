@@ -38,6 +38,7 @@ model User {
   ugc_moderations   UgcModerationAction[]
   roles             UserRole[]
   waitlist_requests WaitlistRequest[]
+  google_calendar_integrations GoogleCalendarIntegration[]
 
   @@map("users")
 }
@@ -361,6 +362,7 @@ model AvailabilitySlot {
 
   @@index([start_at_utc, end_at_utc, status])
   @@index([source])
+  @@unique([start_at_utc, end_at_utc, source, service_id])
   @@map("availability_slots")
 }
 
@@ -369,6 +371,7 @@ model Appointment {
   service_id                 String            @db.Uuid
   client_user_id             String?           @db.Uuid
   lead_id                    String?           @db.Uuid
+  client_request_id          String?           @unique
   start_at_utc               DateTime
   end_at_utc                 DateTime
   timezone                   String
@@ -408,6 +411,17 @@ model Payment {
 
   @@index([provider, provider_payment_id])
   @@map("payments")
+}
+
+model PaymentWebhookEvent {
+  id                String          @id @default(uuid()) @db.Uuid
+  provider          PaymentProvider
+  provider_event_id String          @unique
+  received_at       DateTime        @default(now())
+  processed_at      DateTime?
+
+  @@index([provider, received_at])
+  @@map("payment_webhook_events")
 }
 
 model IntakeForm {
@@ -598,6 +612,31 @@ model ReviewPublicationConsent {
   user       User?     @relation(fields: [user_id], references: [id])
 
   @@map("review_publication_consents")
+}
+
+model GoogleCalendarIntegration {
+  id                       String                          @id @default(uuid()) @db.Uuid
+  status                   GoogleCalendarIntegrationStatus @default(pending)
+  calendar_id              String?
+  timezone                 String?
+  encrypted_access_token   String?
+  encrypted_refresh_token  String?
+  token_expires_at         DateTime?
+  scopes                   String[]                        @default([])
+  oauth_state              String?
+  oauth_state_expires_at   DateTime?
+  connected_by_user_id     String?                         @db.Uuid
+  connected_at             DateTime?
+  last_sync_at             DateTime?
+  last_sync_error          String?
+  last_sync_range_start_at DateTime?
+  last_sync_range_end_at   DateTime?
+  created_at               DateTime                        @default(now())
+  updated_at               DateTime                        @updatedAt
+  connected_by             User?                           @relation(fields: [connected_by_user_id], references: [id])
+
+  @@index([status])
+  @@map("integrations_google_calendar")
 }
 
 model AuditLogEntry {
@@ -879,6 +918,13 @@ enum ModerationReasonCategory {
   spam
   pii
   other
+}
+
+enum GoogleCalendarIntegrationStatus {
+  disconnected
+  pending
+  connected
+  error
 }
 
 enum MessageChannel {

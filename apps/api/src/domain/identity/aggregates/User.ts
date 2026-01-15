@@ -5,6 +5,7 @@ import { Email } from '../value-objects/Email';
 import { Role } from '../value-objects/Role';
 import { UserStatus } from '../value-objects/UserStatus';
 import { UserCreatedEvent } from '../events/UserCreatedEvent';
+import * as crypto from 'crypto';
 
 export class User {
   private _domainEvents: DomainEvent[] = [];
@@ -98,6 +99,32 @@ export class User {
       return;
     }
     this._roles.push(role);
+  }
+
+  grantConsent(type: ConsentType, version: string, source: string): void {
+    const existing = this._consents.find((c) => c.type.equals(type) && c.isActive());
+    if (existing) {
+      return;
+    }
+    const consent = Consent.create(
+      crypto.randomUUID(),
+      type,
+      version,
+      source,
+    );
+    this._consents.push(consent);
+  }
+
+  revokeConsent(type: ConsentType): void {
+    const consent = this._consents.find((c) => c.type.equals(type) && c.isActive());
+    if (!consent) {
+      return;
+    }
+    consent.revoke();
+  }
+
+  hasActiveConsent(type: ConsentType): boolean {
+    return this._consents.some((c) => c.type.equals(type) && c.isActive());
   }
 
   hasRole(roleCode: string): boolean {

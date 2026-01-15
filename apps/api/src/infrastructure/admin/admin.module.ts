@@ -36,15 +36,20 @@ import { ContentModule } from '../content/content.module';
 import { InteractiveModule } from '../interactive/interactive.module';
 import { AdminGlossaryController } from '../../presentation/controllers/admin-glossary.controller';
 import { AdminCuratedController } from '../../presentation/controllers/admin-curated.controller';
+import { AdminGoogleCalendarController } from '../../presentation/controllers/admin-google-calendar.controller';
+import { ConnectGoogleCalendarUseCase } from '../../application/integrations/use-cases/ConnectGoogleCalendarUseCase';
+import { GetGoogleCalendarStatusUseCase } from '../../application/integrations/use-cases/GetGoogleCalendarStatusUseCase';
+import { IntegrationsModule } from '../integrations/integrations.module';
 
 @Module({
-  imports: [IdentityModule, AuditModule, DatabaseModule, ContentModule, InteractiveModule],
+  imports: [IdentityModule, AuditModule, DatabaseModule, ContentModule, InteractiveModule, IntegrationsModule],
   controllers: [
     AdminController, 
     AdminContentController, 
     AdminInteractiveController, 
     AdminGlossaryController,
-    AdminCuratedController
+    AdminCuratedController,
+    AdminGoogleCalendarController,
   ],
   providers: [
     ExportDataUseCase,
@@ -74,6 +79,8 @@ import { AdminCuratedController } from '../../presentation/controllers/admin-cur
     UpsertCuratedCollectionUseCase,
     PublishCuratedCollectionUseCase,
     ReorderCuratedItemsUseCase,
+    ConnectGoogleCalendarUseCase,
+    GetGoogleCalendarStatusUseCase,
   ],
   exports: [
     ExportDataUseCase,
@@ -103,6 +110,8 @@ import { AdminCuratedController } from '../../presentation/controllers/admin-cur
     UpsertCuratedCollectionUseCase,
     PublishCuratedCollectionUseCase,
     ReorderCuratedItemsUseCase,
+    ConnectGoogleCalendarUseCase,
+    GetGoogleCalendarStatusUseCase,
   ],
 })
 export class AdminModule {}

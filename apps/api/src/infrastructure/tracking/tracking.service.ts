@@ -44,6 +44,27 @@ export class TrackingService {
   }
 
   /**
+   * Send booking_conflict event
+   *
+   * According to Tracking Plan:
+   * - Props: service_id/service_slug
+   * - Prohibited: PII
+   */
+  async trackBookingConflict(params: { serviceId: string; serviceSlug: string }): Promise<void> {
+    const event = {
+      event_name: 'booking_conflict',
+      source: 'backend',
+      occurred_at: new Date().toISOString(),
+      properties: {
+        service_id: params.serviceId,
+        service_slug: params.serviceSlug,
+      },
+    };
+
+    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+  }
+
+  /**
    * Calculate size bucket for analytics
    * Buckets: <1MB, 1-5MB, 5-10MB, 10-50MB, >50MB
    */

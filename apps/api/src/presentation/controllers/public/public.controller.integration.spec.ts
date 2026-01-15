@@ -14,6 +14,14 @@ import { ListPublicGlossaryTermsUseCase } from '../../../application/public/use-
 import { GetPublicGlossaryTermUseCase } from '../../../application/public/use-cases/GetPublicGlossaryTermUseCase';
 import { ListServicesUseCase } from '../../../application/public/use-cases/ListServicesUseCase';
 import { GetServiceBySlugUseCase } from '../../../application/public/use-cases/GetServiceBySlugUseCase';
+import { ListAvailableSlotsUseCase } from '../../../application/booking/use-cases/ListAvailableSlotsUseCase';
+import { StartBookingUseCase } from '../../../application/booking/use-cases/StartBookingUseCase';
+import { SubmitIntakeUseCase } from '../../../application/booking/use-cases/SubmitIntakeUseCase';
+import { UpdateBookingConsentsUseCase } from '../../../application/booking/use-cases/UpdateBookingConsentsUseCase';
+import { GetBookingStatusUseCase } from '../../../application/booking/use-cases/GetBookingStatusUseCase';
+import { CreatePaymentUseCase } from '../../../application/booking/use-cases/CreatePaymentUseCase';
+import { ConfirmAppointmentUseCase } from '../../../application/booking/use-cases/ConfirmAppointmentUseCase';
+import { HandlePaymentWebhookUseCase } from '../../../application/payment/use-cases/HandlePaymentWebhookUseCase';
 import { ServiceFormat } from '@domain/booking/value-objects/ServiceEnums';
 import { HomepageDto } from '../../../application/public/dto/homepage.dto';
 
@@ -109,6 +117,38 @@ describe('PublicController (Integration)', () => {
         },
         {
           provide: GetServiceBySlugUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: ListAvailableSlotsUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: StartBookingUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: SubmitIntakeUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: UpdateBookingConsentsUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: GetBookingStatusUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: CreatePaymentUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: ConfirmAppointmentUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: HandlePaymentWebhookUseCase,
           useValue: { execute: jest.fn() },
         },
       ],

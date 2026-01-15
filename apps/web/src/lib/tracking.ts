@@ -78,8 +78,8 @@ function validateProperties(properties: TrackProperties): { valid: boolean; viol
       const currentPath = path ? `${path}.${key}` : key;
       const lowerKey = key.toLowerCase();
       
-      // Проверяем, содержит ли ключ запрещённые слова
-      if (FORBIDDEN_FIELDS.some(forbidden => lowerKey.includes(forbidden))) {
+      // Проверяем, является ли ключ запрещённым (точное совпадение)
+      if (FORBIDDEN_FIELDS.includes(lowerKey)) {
         violations.push(currentPath);
       }
       

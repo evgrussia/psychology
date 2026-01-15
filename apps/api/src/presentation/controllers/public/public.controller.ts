@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GetHomepageModelUseCase } from '../../../application/public/use-cases/GetHomepageModelUseCase';
 import { GetPageBySlugUseCase, GetPageBySlugResponse } from '../../../application/public/use-cases/GetPageBySlugUseCase';
@@ -12,11 +12,29 @@ import { ListCuratedCollectionsUseCase } from '../../../application/public/use-c
 import { GetCuratedCollectionUseCase } from '../../../application/public/use-cases/GetCuratedCollectionUseCase';
 import { ListServicesUseCase } from '../../../application/public/use-cases/ListServicesUseCase';
 import { GetServiceBySlugUseCase } from '../../../application/public/use-cases/GetServiceBySlugUseCase';
+import { ListAvailableSlotsUseCase } from '../../../application/booking/use-cases/ListAvailableSlotsUseCase';
+import { StartBookingUseCase } from '../../../application/booking/use-cases/StartBookingUseCase';
+import { SubmitIntakeUseCase } from '../../../application/booking/use-cases/SubmitIntakeUseCase';
+import { UpdateBookingConsentsUseCase } from '../../../application/booking/use-cases/UpdateBookingConsentsUseCase';
+import { GetBookingStatusUseCase } from '../../../application/booking/use-cases/GetBookingStatusUseCase';
+import { CreatePaymentUseCase, CreatePaymentRequestDto, CreatePaymentResponseDto } from '../../../application/booking/use-cases/CreatePaymentUseCase';
+import { ConfirmAppointmentUseCase } from '../../../application/booking/use-cases/ConfirmAppointmentUseCase';
+import { HandlePaymentWebhookUseCase } from '../../../application/payment/use-cases/HandlePaymentWebhookUseCase';
 import { HomepageDto } from '../../../application/public/dto/homepage.dto';
 import { TopicDto, TopicLandingDto } from '../../../application/public/dto/topics.dto';
 import { PublicCuratedCollectionDto } from '../../../application/public/dto/curated.dto';
 import { PublicGlossaryListItemDto, PublicGlossaryTermResponseDto } from '../../../application/public/dto/glossary.dto';
 import { ServiceDetailsDto, ServiceListItemDto } from '../../../application/public/dto/services.dto';
+import { ListAvailableSlotsResponseDto } from '../../../application/booking/dto/availability.dto';
+import {
+  BookingStatusResponseDto,
+  StartBookingRequestDto,
+  StartBookingResponseDto,
+  SubmitIntakeRequestDto,
+  SubmitIntakeResponseDto,
+  UpdateBookingConsentsRequestDto,
+  UpdateBookingConsentsResponseDto,
+} from '../../../application/booking/dto/booking.dto';
 import { ContentType, GlossaryTermCategory } from '../../../domain/content/value-objects/ContentEnums';
 
 @ApiTags('public')
@@ -35,6 +53,14 @@ export class PublicController {
     private readonly getPublicGlossaryTerm: GetPublicGlossaryTermUseCase,
     private readonly listServices: ListServicesUseCase,
     private readonly getServiceBySlug: GetServiceBySlugUseCase,
+    private readonly listAvailableSlotsUseCase: ListAvailableSlotsUseCase,
+    private readonly startBookingUseCase: StartBookingUseCase,
+    private readonly submitIntakeUseCase: SubmitIntakeUseCase,
+    private readonly updateBookingConsentsUseCase: UpdateBookingConsentsUseCase,
+    private readonly getBookingStatusUseCase: GetBookingStatusUseCase,
+    private readonly createPaymentUseCase: CreatePaymentUseCase,
+    private readonly confirmAppointmentUseCase: ConfirmAppointmentUseCase,
+    private readonly handlePaymentWebhookUseCase: HandlePaymentWebhookUseCase,
   ) {}
 
   @Get('glossary')
@@ -139,5 +165,74 @@ export class PublicController {
   @ApiResponse({ status: 404, description: 'Service not found' })
   async getService(@Param('slug') slug: string): Promise<ServiceDetailsDto> {
     return this.getServiceBySlug.execute(slug);
+  }
+
+  @Get('booking/slots')
+  @ApiOperation({ summary: 'List available booking slots' })
+  @ApiResponse({ status: 200, description: 'List of available slots' })
+  async listAvailableSlots(
+    @Query('service_slug') serviceSlug?: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('tz') timezone?: string,
+  ): Promise<ListAvailableSlotsResponseDto> {
+    if (!serviceSlug || !from || !to || !timezone) {
+      throw new BadRequestException('Missing required query parameters');
+    }
+
+    return this.listAvailableSlotsUseCase.execute({
+      serviceSlug,
+      from,
+      to,
+      timezone,
+    });
+  }
+
+  @Post('booking/start')
+  @ApiOperation({ summary: 'Start booking and reserve slot' })
+  @ApiResponse({ status: 201, description: 'Booking started' })
+  async startBooking(@Body() dto: StartBookingRequestDto): Promise<StartBookingResponseDto> {
+    return this.startBookingUseCase.execute(dto);
+  }
+
+  @Post('booking/:id/intake')
+  @ApiOperation({ summary: 'Submit intake form for appointment' })
+  @ApiResponse({ status: 201, description: 'Intake submitted' })
+  async submitIntake(
+    @Param('id') appointmentId: string,
+    @Body() dto: SubmitIntakeRequestDto,
+  ): Promise<SubmitIntakeResponseDto> {
+    return this.submitIntakeUseCase.execute(appointmentId, dto);
+  }
+
+  @Post('booking/:id/consents')
+  @ApiOperation({ summary: 'Update consents for booking' })
+  @ApiResponse({ status: 201, description: 'Consents updated' })
+  async updateBookingConsents(
+    @Param('id') appointmentId: string,
+    @Body() dto: UpdateBookingConsentsRequestDto,
+  ): Promise<UpdateBookingConsentsResponseDto> {
+    return this.updateBookingConsentsUseCase.execute(appointmentId, dto);
+  }
+
+  @Get('booking/:id/status')
+  @ApiOperation({ summary: 'Get booking status' })
+  @ApiResponse({ status: 200, description: 'Booking status' })
+  async getBookingStatus(@Param('id') appointmentId: string): Promise<BookingStatusResponseDto> {
+    return this.getBookingStatusUseCase.execute(appointmentId);
+  }
+
+  @Post('payments')
+  @ApiOperation({ summary: 'Create payment for appointment' })
+  @ApiResponse({ status: 200, description: 'Payment created' })
+  async createPayment(@Body() dto: CreatePaymentRequestDto): Promise<CreatePaymentResponseDto> {
+    return this.createPaymentUseCase.execute(dto);
+  }
+
+  @Post('booking/webhook/yookassa')
+  @ApiOperation({ summary: 'YooKassa webhook' })
+  @ApiResponse({ status: 200, description: 'Webhook processed' })
+  async yookassaWebhook(@Body() body: any): Promise<{ status: string }> {
+    return this.handlePaymentWebhookUseCase.execute(body);
   }
 }

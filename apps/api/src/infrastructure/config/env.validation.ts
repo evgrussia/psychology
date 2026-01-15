@@ -41,6 +41,33 @@ class EnvironmentVariables {
   @IsOptional()
   @IsNumber()
   HTTP_RETRY_ATTEMPTS?: number;
+
+  @IsString()
+  ENCRYPTION_KEY: string;
+
+  @IsString()
+  ENCRYPTION_KEY_ID: string;
+
+  @IsString()
+  GOOGLE_OAUTH_CLIENT_ID: string;
+
+  @IsString()
+  GOOGLE_OAUTH_CLIENT_SECRET: string;
+
+  @IsString()
+  GOOGLE_OAUTH_REDIRECT_URI: string;
+
+  @IsOptional()
+  @IsString()
+  GOOGLE_OAUTH_SCOPES?: string;
+
+  @IsOptional()
+  @IsNumber()
+  GOOGLE_CALENDAR_SYNC_INTERVAL_MINUTES?: number;
+
+  @IsOptional()
+  @IsNumber()
+  GOOGLE_CALENDAR_SYNC_LOOKAHEAD_DAYS?: number;
 }
 
 export function validate(config: Record<string, any>) {
