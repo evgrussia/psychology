@@ -57,9 +57,14 @@ test.describe('Quiz E2E Tests', () => {
     await page.goto('/start/quizzes/anxiety');
     await page.click('button:has-text("Начать тест")');
     
+    // Wait for transition to questions
+    await page.waitForSelector('h2');
+
     // Answer a few questions
     for (let i = 0; i < 3; i++) {
-      await page.locator('button').first().click();
+      const option = page.getByRole('button').filter({ hasText: /несколько дней|совсем нет/i }).first();
+      await expect(option).toBeVisible();
+      await option.click();
       await page.waitForTimeout(500);
     }
 

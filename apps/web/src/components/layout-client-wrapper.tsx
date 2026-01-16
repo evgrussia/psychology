@@ -8,21 +8,28 @@ export function LayoutClientWrapper({ children }: { children: React.ReactNode })
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <Container className="flex h-16 items-center justify-between">
-          <a href="/" className="flex items-center gap-2">
-            <img 
-              src="/assets/graphics/brand/logo-1408x768.png" 
-              alt="Эмоциональный баланс" 
-              className="h-8 w-auto"
-            />
-            <span className="hidden font-bold sm:inline-block">Эмоциональный баланс</span>
+          <a href="/" className="flex items-center gap-2 group">
+            <div className="h-10 w-auto">
+              <img 
+                src="/assets/graphics/brand/logo-full.svg" 
+                alt="Эмоциональный баланс" 
+                className="h-full w-auto transition-transform group-hover:scale-105"
+              />
+            </div>
           </a>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
             <a href="/services" className="transition-colors hover:text-primary">Услуги</a>
             <a href="/start" className="transition-colors hover:text-primary">С чего начать</a>
             <a href="/about" className="transition-colors hover:text-primary">Обо мне</a>
             <a href="/blog" className="transition-colors hover:text-primary">Блог</a>
+            <a href="/cabinet" className="transition-colors hover:text-primary">Личный кабинет</a>
           </nav>
           <div className="flex items-center gap-4">
+            <a href="/login" className="hidden sm:inline-flex">
+              <button className="inline-flex h-9 items-center justify-center rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                Войти
+              </button>
+            </a>
             <a href="/booking">
               <button className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
                 Записаться
@@ -42,11 +49,10 @@ export function LayoutClientWrapper({ children }: { children: React.ReactNode })
             <div className="space-y-4">
               <a href="/" className="flex items-center gap-2">
                 <img 
-                  src="/assets/graphics/brand/logo-1408x768.png" 
+                  src="/assets/graphics/brand/logo-full.svg" 
                   alt="Эмоциональный баланс" 
-                  className="h-6 w-auto grayscale opacity-70"
+                  className="h-8 w-auto grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all"
                 />
-                <span className="font-bold text-muted-foreground">Эмоциональный баланс</span>
               </a>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 Профессиональная психологическая помощь и поддержка на пути к вашему внутреннему балансу.

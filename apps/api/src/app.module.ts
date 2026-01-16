@@ -3,7 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { HealthController } from './presentation/controllers/health.controller';
 import { AdminAuditLogController } from './presentation/controllers/admin-audit-log.controller';
-import { ClientController } from './presentation/controllers/client.controller';
+import { CabinetModule } from './infrastructure/cabinet/cabinet.module';
 import { IdentityModule } from './infrastructure/identity/identity.module';
 import { MediaModule } from './infrastructure/media/media.module';
 import { EventsModule } from './infrastructure/events/events.module';
@@ -46,8 +46,9 @@ import { TelegramModule } from './infrastructure/telegram/telegram.module';
     InteractiveModule,
     WebhooksModule,
     TelegramModule,
+    CabinetModule,
   ],
-  controllers: [HealthController, AdminAuditLogController, ClientController],
+  controllers: [HealthController, AdminAuditLogController],
   providers: [],
 })
 export class AppModule {}

@@ -19,6 +19,10 @@
 - `FEAT-BKG-03-Implementation-Report.md`
 - `FEAT-BKG-04-Implementation-Report.md`
 - `FEAT-BKG-05-Implementation-Report.md`
+- `FEAT-LK-01-Implementation-Report.md`
+- `FEAT-LK-02-Implementation-Report.md`
+- `FEAT-LK-03-Implementation-Report.md`
+- `FEAT-LK-04-Implementation-Report.md`
 - `FEAT-PAY-01-Implementation-Report.md`
 - `FEAT-PAY-02-Implementation-Report.md`
 - `FEAT-PAY-03-Implementation-Report.md`

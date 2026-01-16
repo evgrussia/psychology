@@ -204,6 +204,7 @@ model MediaAsset {
   uploaded_by_user_id String               @db.Uuid
   created_at          DateTime             @default(now())
   usages              ContentMedia[]
+  appointment_materials AppointmentMaterial[]
   uploaded_by         User                 @relation(fields: [uploaded_by_user_id], references: [id])
 
   @@map("media_assets")
@@ -389,11 +390,29 @@ model Appointment {
   slot                       AvailabilitySlot? @relation(fields: [slot_id], references: [id])
   intake_form                IntakeForm?
   payments                   Payment[]
+  materials                  AppointmentMaterial[]
 
   @@index([start_at_utc, end_at_utc, status])
   @@index([start_at_utc])
   @@index([status])
   @@map("appointments")
+}
+
+model AppointmentMaterial {
+  id             String                  @id @default(uuid()) @db.Uuid
+  appointment_id String                  @db.Uuid
+  material_type  AppointmentMaterialType
+  title          String
+  description    String?
+  link_url       String?
+  media_asset_id String?                 @db.Uuid
+  created_at     DateTime                @default(now())
+  updated_at     DateTime                @updatedAt
+  appointment    Appointment             @relation(fields: [appointment_id], references: [id])
+  media_asset    MediaAsset?             @relation(fields: [media_asset_id], references: [id])
+
+  @@index([appointment_id])
+  @@map("appointment_materials")
 }
 
 model Payment {
@@ -457,6 +476,7 @@ model DiaryEntry {
   diary_type        DiaryType
   entry_date        DateTime  @db.Date
   payload_encrypted String
+  has_text          Boolean   @default(false)
   created_at        DateTime  @default(now())
   deleted_at        DateTime?
   user              User      @relation(fields: [user_id], references: [id])
@@ -867,6 +887,11 @@ enum AppointmentStatus {
   canceled
   rescheduled
   completed
+}
+
+enum AppointmentMaterialType {
+  link
+  file
 }
 
 enum PaymentProvider {

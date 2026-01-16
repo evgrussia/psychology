@@ -20,6 +20,7 @@ export class User {
     private _status: UserStatus,
     private _roles: Role[],
     private _consents: Consent[],
+    private _deletedAt: Date | null,
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
   ) {}
@@ -46,6 +47,7 @@ export class User {
       UserStatus.ACTIVE,
       [Role.CLIENT],
       [],
+      null,
       now,
       now,
     );
@@ -67,6 +69,7 @@ export class User {
     status: UserStatus;
     roles: Role[];
     consents: Consent[];
+    deletedAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
   }): User {
@@ -80,6 +83,7 @@ export class User {
       params.status,
       params.roles,
       params.consents,
+      params.deletedAt,
       params.createdAt,
       params.updatedAt,
     );
@@ -93,6 +97,7 @@ export class User {
   get status(): UserStatus { return this._status; }
   get roles(): Role[] { return [...this._roles]; }
   get consents(): Consent[] { return [...this._consents]; }
+  get deletedAt(): Date | null { return this._deletedAt; }
 
   assignRole(role: Role): void {
     if (this._roles.some((r) => r.equals(role))) {
@@ -133,6 +138,20 @@ export class User {
 
   updatePassword(passwordHash: string): void {
     this._passwordHash = passwordHash;
+  }
+
+  unlinkTelegram(): void {
+    this._telegramUserId = null;
+  }
+
+  deleteAccount(): void {
+    this._status = UserStatus.DELETED;
+    this._deletedAt = new Date();
+    this._email = null;
+    this._phone = null;
+    this._telegramUserId = null;
+    this._displayName = null;
+    this._passwordHash = null;
   }
 
   get domainEvents(): DomainEvent[] {

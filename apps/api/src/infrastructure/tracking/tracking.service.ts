@@ -211,6 +211,109 @@ export class TrackingService {
   }
 
   /**
+   * Send diary_entry_created event
+   *
+   * According to Tracking Plan:
+   * - Props: diary_type, has_text
+   * - Prohibited: payload contents
+   */
+  async trackDiaryEntryCreated(params: { diaryType: string; hasText: boolean }): Promise<void> {
+    const event = {
+      event_name: 'diary_entry_created',
+      source: 'backend',
+      occurred_at: new Date().toISOString(),
+      properties: {
+        diary_type: params.diaryType,
+        has_text: params.hasText,
+      },
+    };
+
+    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+  }
+
+  /**
+   * Send diary_entry_deleted event
+   *
+   * According to Tracking Plan:
+   * - Props: diary_type
+   * - Prohibited: payload contents
+   */
+  async trackDiaryEntryDeleted(params: { diaryType: string }): Promise<void> {
+    const event = {
+      event_name: 'diary_entry_deleted',
+      source: 'backend',
+      occurred_at: new Date().toISOString(),
+      properties: {
+        diary_type: params.diaryType,
+      },
+    };
+
+    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+  }
+
+  /**
+   * Send pdf_exported event
+   *
+   * According to Tracking Plan:
+   * - Props: export_type, period
+   * - Prohibited: diary contents
+   */
+  async trackPdfExported(params: { exportType: string; period: string }): Promise<void> {
+    const event = {
+      event_name: 'pdf_exported',
+      source: 'backend',
+      occurred_at: new Date().toISOString(),
+      properties: {
+        export_type: params.exportType,
+        period: params.period,
+      },
+    };
+
+    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+  }
+
+  /**
+   * Send consent_updated event
+   *
+   * According to Tracking Plan:
+   * - Props: consent_type, new_value
+   * - Prohibited: PII, free text
+   */
+  async trackConsentUpdated(params: { consentType: string; newValue: boolean }): Promise<void> {
+    const event = {
+      event_name: 'consent_updated',
+      source: 'backend',
+      occurred_at: new Date().toISOString(),
+      properties: {
+        consent_type: params.consentType,
+        new_value: params.newValue,
+      },
+    };
+
+    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+  }
+
+  /**
+   * Send account_deleted event
+   *
+   * According to Tracking Plan:
+   * - Props: method
+   * - Prohibited: PII, free text
+   */
+  async trackAccountDeleted(params: { method: string }): Promise<void> {
+    const event = {
+      event_name: 'account_deleted',
+      source: 'backend',
+      occurred_at: new Date().toISOString(),
+      properties: {
+        method: params.method,
+      },
+    };
+
+    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+  }
+
+  /**
    * Send tg_subscribe_confirmed event
    *
    * According to Tracking Plan:

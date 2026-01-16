@@ -32,6 +32,7 @@ export class UserMapper {
           c.revoked_at,
         ),
       ),
+      deletedAt: prismaUser.deleted_at,
       createdAt: prismaUser.created_at,
       updatedAt: prismaUser.updated_at,
     });
@@ -46,6 +47,7 @@ export class UserMapper {
       display_name: user.displayName,
       password_hash: user.passwordHash,
       status: user.status.value,
+      deleted_at: user.deletedAt,
       created_at: user.createdAt,
       updated_at: new Date(),
     };
