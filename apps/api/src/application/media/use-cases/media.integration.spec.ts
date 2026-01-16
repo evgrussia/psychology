@@ -107,23 +107,26 @@ describe('Media Integration Tests', () => {
 
   afterAll(async () => {
     // Cleanup test user
-    if (testUserId) {
+    if (prisma && testUserId) {
       await prisma.user.delete({ where: { id: testUserId } }).catch(() => {});
+      // Cleanup test media assets
+      await prisma.mediaAsset.deleteMany({
+        where: { uploaded_by_user_id: testUserId },
+      });
     }
-
-    // Cleanup test media assets
-    await prisma.mediaAsset.deleteMany({
-      where: { uploaded_by_user_id: testUserId },
-    });
 
     // Cleanup storage directory
     try {
-      await fs.rm(testStoragePath, { recursive: true, force: true });
+      if (testStoragePath) {
+        await fs.rm(testStoragePath, { recursive: true, force: true });
+      }
     } catch (error) {
       // Ignore cleanup errors
     }
 
-    await module.close();
+    if (module) {
+      await module.close();
+    }
   });
 
   describe('Upload → List → Delete flow', () => {

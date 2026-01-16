@@ -48,7 +48,7 @@ function getSessionId(): string {
   const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 минут
   const now = Date.now();
   
-  let sessionData = localStorage.getItem('session_data');
+  const sessionData = localStorage.getItem('session_data');
   if (sessionData) {
     const { sessionId, lastActivity } = JSON.parse(sessionData);
     if (now - lastActivity < SESSION_TIMEOUT) {

@@ -186,11 +186,24 @@ export class PrismaAppointmentRepository implements IAppointmentRepository {
     });
   }
 
+  async markPaidIfPending(appointmentId: string): Promise<boolean> {
+    const result = await this.prisma.appointment.updateMany({
+      where: {
+        id: appointmentId,
+        status: AppointmentStatus.pending_payment,
+      },
+      data: {
+        status: AppointmentStatus.paid,
+      },
+    });
+    return result.count > 0;
+  }
+
   async confirmIfPending(appointmentId: string): Promise<boolean> {
     const result = await this.prisma.appointment.updateMany({
       where: {
         id: appointmentId,
-        status: { in: [AppointmentStatus.pending_payment, AppointmentStatus.paid] },
+        status: AppointmentStatus.paid,
       },
       data: {
         status: AppointmentStatus.confirmed,

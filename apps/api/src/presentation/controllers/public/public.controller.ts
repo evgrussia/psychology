@@ -18,8 +18,8 @@ import { SubmitIntakeUseCase } from '../../../application/booking/use-cases/Subm
 import { UpdateBookingConsentsUseCase } from '../../../application/booking/use-cases/UpdateBookingConsentsUseCase';
 import { GetBookingStatusUseCase } from '../../../application/booking/use-cases/GetBookingStatusUseCase';
 import { CreatePaymentUseCase, CreatePaymentRequestDto, CreatePaymentResponseDto } from '../../../application/booking/use-cases/CreatePaymentUseCase';
-import { ConfirmAppointmentUseCase } from '../../../application/booking/use-cases/ConfirmAppointmentUseCase';
-import { HandlePaymentWebhookUseCase } from '../../../application/payment/use-cases/HandlePaymentWebhookUseCase';
+import { CreateWaitlistRequestUseCase } from '../../../application/booking/use-cases/CreateWaitlistRequestUseCase';
+import { GetNoSlotsModelUseCase } from '../../../application/booking/use-cases/GetNoSlotsModelUseCase';
 import { HomepageDto } from '../../../application/public/dto/homepage.dto';
 import { TopicDto, TopicLandingDto } from '../../../application/public/dto/topics.dto';
 import { PublicCuratedCollectionDto } from '../../../application/public/dto/curated.dto';
@@ -35,6 +35,8 @@ import {
   UpdateBookingConsentsRequestDto,
   UpdateBookingConsentsResponseDto,
 } from '../../../application/booking/dto/booking.dto';
+import { CreateWaitlistRequestDto, CreateWaitlistResponseDto } from '../../../application/booking/dto/waitlist.dto';
+import { NoSlotsModelDto } from '../../../application/booking/dto/no-slots.dto';
 import { ContentType, GlossaryTermCategory } from '../../../domain/content/value-objects/ContentEnums';
 
 @ApiTags('public')
@@ -59,8 +61,8 @@ export class PublicController {
     private readonly updateBookingConsentsUseCase: UpdateBookingConsentsUseCase,
     private readonly getBookingStatusUseCase: GetBookingStatusUseCase,
     private readonly createPaymentUseCase: CreatePaymentUseCase,
-    private readonly confirmAppointmentUseCase: ConfirmAppointmentUseCase,
-    private readonly handlePaymentWebhookUseCase: HandlePaymentWebhookUseCase,
+    private readonly createWaitlistRequestUseCase: CreateWaitlistRequestUseCase,
+    private readonly getNoSlotsModelUseCase: GetNoSlotsModelUseCase,
   ) {}
 
   @Get('glossary')
@@ -188,6 +190,24 @@ export class PublicController {
     });
   }
 
+  @Get('booking/no-slots')
+  @ApiOperation({ summary: 'Get booking no-slots page model' })
+  @ApiResponse({ status: 200, description: 'No slots page model' })
+  async getNoSlotsModel(
+    @Query('service_slug') serviceSlug?: string,
+  ): Promise<NoSlotsModelDto> {
+    return this.getNoSlotsModelUseCase.execute(serviceSlug);
+  }
+
+  @Post('waitlist')
+  @ApiOperation({ summary: 'Create waitlist request' })
+  @ApiResponse({ status: 201, description: 'Waitlist request created' })
+  async createWaitlist(
+    @Body() dto: CreateWaitlistRequestDto,
+  ): Promise<CreateWaitlistResponseDto> {
+    return this.createWaitlistRequestUseCase.execute(dto);
+  }
+
   @Post('booking/start')
   @ApiOperation({ summary: 'Start booking and reserve slot' })
   @ApiResponse({ status: 201, description: 'Booking started' })
@@ -229,10 +249,4 @@ export class PublicController {
     return this.createPaymentUseCase.execute(dto);
   }
 
-  @Post('booking/webhook/yookassa')
-  @ApiOperation({ summary: 'YooKassa webhook' })
-  @ApiResponse({ status: 200, description: 'Webhook processed' })
-  async yookassaWebhook(@Body() body: any): Promise<{ status: string }> {
-    return this.handlePaymentWebhookUseCase.execute(body);
-  }
 }

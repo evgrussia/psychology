@@ -49,7 +49,7 @@ describe('Content Management Integration', () => {
 
   afterAll(async () => {
     // Cleanup
-    if (testUserId) {
+    if (prisma && testUserId) {
       await prisma.contentRevision.deleteMany({
         where: { changed_by_user_id: testUserId },
       });
@@ -60,7 +60,9 @@ describe('Content Management Integration', () => {
         where: { id: testUserId },
       });
     }
-    await app.close();
+    if (app) {
+      await app.close();
+    }
   });
 
   it('should create draft → publish → be accessible via public API', async () => {

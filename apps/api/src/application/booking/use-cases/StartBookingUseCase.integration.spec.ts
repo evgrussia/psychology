@@ -99,15 +99,21 @@ describe('StartBookingUseCase (Integration)', () => {
   });
 
   afterEach(async () => {
-    await prisma.appointment.deleteMany({});
-    await prisma.availabilitySlot.deleteMany({});
-    await prisma.service.deleteMany({});
+    if (prisma) {
+      await prisma.appointment.deleteMany({});
+      await prisma.availabilitySlot.deleteMany({});
+      await prisma.service.deleteMany({});
+    }
     trackingStub.trackBookingConflict.mockClear();
   });
 
   afterAll(async () => {
-    await prisma.$executeRawUnsafe(`DROP SCHEMA IF EXISTS "${schemaName}" CASCADE`);
-    await module.close();
+    if (prisma) {
+      await prisma.$executeRawUnsafe(`DROP SCHEMA IF EXISTS "${schemaName}" CASCADE`);
+    }
+    if (module) {
+      await module.close();
+    }
   });
 
   it('should allow only one concurrent booking per slot', async () => {

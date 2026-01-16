@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { evaluateCrisisTrigger, CrisisTriggerType, CRISIS_KEYWORDS } from './interactive';
 
 describe('evaluateCrisisTrigger', () => {

@@ -2,10 +2,15 @@ import { Inject, Injectable, NotFoundException, BadRequestException } from '@nes
 import { IAppointmentRepository } from '@domain/booking/repositories/IAppointmentRepository';
 import { IServiceRepository } from '@domain/booking/repositories/IServiceRepository';
 import { IPaymentService } from '@domain/payment/services/IPaymentService';
-import { ConfirmAppointmentUseCase } from './ConfirmAppointmentUseCase';
+import { IPaymentRepository } from '@domain/payment/repositories/IPaymentRepository';
+import { Payment } from '@domain/payment/entities/Payment';
+import { PaymentProvider, PaymentStatus } from '@domain/payment/value-objects/PaymentEnums';
+import { TrackingService } from '@infrastructure/tracking/tracking.service';
+import * as crypto from 'crypto';
 
 export interface CreatePaymentRequestDto {
   appointment_id: string;
+  client_request_id?: string;
 }
 
 export interface CreatePaymentResponseDto {
@@ -26,7 +31,9 @@ export class CreatePaymentUseCase {
     private readonly serviceRepository: IServiceRepository,
     @Inject('IPaymentService')
     private readonly paymentService: IPaymentService,
-    private readonly confirmAppointmentUseCase: ConfirmAppointmentUseCase,
+    @Inject('IPaymentRepository')
+    private readonly paymentRepository: IPaymentRepository,
+    private readonly trackingService: TrackingService,
   ) {}
 
   async execute(dto: CreatePaymentRequestDto): Promise<CreatePaymentResponseDto> {
@@ -40,34 +47,64 @@ export class CreatePaymentUseCase {
       throw new NotFoundException('Service not found');
     }
 
+    const idempotencyKey = dto.client_request_id || null;
+    if (idempotencyKey) {
+      const existingPayment = await this.paymentRepository.findByIdempotencyKey(PaymentProvider.yookassa, idempotencyKey);
+      if (existingPayment && existingPayment.appointmentId === appointment.id) {
+        return {
+          payment_id: existingPayment.providerPaymentId,
+          status: existingPayment.status,
+          confirmation: {
+            // In case of existing payment, we don't have the confirmation URL easily accessible 
+            // without re-querying the provider, but the frontend usually already has it or 
+            // we should store it. For now, we return the status and ID.
+            // If it's already paid, the frontend will redirect to confirmation.
+          },
+        };
+      }
+    }
+
     const amount = service.depositAmount ?? service.priceAmount;
     if (!amount) {
       throw new BadRequestException('Service has no price');
     }
 
-    const payment = await this.paymentService.createPayment({
+    const providerResult = await this.paymentService.createPayment({
       appointmentId: appointment.id,
       amount,
       currency: 'RUB',
       description: `Оплата консультации: ${service.title}`,
+      idempotencyKey,
     });
 
-    // SIMULATION: In a real system, YooKassa would call our webhook POST /api/public/booking/webhook/yookassa.
-    // For this implementation phase, we simulate the webhook call after a short delay.
-    setTimeout(async () => {
-      try {
-        await this.confirmAppointmentUseCase.execute(appointment.id);
-      } catch (err) {
-        console.error('Simulated webhook failed:', err);
-      }
-    }, 5000);
+    const payment = Payment.create({
+      id: crypto.randomUUID(),
+      appointmentId: appointment.id,
+      provider: PaymentProvider.yookassa,
+      providerPaymentId: providerResult.providerPaymentId,
+      amount,
+      currency: 'RUB',
+      status: PaymentStatus.pending,
+      idempotencyKey,
+      createdAt: new Date(),
+    });
+
+    await this.paymentRepository.create(payment);
+
+    await this.trackingService.trackPaymentStarted({
+      paymentProvider: PaymentProvider.yookassa,
+      amount,
+      currency: 'RUB',
+      serviceId: service.id,
+      serviceSlug: service.slug,
+    });
 
     return {
-      payment_id: payment.id,
+      payment_id: payment.providerPaymentId,
       status: payment.status,
       confirmation: {
-        confirmation_url: payment.confirmationUrl,
-        url: payment.confirmationUrl,
+        confirmation_url: providerResult.confirmationUrl,
+        url: providerResult.confirmationUrl,
       },
     };
   }

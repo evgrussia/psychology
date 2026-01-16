@@ -20,8 +20,8 @@ import { SubmitIntakeUseCase } from '../../../application/booking/use-cases/Subm
 import { UpdateBookingConsentsUseCase } from '../../../application/booking/use-cases/UpdateBookingConsentsUseCase';
 import { GetBookingStatusUseCase } from '../../../application/booking/use-cases/GetBookingStatusUseCase';
 import { CreatePaymentUseCase } from '../../../application/booking/use-cases/CreatePaymentUseCase';
-import { ConfirmAppointmentUseCase } from '../../../application/booking/use-cases/ConfirmAppointmentUseCase';
-import { HandlePaymentWebhookUseCase } from '../../../application/payment/use-cases/HandlePaymentWebhookUseCase';
+import { CreateWaitlistRequestUseCase } from '../../../application/booking/use-cases/CreateWaitlistRequestUseCase';
+import { GetNoSlotsModelUseCase } from '../../../application/booking/use-cases/GetNoSlotsModelUseCase';
 import { NotFoundException } from '@nestjs/common';
 import { GlossaryTermCategory } from '../../../domain/content/value-objects/ContentEnums';
 
@@ -142,11 +142,15 @@ describe('PublicController - Glossary (Integration)', () => {
           useValue: { execute: jest.fn() },
         },
         {
-          provide: ConfirmAppointmentUseCase,
+          provide: CreatePaymentUseCase,
           useValue: { execute: jest.fn() },
         },
         {
-          provide: HandlePaymentWebhookUseCase,
+          provide: CreateWaitlistRequestUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: GetNoSlotsModelUseCase,
           useValue: { execute: jest.fn() },
         },
       ],
@@ -160,7 +164,9 @@ describe('PublicController - Glossary (Integration)', () => {
   });
 
   afterEach(async () => {
-    await app.close();
+    if (app) {
+      await app.close();
+    }
   });
 
   describe('GET /public/glossary', () => {

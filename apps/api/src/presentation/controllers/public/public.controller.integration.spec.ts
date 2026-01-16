@@ -20,10 +20,11 @@ import { SubmitIntakeUseCase } from '../../../application/booking/use-cases/Subm
 import { UpdateBookingConsentsUseCase } from '../../../application/booking/use-cases/UpdateBookingConsentsUseCase';
 import { GetBookingStatusUseCase } from '../../../application/booking/use-cases/GetBookingStatusUseCase';
 import { CreatePaymentUseCase } from '../../../application/booking/use-cases/CreatePaymentUseCase';
-import { ConfirmAppointmentUseCase } from '../../../application/booking/use-cases/ConfirmAppointmentUseCase';
-import { HandlePaymentWebhookUseCase } from '../../../application/payment/use-cases/HandlePaymentWebhookUseCase';
+import { CreateWaitlistRequestUseCase } from '../../../application/booking/use-cases/CreateWaitlistRequestUseCase';
+import { GetNoSlotsModelUseCase } from '../../../application/booking/use-cases/GetNoSlotsModelUseCase';
 import { ServiceFormat } from '@domain/booking/value-objects/ServiceEnums';
 import { HomepageDto } from '../../../application/public/dto/homepage.dto';
+import { PreferredContactMethod, PreferredTimeWindow, WaitlistStatus } from '@domain/booking/value-objects/BookingEnums';
 
 describe('PublicController (Integration)', () => {
   let app: INestApplication;
@@ -144,11 +145,11 @@ describe('PublicController (Integration)', () => {
           useValue: { execute: jest.fn() },
         },
         {
-          provide: ConfirmAppointmentUseCase,
+          provide: CreateWaitlistRequestUseCase,
           useValue: { execute: jest.fn() },
         },
         {
-          provide: HandlePaymentWebhookUseCase,
+          provide: GetNoSlotsModelUseCase,
           useValue: { execute: jest.fn() },
         },
       ],
@@ -163,7 +164,9 @@ describe('PublicController (Integration)', () => {
   });
 
   afterEach(async () => {
-    await app.close();
+    if (app) {
+      await app.close();
+    }
   });
 
   describe('GET /public/homepage', () => {
@@ -360,6 +363,61 @@ describe('PublicController (Integration)', () => {
 
       expect(response.body.slug).toBe('intro-session');
       expect(response.body.cancel_free_hours).toBe(24);
+    });
+  });
+
+  describe('GET /public/booking/no-slots', () => {
+    it('should return no-slots model', async () => {
+      const getNoSlotsModelUseCase = app.get<GetNoSlotsModelUseCase>(GetNoSlotsModelUseCase);
+      jest.spyOn(getNoSlotsModelUseCase, 'execute').mockResolvedValueOnce({
+        service: { id: 'service-1', slug: 'intro-session', title: 'Ознакомительная сессия' },
+        contact_methods: [
+          PreferredContactMethod.email,
+          PreferredContactMethod.phone,
+          PreferredContactMethod.telegram,
+        ],
+        time_windows: [
+          PreferredTimeWindow.weekday_morning,
+          PreferredTimeWindow.weekday_evening,
+          PreferredTimeWindow.weekend,
+          PreferredTimeWindow.any,
+        ],
+      });
+
+      const response = await request(app.getHttpServer())
+        .get('/public/booking/no-slots?service_slug=intro-session')
+        .expect(200);
+
+      expect(response.body.service.slug).toBe('intro-session');
+      expect(response.body.contact_methods).toContain('email');
+    });
+  });
+
+  describe('POST /public/waitlist', () => {
+    it('should create waitlist request', async () => {
+      const createWaitlistRequestUseCase = app.get<CreateWaitlistRequestUseCase>(CreateWaitlistRequestUseCase);
+      jest.spyOn(createWaitlistRequestUseCase, 'execute').mockResolvedValueOnce({
+        waitlist_id: 'waitlist-1',
+        status: WaitlistStatus.new,
+        service_id: 'service-1',
+        service_slug: 'intro-session',
+        created_at: new Date().toISOString(),
+      });
+
+      const response = await request(app.getHttpServer())
+        .post('/public/waitlist')
+        .send({
+          service_slug: 'intro-session',
+          preferred_contact: PreferredContactMethod.email,
+          contact_value: 'test@example.com',
+          preferred_time_window: PreferredTimeWindow.any,
+          consents: { personal_data: true, communications: true },
+          source: 'web',
+        })
+        .expect(201);
+
+      expect(response.body.waitlist_id).toBe('waitlist-1');
+      expect(response.body.status).toBe('new');
     });
   });
 });

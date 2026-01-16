@@ -81,8 +81,10 @@ describe('SyncCalendarBusyTimesUseCase (Integration)', () => {
   });
 
   beforeEach(async () => {
-    await prisma.availabilitySlot.deleteMany({});
-    await (prisma as any).googleCalendarIntegration.deleteMany({});
+    if (prisma) {
+      await prisma.availabilitySlot.deleteMany({});
+      await (prisma as any).googleCalendarIntegration.deleteMany({});
+    }
   });
 
   function configureTestSchema(): void {
@@ -94,10 +96,14 @@ describe('SyncCalendarBusyTimesUseCase (Integration)', () => {
   }
 
   afterAll(async () => {
-    await prisma.availabilitySlot.deleteMany({});
-    await (prisma as any).googleCalendarIntegration.deleteMany({});
-    await prisma.$executeRawUnsafe(`DROP SCHEMA IF EXISTS "${schemaName}" CASCADE`);
-    await module.close();
+    if (prisma) {
+      await prisma.availabilitySlot.deleteMany({});
+      await (prisma as any).googleCalendarIntegration.deleteMany({});
+      await prisma.$executeRawUnsafe(`DROP SCHEMA IF EXISTS "${schemaName}" CASCADE`);
+    }
+    if (module) {
+      await module.close();
+    }
   });
 
   it('should sync busy intervals into availability slots', async () => {

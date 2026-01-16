@@ -42,6 +42,22 @@ class EnvironmentVariables {
   @IsNumber()
   HTTP_RETRY_ATTEMPTS?: number;
 
+  @IsOptional()
+  @IsString()
+  YOOKASSA_WEBHOOK_SECRET?: string;
+
+  @IsOptional()
+  @IsString()
+  YOOKASSA_WEBHOOK_SIGNATURE_HEADER?: string;
+
+  @IsOptional()
+  @IsString()
+  YOOKASSA_WEBHOOK_IP_ALLOWLIST?: string;
+
+  @IsOptional()
+  @IsString()
+  YOOKASSA_WEBHOOK_BASIC_AUTH?: string;
+
   @IsString()
   ENCRYPTION_KEY: string;
 

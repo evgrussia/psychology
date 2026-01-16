@@ -65,6 +65,152 @@ export class TrackingService {
   }
 
   /**
+   * Send payment_started event
+   *
+   * According to Tracking Plan:
+   * - Props: payment_provider, amount, currency, service_id/service_slug
+   * - Prohibited: PII, free text
+   */
+  async trackPaymentStarted(params: {
+    paymentProvider: string;
+    amount: number;
+    currency: string;
+    serviceId: string;
+    serviceSlug: string;
+  }): Promise<void> {
+    const event = {
+      event_name: 'payment_started',
+      source: 'backend',
+      occurred_at: new Date().toISOString(),
+      properties: {
+        payment_provider: params.paymentProvider,
+        amount: params.amount,
+        currency: params.currency,
+        service_id: params.serviceId,
+        service_slug: params.serviceSlug,
+      },
+    };
+
+    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+  }
+
+  /**
+   * Send booking_paid event (server-side source of truth)
+   *
+   * According to Tracking Plan:
+   * - Props: payment_provider, amount, currency, service_id/service_slug
+   * - Prohibited: PII, free text
+   */
+  async trackBookingPaid(params: {
+    paymentProvider: string;
+    amount: number;
+    currency: string;
+    serviceId: string;
+    serviceSlug: string;
+  }): Promise<void> {
+    const event = {
+      event_name: 'booking_paid',
+      source: 'backend',
+      occurred_at: new Date().toISOString(),
+      properties: {
+        payment_provider: params.paymentProvider,
+        amount: params.amount,
+        currency: params.currency,
+        service_id: params.serviceId,
+        service_slug: params.serviceSlug,
+      },
+    };
+
+    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+  }
+
+  /**
+   * Send booking_confirmed event (server-side source of truth)
+   *
+   * According to Tracking Plan:
+   * - Props: appointment_start_at, timezone, service_id/service_slug, format
+   * - Prohibited: PII, free text
+   */
+  async trackBookingConfirmed(params: {
+    appointmentStartAt: Date;
+    timezone: string;
+    serviceId: string;
+    serviceSlug: string;
+    format: string;
+  }): Promise<void> {
+    const event = {
+      event_name: 'booking_confirmed',
+      source: 'backend',
+      occurred_at: new Date().toISOString(),
+      properties: {
+        appointment_start_at: params.appointmentStartAt.toISOString(),
+        timezone: params.timezone,
+        service_id: params.serviceId,
+        service_slug: params.serviceSlug,
+        format: params.format,
+      },
+    };
+
+    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+  }
+
+  /**
+   * Send payment_failed event
+   *
+   * According to Tracking Plan:
+   * - Props: payment_provider, failure_category, service_id/service_slug
+   * - Prohibited: PII, free text
+   */
+  async trackPaymentFailed(params: {
+    paymentProvider: string;
+    failureCategory: string;
+    serviceId: string;
+    serviceSlug: string;
+  }): Promise<void> {
+    const event = {
+      event_name: 'payment_failed',
+      source: 'backend',
+      occurred_at: new Date().toISOString(),
+      properties: {
+        payment_provider: params.paymentProvider,
+        failure_category: params.failureCategory,
+        service_id: params.serviceId,
+        service_slug: params.serviceSlug,
+      },
+    };
+
+    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+  }
+
+  /**
+   * Send waitlist_submitted event
+   *
+   * According to Tracking Plan:
+   * - Props: preferred_contact, service_id/service_slug, preferred_time_window (optional)
+   * - Prohibited: PII
+   */
+  async trackWaitlistSubmitted(params: {
+    serviceId: string;
+    serviceSlug: string;
+    preferredContact: string;
+    preferredTimeWindow: string;
+  }): Promise<void> {
+    const event = {
+      event_name: 'waitlist_submitted',
+      source: 'backend',
+      occurred_at: new Date().toISOString(),
+      properties: {
+        service_id: params.serviceId,
+        service_slug: params.serviceSlug,
+        preferred_contact: params.preferredContact,
+        preferred_time_window: params.preferredTimeWindow,
+      },
+    };
+
+    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+  }
+
+  /**
    * Calculate size bucket for analytics
    * Buckets: <1MB, 1-5MB, 5-10MB, 10-50MB, >50MB
    */

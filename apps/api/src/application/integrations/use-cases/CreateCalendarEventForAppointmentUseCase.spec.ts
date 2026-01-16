@@ -96,6 +96,7 @@ describe('CreateCalendarEventForAppointmentUseCase (Integration)', () => {
   }
 
   beforeEach(async () => {
+    jest.clearAllMocks();
     await (prisma as any).googleCalendarIntegration.create({
       data: {
         status: 'connected',
@@ -135,14 +136,20 @@ describe('CreateCalendarEventForAppointmentUseCase (Integration)', () => {
   });
 
   afterEach(async () => {
-    await prisma.appointment.deleteMany({});
-    await prisma.service.deleteMany({});
-    await (prisma as any).googleCalendarIntegration.deleteMany({});
+    if (prisma) {
+      await prisma.appointment.deleteMany({});
+      await prisma.service.deleteMany({});
+      await (prisma as any).googleCalendarIntegration.deleteMany({});
+    }
   });
 
   afterAll(async () => {
-    await prisma.$executeRawUnsafe(`DROP SCHEMA IF EXISTS "${schemaName}" CASCADE`);
-    await module.close();
+    if (prisma) {
+      await prisma.$executeRawUnsafe(`DROP SCHEMA IF EXISTS "${schemaName}" CASCADE`);
+    }
+    if (module) {
+      await module.close();
+    }
   });
 
   it('should create calendar event and link appointment', async () => {
@@ -157,5 +164,17 @@ describe('CreateCalendarEventForAppointmentUseCase (Integration)', () => {
 
     const updated = await prisma.appointment.findUnique({ where: { id: appointmentId } });
     expect(updated?.external_calendar_event_id).toBe('event-123');
+  });
+
+  it('should skip when appointment already has calendar event id', async () => {
+    await prisma.appointment.update({
+      where: { id: appointmentId },
+      data: { external_calendar_event_id: 'event-existing' },
+    });
+
+    const result = await useCase.execute(appointmentId);
+
+    expect(result.status).toBe('skipped');
+    expect(googleCalendarService.createEvent).not.toHaveBeenCalled();
   });
 });

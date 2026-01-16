@@ -17,3 +17,22 @@ export enum AppointmentStatus {
   rescheduled = 'rescheduled',
   completed = 'completed',
 }
+
+export enum WaitlistStatus {
+  new = 'new',
+  contacted = 'contacted',
+  closed = 'closed',
+}
+
+export enum PreferredContactMethod {
+  email = 'email',
+  phone = 'phone',
+  telegram = 'telegram',
+}
+
+export enum PreferredTimeWindow {
+  weekday_morning = 'weekday_morning',
+  weekday_evening = 'weekday_evening',
+  weekend = 'weekend',
+  any = 'any',
+}

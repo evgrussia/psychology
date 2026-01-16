@@ -1,19 +1,26 @@
 import { Module, Global } from '@nestjs/common';
-import { EmailStub } from '../integrations/email.stub';
-import { YooKassaStub } from '../integrations/payment.stub';
+import { HttpModule } from '@nestjs/axios';
+import { EmailService } from '../integrations/email.service';
+import { YooKassaService } from '../integrations/yookassa.service';
+import { PrismaPaymentRepository } from '../persistence/prisma/payment/prisma-payment.repository';
 import { AesGcmEncryptionService } from '../security/encryption.service';
 import { HttpClientConfig } from '../config/http-client.config';
 
 @Global()
 @Module({
+  imports: [HttpModule],
   providers: [
     {
       provide: 'IEmailService',
-      useClass: EmailStub,
+      useClass: EmailService,
     },
     {
       provide: 'IPaymentService',
-      useClass: YooKassaStub,
+      useClass: YooKassaService,
+    },
+    {
+      provide: 'IPaymentRepository',
+      useClass: PrismaPaymentRepository,
     },
     {
       provide: 'IEncryptionService',
@@ -24,6 +31,7 @@ import { HttpClientConfig } from '../config/http-client.config';
   exports: [
     'IEmailService',
     'IPaymentService',
+    'IPaymentRepository',
     'IEncryptionService',
     HttpClientConfig,
   ],

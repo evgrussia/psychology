@@ -405,6 +405,7 @@ model Payment {
   currency            String          @default("RUB")
   status              PaymentStatus   @default(pending)
   failure_category    String?
+  idempotency_key     String?         @unique
   created_at          DateTime        @default(now())
   confirmed_at        DateTime?
   appointment         Appointment     @relation(fields: [appointment_id], references: [id])

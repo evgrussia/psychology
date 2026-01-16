@@ -8,8 +8,7 @@ import {
 
 describe('Feature Flags', () => {
   beforeEach(() => {
-    // Set environment to test
-    process.env.NODE_ENV = 'test';
+    // __TEST_ONLY_resetFeatureFlags();
   });
 
   afterEach(() => {

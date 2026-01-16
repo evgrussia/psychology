@@ -50,7 +50,10 @@ export function BookingPaymentClient() {
       const res = await fetch(`${apiUrl}/public/payments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ appointment_id: draft.appointmentId }),
+        body: JSON.stringify({ 
+          appointment_id: draft.appointmentId,
+          client_request_id: draft.clientRequestId
+        }),
       });
 
       if (!res.ok) {

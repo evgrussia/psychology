@@ -1,0 +1,80 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]: "404"
+    - heading "Страница не найдена" [level=1] [ref=e4]
+    - paragraph [ref=e5]: Похоже, эта страница куда-то ушла. Но не волнуйтесь, мы поможем вам найти дорогу.
+    - generic [ref=e6]:
+      - heading "С чего начать?" [level=2] [ref=e7]
+      - paragraph [ref=e8]: Вы можете начать с руководства, изучить материалы блога или узнать больше об услугах.
+      - navigation "Навигация по основным разделам" [ref=e9]:
+        - link "📖 Руководство" [ref=e10] [cursor=pointer]:
+          - /url: /start
+          - generic [ref=e11]: 📖
+          - generic [ref=e12]: Руководство
+        - link "📝 Читать блог" [ref=e13] [cursor=pointer]:
+          - /url: /blog
+          - generic [ref=e14]: 📝
+          - generic [ref=e15]: Читать блог
+        - link "🤝 Мои услуги" [ref=e16] [cursor=pointer]:
+          - /url: /services
+          - generic [ref=e17]: 🤝
+          - generic [ref=e18]: Мои услуги
+        - link "👩‍💼 О психологе" [ref=e19] [cursor=pointer]:
+          - /url: /about
+          - generic [ref=e20]: 👩‍💼
+          - generic [ref=e21]: О психологе
+    - button "На главную" [ref=e22]
+  - contentinfo [ref=e23]:
+    - generic [ref=e24]:
+      - generic [ref=e25]:
+        - generic [ref=e26]:
+          - heading "Навигация" [level=3] [ref=e27]
+          - navigation [ref=e28]:
+            - link "С чего начать" [ref=e29] [cursor=pointer]:
+              - /url: /start
+            - link "С чем я помогаю" [ref=e30] [cursor=pointer]:
+              - /url: /s-chem-ya-pomogayu
+            - link "Услуги" [ref=e31] [cursor=pointer]:
+              - /url: /services
+            - link "О психологе" [ref=e32] [cursor=pointer]:
+              - /url: /about
+            - link "Как проходит консультация" [ref=e33] [cursor=pointer]:
+              - /url: /how-it-works
+            - link "Блог" [ref=e34] [cursor=pointer]:
+              - /url: /blog
+        - generic [ref=e35]:
+          - heading "⚠️ Экстренная помощь" [level=3] [ref=e36]
+          - paragraph [ref=e37]: "Если вам нужна немедленная помощь:"
+          - list [ref=e38]:
+            - listitem [ref=e39]:
+              - text: "Телефон доверия:"
+              - strong [ref=e40]: 8-800-2000-122
+            - listitem [ref=e41]:
+              - text: "МЧС:"
+              - strong [ref=e42]: +7 (495) 989-50-50
+            - listitem [ref=e43]:
+              - text: "Скорая помощь:"
+              - strong [ref=e44]: "112"
+          - link "Все экстренные контакты" [ref=e45] [cursor=pointer]:
+            - /url: /emergency
+        - generic [ref=e46]:
+          - heading "Юридическая информация" [level=3] [ref=e47]
+          - navigation [ref=e48]:
+            - link "Политика конфиденциальности" [ref=e49] [cursor=pointer]:
+              - /url: /legal/privacy
+            - link "Согласие на обработку ПДн" [ref=e50] [cursor=pointer]:
+              - /url: /legal/personal-data-consent
+            - link "Публичная оферта" [ref=e51] [cursor=pointer]:
+              - /url: /legal/offer
+            - link "Отказ от ответственности" [ref=e52] [cursor=pointer]:
+              - /url: /legal/disclaimer
+            - link "Cookie Policy" [ref=e53] [cursor=pointer]:
+              - /url: /legal/cookies
+      - generic [ref=e54]:
+        - paragraph [ref=e55]: © 2026 Эмоциональный баланс. Все права защищены.
+        - paragraph [ref=e56]: Информация на сайте не является публичной офертой и носит информационный характер.
+  - alert [ref=e57]
+```

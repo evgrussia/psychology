@@ -9,6 +9,7 @@ export interface IAppointmentRepository {
   findConfirmedWithoutCalendarEvent(from: Date, to: Date): Promise<Appointment[]>;
   setExternalCalendarEventIdIfMatch(appointmentId: string, expectedValue: string | null, newValue: string): Promise<boolean>;
   clearExternalCalendarEventId(appointmentId: string, expectedValue: string): Promise<void>;
+  markPaidIfPending(appointmentId: string): Promise<boolean>;
   confirmIfPending(appointmentId: string): Promise<boolean>;
   save(appointment: Appointment): Promise<void>;
 }

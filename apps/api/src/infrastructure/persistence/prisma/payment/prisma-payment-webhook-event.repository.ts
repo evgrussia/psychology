@@ -38,4 +38,14 @@ export class PrismaPaymentWebhookEventRepository implements IPaymentWebhookEvent
       },
     });
   }
+
+  async isProcessed(provider: string, providerEventId: string): Promise<boolean> {
+    const normalizedProvider = provider === 'yookassa' ? PaymentProvider.yookassa : (provider as PaymentProvider);
+    const record = await this.prisma.paymentWebhookEvent.findUnique({
+      where: {
+        provider_event_id: providerEventId,
+      },
+    });
+    return !!record?.processed_at;
+  }
 }

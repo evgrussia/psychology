@@ -5,12 +5,23 @@ import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import { AppLogger } from './infrastructure/logging/logger.service';
 import * as cookieParser from 'cookie-parser';
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   const logger = new AppLogger('Bootstrap');
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: logger,
+    bodyParser: false,
   });
+
+  app.use(
+    bodyParser.json({
+      verify: (req: any, _res, buf) => {
+        req.rawBody = buf;
+      },
+    }),
+  );
+  app.use(bodyParser.urlencoded({ extended: true }));
 
   const configService = app.get(ConfigService);
   const storagePath = configService.get<string>('MEDIA_STORAGE_PATH');

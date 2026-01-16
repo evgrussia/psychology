@@ -18,6 +18,10 @@
 - `FEAT-BKG-02-Implementation-Report.md`
 - `FEAT-BKG-03-Implementation-Report.md`
 - `FEAT-BKG-04-Implementation-Report.md`
+- `FEAT-BKG-05-Implementation-Report.md`
+- `FEAT-PAY-01-Implementation-Report.md`
+- `FEAT-PAY-02-Implementation-Report.md`
+- `FEAT-PAY-03-Implementation-Report.md`
 
 ## Список фич (P0) и оценки токенов
 

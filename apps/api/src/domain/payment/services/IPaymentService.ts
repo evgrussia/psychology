@@ -4,8 +4,9 @@ export interface IPaymentService {
     amount: number;
     currency: string;
     description: string;
+    idempotencyKey?: string | null;
   }): Promise<{
-    id: string;
+    providerPaymentId: string;
     confirmationUrl?: string;
     status: string;
   }>;

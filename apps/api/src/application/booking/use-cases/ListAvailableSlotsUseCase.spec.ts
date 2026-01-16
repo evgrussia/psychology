@@ -111,15 +111,21 @@ describe('ListAvailableSlotsUseCase (Integration)', () => {
   });
 
   afterEach(async () => {
-    await prisma.availabilitySlot.deleteMany({});
-    await prisma.service.deleteMany({});
-    await (prisma as any).googleCalendarIntegration.deleteMany({});
+    if (prisma) {
+      await prisma.availabilitySlot.deleteMany({});
+      await prisma.service.deleteMany({});
+      await (prisma as any).googleCalendarIntegration.deleteMany({});
+    }
     syncUseCase.execute.mockClear();
   });
 
   afterAll(async () => {
-    await prisma.$executeRawUnsafe(`DROP SCHEMA IF EXISTS "${schemaName}" CASCADE`);
-    await module.close();
+    if (prisma) {
+      await prisma.$executeRawUnsafe(`DROP SCHEMA IF EXISTS "${schemaName}" CASCADE`);
+    }
+    if (module) {
+      await module.close();
+    }
   });
 
   it('should exclude slots that overlap busy intervals', async () => {

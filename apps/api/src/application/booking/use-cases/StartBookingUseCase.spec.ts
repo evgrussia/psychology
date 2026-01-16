@@ -42,9 +42,10 @@ describe('StartBookingUseCase', () => {
       findConfirmedWithoutCalendarEvent: jest.fn(),
       setExternalCalendarEventIdIfMatch: jest.fn(),
       clearExternalCalendarEventId: jest.fn(),
+      markPaidIfPending: jest.fn(),
       confirmIfPending: jest.fn(),
       save: jest.fn(),
-    };
+    } as any;
     useCase = new StartBookingUseCase(
       serviceRepository,
       slotRepository,
