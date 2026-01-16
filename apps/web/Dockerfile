@@ -32,6 +32,7 @@ COPY design-system/package.json ./design-system/
 # Копируем исходники
 COPY apps/web ./apps/web
 COPY design-system ./design-system
+COPY assets ./assets
 
 RUN npm install -g pnpm
 
@@ -46,8 +47,8 @@ RUN npm install -g pnpm
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
-# Создаем пустую директорию public, если её нет (Next.js требует её для билда)
-RUN mkdir -p public
+# Подготавливаем статические ассеты
+RUN mkdir -p public/assets && cp -r /app/assets/* public/assets/
 
 RUN pnpm build
 
