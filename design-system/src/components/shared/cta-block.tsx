@@ -2,11 +2,12 @@ import * as React from "react";
 import { Card, CardContent } from "../ui/card";
 import { cn } from "../ui/utils";
 
-interface CTABlockProps extends React.ComponentProps<typeof Card> {
+export interface CTABlockProps extends React.ComponentProps<typeof Card> {
   title: string;
   description?: string;
   primaryCTA?: React.ReactNode;
   secondaryCTA?: React.ReactNode;
+  backgroundImage?: string;
   className?: string;
 }
 
@@ -15,25 +16,37 @@ export function CTABlock({
   description,
   primaryCTA,
   secondaryCTA,
+  backgroundImage,
   className,
   ...props
 }: CTABlockProps) {
   return (
     <Card
       className={cn(
-        "bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20",
+        "relative overflow-hidden border-primary/20",
+        !backgroundImage && "bg-gradient-to-r from-primary/10 to-accent/10",
         className
       )}
       {...props}
     >
-      <CardContent className="p-8">
+      {backgroundImage && (
+        <div 
+          className="absolute inset-0 z-0 opacity-20 pointer-events-none"
+          style={{ 
+            backgroundImage: `url(${backgroundImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}
+        />
+      )}
+      <CardContent className="p-8 relative z-10">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex-1 text-center md:text-left">
-            <h3 className="text-2xl font-bold text-foreground mb-2">
+            <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
               {title}
             </h3>
             {description && (
-              <p className="text-muted-foreground">
+              <p className="text-lg text-muted-foreground max-w-2xl">
                 {description}
               </p>
             )}

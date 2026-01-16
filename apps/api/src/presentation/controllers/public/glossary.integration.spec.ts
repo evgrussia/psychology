@@ -22,6 +22,7 @@ import { GetBookingStatusUseCase } from '../../../application/booking/use-cases/
 import { CreatePaymentUseCase } from '../../../application/booking/use-cases/CreatePaymentUseCase';
 import { CreateWaitlistRequestUseCase } from '../../../application/booking/use-cases/CreateWaitlistRequestUseCase';
 import { GetNoSlotsModelUseCase } from '../../../application/booking/use-cases/GetNoSlotsModelUseCase';
+import { CreateDeepLinkUseCase } from '../../../application/telegram/use-cases/CreateDeepLinkUseCase';
 import { NotFoundException } from '@nestjs/common';
 import { GlossaryTermCategory } from '../../../domain/content/value-objects/ContentEnums';
 
@@ -151,6 +152,10 @@ describe('PublicController - Glossary (Integration)', () => {
         },
         {
           provide: GetNoSlotsModelUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: CreateDeepLinkUseCase,
           useValue: { execute: jest.fn() },
         },
       ],

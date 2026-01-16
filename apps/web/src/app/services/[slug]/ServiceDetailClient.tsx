@@ -81,7 +81,7 @@ export default function ServiceDetailClient({ service }: { service: ServiceDetai
   };
 
   return (
-    <main>
+    <>
       <Section>
         <Container className="max-w-4xl">
           <Link href="/services" className="text-sm font-semibold text-muted-foreground hover:text-foreground">
@@ -168,6 +168,6 @@ export default function ServiceDetailClient({ service }: { service: ServiceDetai
           )}
         />
       </Section>
-    </main>
+    </>
   );
 }

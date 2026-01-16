@@ -46,7 +46,7 @@ export default async function TopicsHubPage() {
   const topics = await getTopics();
 
   return (
-    <main>
+    <>
       <Section>
         <Container>
           <header className="mb-12 text-center">
@@ -69,6 +69,6 @@ export default async function TopicsHubPage() {
           </div>
         </Container>
       </Section>
-    </main>
+    </>
   );
 }

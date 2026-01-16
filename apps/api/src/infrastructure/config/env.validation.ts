@@ -84,6 +84,50 @@ class EnvironmentVariables {
   @IsOptional()
   @IsNumber()
   GOOGLE_CALENDAR_SYNC_LOOKAHEAD_DAYS?: number;
+
+  @IsOptional()
+  @IsString()
+  TELEGRAM_BOT_USERNAME?: string;
+
+  @IsOptional()
+  @IsString()
+  TELEGRAM_CHANNEL_USERNAME?: string;
+
+  @IsOptional()
+  @IsString()
+  TELEGRAM_SERVICE_TOKEN?: string;
+
+  @IsOptional()
+  @IsString()
+  TELEGRAM_BOT_TOKEN?: string;
+
+  @IsOptional()
+  @IsString()
+  TELEGRAM_WEBHOOK_URL?: string;
+
+  @IsOptional()
+  @IsString()
+  TELEGRAM_WEBHOOK_SECRET?: string;
+
+  @IsOptional()
+  @IsString()
+  TELEGRAM_UPDATES_MODE?: string;
+
+  @IsOptional()
+  @IsNumber()
+  TELEGRAM_POLLING_INTERVAL_MS?: number;
+
+  @IsOptional()
+  @IsNumber()
+  TELEGRAM_DEEP_LINK_TTL_DAYS?: number;
+
+  @IsOptional()
+  @IsNumber()
+  TELEGRAM_DEEP_LINK_CLEANUP_INTERVAL_HOURS?: number;
+
+  @IsOptional()
+  @IsString()
+  PUBLIC_WEB_URL?: string;
 }
 
 export function validate(config: Record<string, any>) {

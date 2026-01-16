@@ -480,6 +480,7 @@ model DataExportRequest {
 model DeepLink {
   deep_link_id     String              @id
   flow             String
+  tg_target        String              @default("bot")
   topic_code       String?
   entity_ref       String?
   source_page      String?
@@ -490,9 +491,46 @@ model DeepLink {
   lead             Lead?               @relation(fields: [lead_id], references: [id])
   interactive_runs InteractiveRun[]
   timeline_events  LeadTimelineEvent[]
+  telegram_sessions TelegramSession[]
 
   @@index([created_at])
   @@map("deep_links")
+}
+
+model TelegramUser {
+  telegram_user_id String           @id
+  username         String?
+  first_name       String?
+  last_name        String?
+  language_code    String?
+  is_bot           Boolean          @default(false)
+  created_at       DateTime         @default(now())
+  updated_at       DateTime         @updatedAt
+  last_seen_at     DateTime?
+  sessions         TelegramSession[]
+
+  @@map("telegram_users")
+}
+
+model TelegramSession {
+  id                   String        @id @default(uuid()) @db.Uuid
+  telegram_user_id     String
+  state                String
+  flow                 String?
+  deep_link_id         String?
+  topic_code           String?
+  frequency            String?
+  concierge_payload    Json?
+  is_active            Boolean       @default(true)
+  started_at           DateTime      @default(now())
+  updated_at           DateTime      @updatedAt
+  stopped_at           DateTime?
+  last_interaction_at  DateTime?
+  telegram_user        TelegramUser  @relation(fields: [telegram_user_id], references: [telegram_user_id])
+  deep_link            DeepLink?     @relation(fields: [deep_link_id], references: [deep_link_id])
+
+  @@index([telegram_user_id, is_active])
+  @@map("telegram_sessions")
 }
 
 model Lead {

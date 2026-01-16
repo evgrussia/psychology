@@ -58,14 +58,69 @@ export default function PageClient({ slug, data }: PageClientProps) {
     }
   }, [slug, data.title]);
 
+  const getPageGraphics = () => {
+    switch(slug) {
+      case 'about':
+        return {
+          hero: "/assets/graphics/hero/hero-about-office-1376x768.webp",
+          spot: "/assets/graphics/spot/spot-journal-reflection-1024x1024.svg",
+          abstract: "/assets/graphics/abstract/abstract-inner-landscape-1376x768.webp"
+        };
+      case 'how-it-works':
+        return {
+          hero: "/assets/graphics/hero/hero-journey-1376x768.webp",
+          spot: "/assets/graphics/spot/spot-hopeful-progression-1024x1024.svg",
+          abstract: "/assets/graphics/abstract/abstract-balance-forms-1376x768.webp"
+        };
+      case 'emergency':
+        return {
+          hero: "/assets/graphics/hero/hero-trust-office-1376x768.webp",
+          spot: "/assets/graphics/spot/spot-safe-space-1024x1024.svg",
+          abstract: "/assets/graphics/abstract/abstract-emotional-waves-1376x768.webp"
+        };
+      default:
+        return {
+          hero: undefined,
+          spot: undefined,
+          abstract: undefined
+        };
+    }
+  };
+
+  const graphics = getPageGraphics();
+
   return (
-    <main>
-      <Section>
-        <Container className="max-w-3xl">
-          <h1 className="text-4xl font-bold mb-8 text-foreground">{data.title}</h1>
-          
-          <div className="prose prose-slate dark:prose-invert max-w-none text-muted-foreground">
-            <SafeMarkdownRenderer content={data.body_markdown} />
+    <>
+      {graphics.hero ? (
+        <HeroSection 
+          title={data.title}
+          image={graphics.hero}
+          className="bg-background border-b"
+        />
+      ) : (
+        <Section>
+          <Container className="max-w-3xl text-center md:text-left">
+            <h1 className="text-4xl md:text-5xl font-bold mb-8 text-foreground">{data.title}</h1>
+          </Container>
+        </Section>
+      )}
+      
+      <Section className="relative overflow-hidden">
+        {graphics.abstract && (
+          <div className="absolute top-0 right-0 w-1/3 h-full opacity-5 pointer-events-none">
+            <img src={graphics.abstract} alt="" className="w-full h-full object-cover" />
+          </div>
+        )}
+        <Container className="max-w-4xl relative z-10">
+          <div className="flex flex-col md:flex-row gap-12">
+            <div className="flex-1 prose prose-slate dark:prose-invert max-w-none text-muted-foreground">
+              <SafeMarkdownRenderer content={data.body_markdown} />
+            </div>
+            {graphics.spot && (
+              <div className="hidden md:block w-64 h-64 flex-shrink-0">
+                <img src={graphics.spot} alt="" className="w-full h-full object-contain opacity-80" />
+              </div>
+            )}
           </div>
         </Container>
       </Section>
@@ -81,19 +136,19 @@ export default function PageClient({ slug, data }: PageClientProps) {
                   id: 'confidentiality',
                   title: 'Конфиденциальность',
                   description: 'Ваши данные и история остаются строго между нами.',
-                  icon: '🔒'
+                  image: "/assets/graphics/spot/spot-safe-space-1024x1024.svg"
                 },
                 {
                   id: 'boundaries',
                   title: 'Профессиональные границы',
                   description: 'Работа в рамках этического кодекса и четких договоренностей.',
-                  icon: '🤝'
+                  image: "/assets/graphics/spot/spot-support-connection-1024x1024.svg"
                 },
                 {
                   id: 'education',
                   title: 'Образование и супервизия',
                   description: 'Постоянное обучение и регулярная супервизия практики.',
-                  icon: '🎓'
+                  image: "/assets/graphics/spot/spot-education-1024x1024.svg"
                 }
               ]}
             />
@@ -177,6 +232,7 @@ export default function PageClient({ slug, data }: PageClientProps) {
           className="mx-4"
           title="С чего начнём?"
           description="Вы можете записаться на ознакомительную сессию или задать вопрос в Telegram."
+          backgroundImage={graphics.abstract}
           primaryCTA={
             <Button size="lg" onClick={() => handleBookingClick(`${slug}_footer_booking`)}>
               Записаться
@@ -189,6 +245,6 @@ export default function PageClient({ slug, data }: PageClientProps) {
           }
         />
       </Section>
-    </main>
+    </>
   );
 }

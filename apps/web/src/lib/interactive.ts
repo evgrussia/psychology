@@ -233,8 +233,13 @@ export class InteractivePlatform {
 
   static async getQuiz(slug: string): Promise<any> {
     try {
-      const response = await fetch(`${API_BASE_URL}/public/interactive/quizzes/${slug}`);
-      if (!response.ok) throw new Error('Failed to fetch quiz');
+      const response = await fetch(`${API_BASE_URL}/public/interactive/quizzes/${slug}`, {
+        cache: 'no-store'
+      });
+      if (!response.ok) {
+        console.error(`[InteractivePlatform] Failed to fetch quiz ${slug}: ${response.status} ${response.statusText}`);
+        throw new Error(`Failed to fetch quiz: ${response.status}`);
+      }
       return await response.json();
     } catch (error) {
       console.error('[InteractivePlatform] Error getting quiz:', error);

@@ -13,6 +13,7 @@ import {
   Section
 } from '@psychology/design-system';
 import { track, captureUTMParameters } from '../lib/tracking';
+import { createTelegramDeepLink } from '../lib/telegram';
 
 interface HomeClientProps {
   data: {
@@ -28,9 +29,26 @@ export default function HomeClient({ data }: HomeClientProps) {
     window.location.href = '/booking';
   };
 
-  const handleTGClick = (ctaId: string) => {
-    track('cta_click', { cta_id: ctaId, cta_target: 'telegram' });
-    window.location.href = 'https://t.me/emotional_balance_bot';
+  const handleTGClick = async (ctaId: string) => {
+    try {
+      const { deepLinkId, url } = await createTelegramDeepLink({
+        flow: 'plan_7d',
+        tgTarget: 'channel',
+        source: '/',
+        utmMedium: 'channel',
+        utmContent: ctaId,
+      });
+      track('cta_tg_click', {
+        tg_target: 'channel',
+        tg_flow: 'plan_7d',
+        deep_link_id: deepLinkId,
+      });
+      window.location.href = url;
+    } catch (error) {
+      console.error('Failed to open Telegram channel', error);
+      const channelUsername = process.env.NEXT_PUBLIC_TELEGRAM_CHANNEL_USERNAME || 'emotional_balance_channel';
+      window.location.href = `https://t.me/${channelUsername.replace(/^@/, '')}`;
+    }
   };
 
   const handleTopicClick = (topicCode: string) => {
@@ -57,33 +75,60 @@ export default function HomeClient({ data }: HomeClientProps) {
   }, [data.trust_blocks]);
 
   return (
-    <main>
+    <>
       <HeroSection 
         title="Эмоциональный баланс"
         subtitle="Тёплое пространство профессиональной поддержки"
         description="Помогаю справиться с тревогой, выгоранием и найти опору в себе за 1–3 клика до первого шага."
+        image="/assets/graphics/hero/hero-homepage-calm-1376x768.webp"
         primaryCTA={
           <Button size="lg" onClick={() => handleBookingClick('hero_booking')}>
             Записаться на консультацию
           </Button>
         }
         secondaryCTA={
-          <Button variant="outline" size="lg" onClick={() => handleTGClick('hero_tg')}>
-            Начать в Telegram
+          <Button variant="outline" size="lg" onClick={() => void handleTGClick('hero_tg')}>
+            Подписаться на канал
           </Button>
         }
       />
 
       <Section>
         <Container>
+          <div className="flex flex-col lg:flex-row items-center gap-12 mb-16">
+            <div className="flex-1">
+              <h2 className="text-3xl font-bold mb-6">Как я работаю</h2>
+              <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
+                Мой подход основан на бережности, профессионализме и доказательных методах психотерапии. 
+                Мы вместе создаем безопасное пространство, где вы можете быть собой.
+              </p>
+              <Button variant="outline" onClick={() => window.location.href = '/how-it-works'}>
+                Подробнее о подходе
+              </Button>
+            </div>
+            <div className="flex-1 w-full max-w-[500px]">
+              <img 
+                src="/assets/graphics/sections/section-homepage-how-i-work-1376x768.png" 
+                alt="Как я работаю" 
+                className="w-full h-auto rounded-2xl shadow-xl"
+              />
+            </div>
+          </div>
+          
           <h2 className="text-3xl font-bold text-center mb-12">С чем я помогаю</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {data.topics.map((topic) => (
+            {data.topics.map((topic, index) => (
               <TopicCard 
                 key={topic.code}
                 title={topic.title}
                 description={`Узнайте больше о том, как я работаю с темой ${topic.title.toLowerCase()}.`}
                 href={`/s-chem-ya-pomogayu/${topic.code}`}
+                image={`/assets/graphics/spot/${
+                  topic.code === 'anxiety' ? 'spot-anxiety-waves-1024x1024.svg' : 
+                  topic.code === 'relationship' ? 'spot-support-connection-1024x1024.svg' :
+                  topic.code === 'growth' ? 'spot-growth-sprout-1024x1024.svg' :
+                  'spot-dialog-bubbles-1024x1024.svg'
+                }`}
                 onClick={() => handleTopicClick(topic.code)}
               />
             ))}
@@ -92,16 +137,20 @@ export default function HomeClient({ data }: HomeClientProps) {
       </Section>
 
       {data.featured_interactives.length > 0 && (
-        <Section className="bg-muted">
-          <Container>
+        <Section className="bg-muted overflow-hidden relative">
+          <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
+            <img src="/assets/graphics/patterns/pattern-waves-subtle-1024x1024.png" alt="" className="w-full h-full object-cover" />
+          </div>
+          <Container className="relative z-10">
             <h2 className="text-3xl font-bold text-center mb-12">Первый шаг за 3 минуты</h2>
-            <div className="flex flex-col gap-6 max-w-3xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
               {data.featured_interactives.map((item) => (
                 <TopicCard 
                   key={item.id}
                   title={item.title}
                   description="Пройдите короткий интерактив и получите план действий."
                   href={`/start/${item.slug}`}
+                  image={item.type === 'quiz' ? "/assets/graphics/modules/module-anxiety-test-1264x848.jpg" : "/assets/graphics/modules/module-exercises-1264x848.png"}
                   onClick={() => track('cta_click', { cta_id: `interactive_${item.slug}`, cta_target: `interactive_${item.type}` })}
                 />
               ))}
@@ -112,8 +161,17 @@ export default function HomeClient({ data }: HomeClientProps) {
 
       <Section>
         <Container>
-          <h2 className="text-3xl font-bold text-center mb-12">Почему мне можно доверять</h2>
-          <TrustBlocks viewport="desktop" items={data.trust_blocks} />
+          <TrustBlocks 
+            viewport="desktop" 
+            title="Почему мне можно доверять"
+            items={data.trust_blocks.map((block, index) => ({
+              ...block,
+              image: index === 0 ? "/assets/graphics/spot/spot-safe-space-1024x1024.svg" :
+                     index === 1 ? "/assets/graphics/spot/spot-education-1024x1024.svg" :
+                     index === 2 ? "/assets/graphics/spot/spot-hopeful-progression-1024x1024.svg" :
+                     "/assets/graphics/spot/spot-support-connection-1024x1024.svg"
+            }))} 
+          />
         </Container>
       </Section>
 
@@ -153,17 +211,18 @@ export default function HomeClient({ data }: HomeClientProps) {
         className="mx-4 mb-16"
         title="Готовы сделать первый шаг?"
         description="Выберите удобный способ начать: записаться на консультацию или получить полезные материалы в Telegram."
+        backgroundImage="/assets/graphics/abstract/abstract-balance-forms-1376x768.webp"
         primaryCTA={
           <Button size="lg" onClick={() => handleBookingClick('footer_booking')}>
             Записаться
           </Button>
         }
         secondaryCTA={
-          <Button variant="outline" size="lg" onClick={() => handleTGClick('footer_tg')}>
-            Telegram-бот
+          <Button variant="outline" size="lg" onClick={() => void handleTGClick('footer_tg')}>
+            Telegram-канал
           </Button>
         }
       />
-    </main>
+    </>
   );
 }

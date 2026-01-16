@@ -6,10 +6,11 @@ import { track } from '@/lib/tracking';
 
 interface ServiceBookingButtonProps {
   serviceSlug: string;
+  className?: string;
   children?: React.ReactNode;
 }
 
-export function ServiceBookingButton({ serviceSlug, children = 'Записаться' }: ServiceBookingButtonProps) {
+export function ServiceBookingButton({ serviceSlug, className, children = 'Записаться' }: ServiceBookingButtonProps) {
   const handleBookingClick = () => {
     track('booking_start', {
       service_slug: serviceSlug,
@@ -19,7 +20,7 @@ export function ServiceBookingButton({ serviceSlug, children = 'Записать
   };
 
   return (
-    <Button onClick={handleBookingClick}>
+    <Button onClick={handleBookingClick} className={className}>
       {children}
     </Button>
   );

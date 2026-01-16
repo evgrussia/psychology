@@ -5,7 +5,7 @@ import { Button, Container, Section } from '@psychology/design-system';
 
 export default function NotFound() {
   return (
-    <main className="min-h-[80vh] flex flex-col items-center justify-center text-center px-6">
+    <div className="min-h-[80vh] flex flex-col items-center justify-center text-center px-6">
       <div className="text-[120px] font-extrabold text-primary/20 leading-none mb-4">
         404
       </div>
@@ -45,6 +45,6 @@ export default function NotFound() {
       <Button size="lg" className="px-12" onClick={() => window.location.href = '/'}>
         На главную
       </Button>
-    </main>
+    </div>
   );
 }

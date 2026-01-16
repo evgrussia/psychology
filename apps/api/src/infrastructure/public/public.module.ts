@@ -18,9 +18,10 @@ import { DatabaseModule } from '../database/database.module';
 import { ContentModule } from '../content/content.module';
 import { BookingModule } from '../booking/booking.module';
 import { IntegrationsModule } from '../integrations/integrations.module';
+import { TelegramModule } from '../telegram/telegram.module';
 
 @Module({
-  imports: [DatabaseModule, ContentModule, BookingModule, IntegrationsModule],
+  imports: [DatabaseModule, ContentModule, BookingModule, IntegrationsModule, TelegramModule],
   controllers: [PublicController],
   providers: [
     GetHomepageModelUseCase,

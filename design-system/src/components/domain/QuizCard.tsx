@@ -10,19 +10,28 @@ import type { ReactElement } from 'react';
 
 interface QuizCardProps {
   variant?: 'single-choice' | 'multi-choice' | 'scale';
+  illustration?: string;
 }
 
 export function QuizCard({
   variant = 'single-choice',
+  illustration,
 }: QuizCardProps): ReactElement {
   const [selectedSingle, setSelectedSingle] = useState('');
   const [selectedMulti, setSelectedMulti] = useState<string[]>([]);
   const [scaleValue, setScaleValue] = useState([5]);
 
+  const Illustration = illustration ? (
+    <div className="flex justify-center mb-6">
+      <img src={illustration} alt="" className="w-32 h-32 opacity-80" />
+    </div>
+  ) : null;
+
   if (variant === 'single-choice') {
     return (
       <Card className="w-full max-w-2xl">
         <CardHeader>
+          {Illustration}
           <CardTitle className="text-xl">Как часто вы чувствуете тревогу?</CardTitle>
           <p className="text-sm text-muted-foreground mt-2">
             Выберите один вариант, который лучше всего описывает ваше состояние

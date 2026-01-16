@@ -22,9 +22,11 @@ import { GetBookingStatusUseCase } from '../../../application/booking/use-cases/
 import { CreatePaymentUseCase } from '../../../application/booking/use-cases/CreatePaymentUseCase';
 import { CreateWaitlistRequestUseCase } from '../../../application/booking/use-cases/CreateWaitlistRequestUseCase';
 import { GetNoSlotsModelUseCase } from '../../../application/booking/use-cases/GetNoSlotsModelUseCase';
+import { CreateDeepLinkUseCase } from '../../../application/telegram/use-cases/CreateDeepLinkUseCase';
 import { ServiceFormat } from '@domain/booking/value-objects/ServiceEnums';
 import { HomepageDto } from '../../../application/public/dto/homepage.dto';
 import { PreferredContactMethod, PreferredTimeWindow, WaitlistStatus } from '@domain/booking/value-objects/BookingEnums';
+import { TelegramFlow } from '@domain/telegram/value-objects/TelegramEnums';
 
 describe('PublicController (Integration)', () => {
   let app: INestApplication;
@@ -150,6 +152,10 @@ describe('PublicController (Integration)', () => {
         },
         {
           provide: GetNoSlotsModelUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: CreateDeepLinkUseCase,
           useValue: { execute: jest.fn() },
         },
       ],
@@ -418,6 +424,28 @@ describe('PublicController (Integration)', () => {
 
       expect(response.body.waitlist_id).toBe('waitlist-1');
       expect(response.body.status).toBe('new');
+    });
+  });
+
+  describe('POST /public/deep-links', () => {
+    it('should create deep link', async () => {
+      const createDeepLinkUseCase = app.get<CreateDeepLinkUseCase>(CreateDeepLinkUseCase);
+      jest.spyOn(createDeepLinkUseCase, 'execute').mockResolvedValueOnce({
+        deep_link_id: 'dl_123',
+        url: 'https://t.me/emotional_balance_bot?start=payload',
+      });
+
+      const response = await request(app.getHttpServer())
+        .post('/public/deep-links')
+        .send({
+          tg_flow: TelegramFlow.concierge,
+          tg_target: 'bot',
+          source_page: 'booking_no_slots',
+        })
+        .expect(201);
+
+      expect(response.body.deep_link_id).toBe('dl_123');
+      expect(response.body.url).toContain('t.me');
     });
   });
 });

@@ -20,7 +20,7 @@ export default async function CuratedHubPage() {
   const collections = await getCollections();
 
   return (
-    <main>
+    <>
       <Section>
         <Container>
           <header className="mb-12 text-center">
@@ -57,6 +57,6 @@ export default async function CuratedHubPage() {
           )}
         </Container>
       </Section>
-    </main>
+    </>
   );
 }

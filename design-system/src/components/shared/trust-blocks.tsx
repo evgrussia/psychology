@@ -3,14 +3,15 @@ import { Shield, Award, Heart, Users, type LucideIcon } from 'lucide-react';
 import { cn } from '../ui/utils';
 import type { ReactElement } from 'react';
 
-interface TrustItem {
+export interface TrustItem {
   id: string;
   title: string;
   description: string;
   icon?: string | LucideIcon;
+  image?: string;
 }
 
-interface TrustBlocksProps {
+export interface TrustBlocksProps {
   viewport: 'mobile' | 'desktop';
   compact?: boolean;
   className?: string;
@@ -59,8 +60,10 @@ export function TrustBlocks({
       <div className={cn(`grid gap-4 ${viewport === 'mobile' ? 'grid-cols-2' : 'grid-cols-4'}`, className)}>
         {displayItems.map((item) => (
           <div key={item.id} className="text-center">
-            <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3">
-              {typeof item.icon === 'string' ? (
+            <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3 overflow-hidden">
+              {item.image ? (
+                <img src={item.image} alt={item.title} className="w-full h-full object-contain" />
+              ) : typeof item.icon === 'string' ? (
                 <span className="text-2xl">{item.icon}</span>
               ) : item.icon ? (
                 <item.icon className="w-6 h-6" />
@@ -83,18 +86,20 @@ export function TrustBlocks({
       {title && (
         <h2 className="text-3xl font-bold text-center">{title}</h2>
       )}
-      <div className={`grid gap-4 ${viewport === 'mobile' ? 'grid-cols-1' : 'grid-cols-2 lg:grid-cols-4'}`}>
+      <div className={`grid gap-6 ${viewport === 'mobile' ? 'grid-cols-1' : 'grid-cols-2 lg:grid-cols-4'}`}>
         {displayItems.map((item) => (
-          <Card key={item.id} className="border-2">
-            <CardContent className="p-5 text-center">
-              <div className="w-14 h-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4">
-                {typeof item.icon === 'string' ? (
+          <Card key={item.id} className="border-2 hover:border-primary/50 transition-colors">
+            <CardContent className="p-6 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-primary/5 text-primary flex items-center justify-center mx-auto mb-6 overflow-hidden">
+                {item.image ? (
+                  <img src={item.image} alt={item.title} className="w-full h-full object-contain p-2" />
+                ) : typeof item.icon === 'string' ? (
                   <span className="text-3xl">{item.icon}</span>
                 ) : item.icon ? (
-                  <item.icon className="w-7 h-7" />
+                  <item.icon className="w-8 h-8" />
                 ) : null}
               </div>
-              <h4 className="font-semibold text-foreground mb-2">
+              <h4 className="font-semibold text-lg text-foreground mb-3">
                 {item.title}
               </h4>
               <p className="text-sm text-muted-foreground leading-relaxed">

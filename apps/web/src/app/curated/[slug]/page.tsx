@@ -25,7 +25,7 @@ export default async function CuratedCollectionPage({ params }: { params: { slug
   }
 
   return (
-    <main>
+    <>
       <Section>
         <Container>
           <Link href="/curated" className="text-primary hover:underline mb-6 inline-block font-medium">
@@ -114,6 +114,6 @@ export default async function CuratedCollectionPage({ params }: { params: { slug
           </div>
         </Container>
       </Section>
-    </main>
+    </>
   );
 }

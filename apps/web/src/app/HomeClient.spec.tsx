@@ -1,7 +1,8 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { expect, it, describe, vi, beforeEach } from 'vitest';
 import HomeClient from './HomeClient';
 import * as tracking from '../lib/tracking';
+import * as telegram from '../lib/telegram';
 
 // Mock tracking module
 vi.mock('../lib/tracking', () => ({
@@ -9,9 +10,18 @@ vi.mock('../lib/tracking', () => ({
   captureUTMParameters: vi.fn(),
 }));
 
+vi.mock('../lib/telegram', () => ({
+  createTelegramDeepLink: vi.fn().mockResolvedValue({
+    deepLinkId: 'dl_123',
+    url: 'https://t.me/emotional_balance_channel',
+  }),
+}));
+
 // Mock window.location
-delete (window as any).location;
-window.location = { href: '/' } as any;
+Object.defineProperty(window, 'location', {
+  value: { href: '/' },
+  writable: true,
+});
 
 describe('HomeClient', () => {
   const mockData = {
@@ -52,7 +62,7 @@ describe('HomeClient', () => {
     expect(screen.getByText('Эмоциональный баланс')).toBeInTheDocument();
     expect(screen.getByText(/Тёплое пространство/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Записаться на консультацию/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Начать в Telegram/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Подписаться на канал/i })).toBeInTheDocument();
   });
 
   it('renders all topic cards', () => {
@@ -145,15 +155,27 @@ describe('HomeClient', () => {
     });
   });
 
-  it('tracks Telegram CTA click', () => {
+  it('tracks Telegram CTA click', async () => {
     render(<HomeClient data={mockData} />);
 
-    const tgButton = screen.getAllByRole('button', { name: /Telegram/i })[0];
+    const tgButton = screen.getByRole('button', { name: /Подписаться на канал/i });
     fireEvent.click(tgButton);
 
-    expect(tracking.track).toHaveBeenCalledWith('cta_click', {
-      cta_id: 'hero_tg',
-      cta_target: 'telegram',
+    await waitFor(() => {
+      expect(telegram.createTelegramDeepLink).toHaveBeenCalledWith(
+        expect.objectContaining({
+          flow: 'plan_7d',
+          tgTarget: 'channel',
+          utmContent: 'hero_tg',
+          utmMedium: 'channel',
+        }),
+      );
+    });
+
+    expect(tracking.track).toHaveBeenCalledWith('cta_tg_click', {
+      tg_target: 'channel',
+      tg_flow: 'plan_7d',
+      deep_link_id: 'dl_123',
     });
   });
 

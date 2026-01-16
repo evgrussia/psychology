@@ -48,22 +48,28 @@ export default function StartHubPage() {
   ];
 
   return (
-    <main>
+    <>
       <HeroSection
         title="С чего начнём?"
         subtitle="Выберите инструмент"
         description="Выберите подходящий инструмент, чтобы лучше понять своё состояние и получить практические рекомендации. Это анонимно и бесплатно."
+        image="/assets/graphics/hero/hero-journey-1376x768.webp"
       />
 
       <Section>
         <Container>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {interactives.map((item) => (
               <TopicCard
                 key={item.id}
                 title={item.title}
                 description={item.description}
                 href={`/start/${item.slug}`}
+                image={
+                  item.id === 'anxiety' ? "/assets/graphics/modules/module-anxiety-test-1264x848.jpg" :
+                  item.id === 'rituals' ? "/assets/graphics/modules/module-emotions-journal-1264x848.png" :
+                  "/assets/graphics/modules/module-exercises-1264x848.png"
+                }
               />
             ))}
           </div>
@@ -74,6 +80,7 @@ export default function StartHubPage() {
         className="mx-4 mb-16"
         title="Нужна помощь специалиста?"
         description="Если вы чувствуете, что самопомощи недостаточно, наши психологи всегда готовы поддержать вас."
+        backgroundImage="/assets/graphics/abstract/abstract-inner-landscape-1376x768.webp"
         primaryCTA={
           <Button onClick={() => window.location.href = '/booking'}>
             Подобрать психолога
@@ -85,6 +92,6 @@ export default function StartHubPage() {
           </Button>
         }
       />
-    </main>
+    </>
   );
 }

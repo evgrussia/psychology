@@ -20,6 +20,7 @@ import { GetBookingStatusUseCase } from '../../../application/booking/use-cases/
 import { CreatePaymentUseCase, CreatePaymentRequestDto, CreatePaymentResponseDto } from '../../../application/booking/use-cases/CreatePaymentUseCase';
 import { CreateWaitlistRequestUseCase } from '../../../application/booking/use-cases/CreateWaitlistRequestUseCase';
 import { GetNoSlotsModelUseCase } from '../../../application/booking/use-cases/GetNoSlotsModelUseCase';
+import { CreateDeepLinkUseCase } from '../../../application/telegram/use-cases/CreateDeepLinkUseCase';
 import { HomepageDto } from '../../../application/public/dto/homepage.dto';
 import { TopicDto, TopicLandingDto } from '../../../application/public/dto/topics.dto';
 import { PublicCuratedCollectionDto } from '../../../application/public/dto/curated.dto';
@@ -38,6 +39,7 @@ import {
 import { CreateWaitlistRequestDto, CreateWaitlistResponseDto } from '../../../application/booking/dto/waitlist.dto';
 import { NoSlotsModelDto } from '../../../application/booking/dto/no-slots.dto';
 import { ContentType, GlossaryTermCategory } from '../../../domain/content/value-objects/ContentEnums';
+import { CreateDeepLinkRequestDto, CreateDeepLinkResponseDto } from '../../../application/telegram/dto/deep-links.dto';
 
 @ApiTags('public')
 @Controller('public')
@@ -63,6 +65,7 @@ export class PublicController {
     private readonly createPaymentUseCase: CreatePaymentUseCase,
     private readonly createWaitlistRequestUseCase: CreateWaitlistRequestUseCase,
     private readonly getNoSlotsModelUseCase: GetNoSlotsModelUseCase,
+    private readonly createDeepLinkUseCase: CreateDeepLinkUseCase,
   ) {}
 
   @Get('glossary')
@@ -206,6 +209,15 @@ export class PublicController {
     @Body() dto: CreateWaitlistRequestDto,
   ): Promise<CreateWaitlistResponseDto> {
     return this.createWaitlistRequestUseCase.execute(dto);
+  }
+
+  @Post('deep-links')
+  @ApiOperation({ summary: 'Create telegram deep link' })
+  @ApiResponse({ status: 201, description: 'Deep link created' })
+  async createDeepLink(
+    @Body() dto: CreateDeepLinkRequestDto,
+  ): Promise<CreateDeepLinkResponseDto> {
+    return this.createDeepLinkUseCase.execute(dto);
   }
 
   @Post('booking/start')

@@ -211,6 +211,122 @@ export class TrackingService {
   }
 
   /**
+   * Send tg_subscribe_confirmed event
+   *
+   * According to Tracking Plan:
+   * - Props: tg_target, deep_link_id, tg_flow (optional), topic (optional)
+   * - Prohibited: tg_id, free text
+   */
+  async trackTelegramSubscribeConfirmed(params: {
+    deepLinkId?: string | null;
+    tgTarget: string;
+    tgFlow?: string | null;
+    topic?: string | null;
+  }): Promise<void> {
+    const event = {
+      event_name: 'tg_subscribe_confirmed',
+      source: 'telegram',
+      occurred_at: new Date().toISOString(),
+      properties: {
+        tg_target: params.tgTarget,
+        deep_link_id: params.deepLinkId ?? undefined,
+        tg_flow: params.tgFlow ?? undefined,
+        topic: params.topic ?? undefined,
+      },
+    };
+
+    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+  }
+
+  /**
+   * Send tg_onboarding_completed event
+   *
+   * According to Tracking Plan:
+   * - Props: segment, frequency, deep_link_id (optional)
+   * - Prohibited: PII, free text
+   */
+  async trackTelegramOnboardingCompleted(params: {
+    deepLinkId?: string | null;
+    segment: string;
+    frequency: string;
+  }): Promise<void> {
+    const event = {
+      event_name: 'tg_onboarding_completed',
+      source: 'telegram',
+      occurred_at: new Date().toISOString(),
+      properties: {
+        deep_link_id: params.deepLinkId ?? undefined,
+        segment: params.segment,
+        frequency: params.frequency,
+      },
+    };
+
+    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+  }
+
+  /**
+   * Send tg_interaction event
+   *
+   * According to Tracking Plan:
+   * - Props: interaction_type, tg_flow, deep_link_id (optional), button_id (optional)
+   * - Prohibited: text content
+   */
+  async trackTelegramInteraction(params: {
+    interactionType: string;
+    tgFlow: string;
+    deepLinkId?: string | null;
+    buttonId?: string | null;
+    messageTemplateId?: string | null;
+    topic?: string | null;
+    hasText?: boolean;
+    textLengthBucket?: string | null;
+  }): Promise<void> {
+    const event = {
+      event_name: 'tg_interaction',
+      source: 'telegram',
+      occurred_at: new Date().toISOString(),
+      properties: {
+        interaction_type: params.interactionType,
+        tg_flow: params.tgFlow,
+        deep_link_id: params.deepLinkId ?? undefined,
+        button_id: params.buttonId ?? undefined,
+        message_template_id: params.messageTemplateId ?? undefined,
+        topic: params.topic ?? undefined,
+        has_text: params.hasText ?? undefined,
+        text_length_bucket: params.textLengthBucket ?? undefined,
+      },
+    };
+
+    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+  }
+
+  /**
+   * Send tg_series_stopped event
+   *
+   * According to Tracking Plan:
+   * - Props: tg_flow, stop_method, deep_link_id (optional)
+   * - Prohibited: PII, free text
+   */
+  async trackTelegramSeriesStopped(params: {
+    tgFlow: string;
+    stopMethod: string;
+    deepLinkId?: string | null;
+  }): Promise<void> {
+    const event = {
+      event_name: 'tg_series_stopped',
+      source: 'telegram',
+      occurred_at: new Date().toISOString(),
+      properties: {
+        tg_flow: params.tgFlow,
+        stop_method: params.stopMethod,
+        deep_link_id: params.deepLinkId ?? undefined,
+      },
+    };
+
+    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+  }
+
+  /**
    * Calculate size bucket for analytics
    * Buckets: <1MB, 1-5MB, 5-10MB, 10-50MB, >50MB
    */

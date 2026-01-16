@@ -5,11 +5,53 @@ import { Container } from '@psychology/design-system';
 
 export function LayoutClientWrapper({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      {children}
-      <footer className="mt-16 border-t bg-muted py-10">
+    <div className="flex min-h-screen flex-col">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <Container className="flex h-16 items-center justify-between">
+          <a href="/" className="flex items-center gap-2">
+            <img 
+              src="/assets/graphics/brand/logo-1408x768.png" 
+              alt="Эмоциональный баланс" 
+              className="h-8 w-auto"
+            />
+            <span className="hidden font-bold sm:inline-block">Эмоциональный баланс</span>
+          </a>
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+            <a href="/services" className="transition-colors hover:text-primary">Услуги</a>
+            <a href="/start" className="transition-colors hover:text-primary">С чего начать</a>
+            <a href="/about" className="transition-colors hover:text-primary">Обо мне</a>
+            <a href="/blog" className="transition-colors hover:text-primary">Блог</a>
+          </nav>
+          <div className="flex items-center gap-4">
+            <a href="/booking">
+              <button className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
+                Записаться
+              </button>
+            </a>
+          </div>
+        </Container>
+      </header>
+      
+      <main className="flex-1">
+        {children}
+      </main>
+
+      <footer className="mt-16 border-t bg-muted py-12">
         <Container>
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-12 md:grid-cols-4">
+            <div className="space-y-4">
+              <a href="/" className="flex items-center gap-2">
+                <img 
+                  src="/assets/graphics/brand/logo-1408x768.png" 
+                  alt="Эмоциональный баланс" 
+                  className="h-6 w-auto grayscale opacity-70"
+                />
+                <span className="font-bold text-muted-foreground">Эмоциональный баланс</span>
+              </a>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Профессиональная психологическая помощь и поддержка на пути к вашему внутреннему балансу.
+              </p>
+            </div>
             <div>
               <h3 className="mb-4 text-base font-semibold">Навигация</h3>
               <nav className="flex flex-col gap-2">
@@ -26,7 +68,7 @@ export function LayoutClientWrapper({ children }: { children: React.ReactNode })
               <p className="mb-3 text-sm text-muted-foreground">
                 Если вам нужна немедленная помощь:
               </p>
-              <ul className="list-inside list-disc pl-5 text-sm leading-relaxed text-muted-foreground">
+              <ul className="list-inside list-disc pl-2 text-sm leading-relaxed text-muted-foreground">
                 <li>Телефон доверия: <strong className="font-semibold text-foreground">8-800-2000-122</strong></li>
                 <li>МЧС: <strong className="font-semibold text-foreground">+7 (495) 989-50-50</strong></li>
                 <li>Скорая помощь: <strong className="font-semibold text-foreground">112</strong></li>
@@ -46,14 +88,14 @@ export function LayoutClientWrapper({ children }: { children: React.ReactNode })
               </nav>
             </div>
           </div>
-          <div className="mt-8 border-t pt-6 text-center text-sm text-muted-foreground">
+          <div className="mt-12 border-t pt-8 text-center text-sm text-muted-foreground">
             <p>© 2026 Эмоциональный баланс. Все права защищены.</p>
-            <p className="mt-2 text-xs">
+            <p className="mt-2 text-xs opacity-60">
               Информация на сайте не является публичной офертой и носит информационный характер.
             </p>
           </div>
         </Container>
       </footer>
-    </>
+    </div>
   );
 }

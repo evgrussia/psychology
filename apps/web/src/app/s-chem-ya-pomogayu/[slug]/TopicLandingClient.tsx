@@ -92,7 +92,7 @@ export default function TopicLandingClient({ data }: TopicLandingClientProps) {
   const howIWorkContent = markdownSections.how_i_work;
 
   return (
-    <main>
+    <>
       <HeroSection
         title={landing?.title || topic.title}
         subtitle="С чем я помогаю"
@@ -252,6 +252,6 @@ export default function TopicLandingClient({ data }: TopicLandingClientProps) {
           </Button>
         }
       />
-    </main>
+    </>
   );
 }

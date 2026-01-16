@@ -6,7 +6,7 @@ import { Button, Card, Checkbox, Input, Label, RadioGroup, RadioGroupItem } from
 import { BookingStepLayout } from '../BookingStepLayout';
 import { loadBookingDraft } from '../bookingStorage';
 import { track } from '@/lib/tracking';
-import { buildTelegramDeepLink, generateDeepLinkId } from '@/lib/telegram';
+import { createTelegramDeepLink } from '@/lib/telegram';
 
 export function NoSlotsClient() {
   const router = useRouter();
@@ -113,21 +113,25 @@ export function NoSlotsClient() {
     }
   };
 
-  const handleTelegramClick = () => {
-    const deepLinkId = generateDeepLinkId();
-    const url = buildTelegramDeepLink({
-      deepLinkId,
-      flow: 'concierge',
-      source: 'booking_no_slots',
-    });
+  const handleTelegramClick = async () => {
+    setErrorMessage(null);
+    try {
+      const { deepLinkId, url } = await createTelegramDeepLink({
+        flow: 'concierge',
+        source: 'booking_no_slots',
+        tgTarget: 'bot',
+      });
 
-    track('cta_tg_click', {
-      tg_target: 'bot',
-      tg_flow: 'concierge',
-      deep_link_id: deepLinkId,
-    });
+      track('cta_tg_click', {
+        tg_target: 'bot',
+        tg_flow: 'concierge',
+        deep_link_id: deepLinkId,
+      });
 
-    window.location.href = url;
+      window.location.href = url;
+    } catch (error: any) {
+      setErrorMessage(error?.message || 'Не удалось открыть Telegram. Попробуйте ещё раз.');
+    }
   };
 
   return (

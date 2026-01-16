@@ -1,0 +1,93 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "Эмоциональный баланс" [ref=e5] [cursor=pointer]:
+          - /url: /
+          - img "Эмоциональный баланс" [ref=e6]
+        - navigation [ref=e7]:
+          - link "Услуги" [ref=e8] [cursor=pointer]:
+            - /url: /services
+          - link "С чего начать" [ref=e9] [cursor=pointer]:
+            - /url: /start
+          - link "Обо мне" [ref=e10] [cursor=pointer]:
+            - /url: /about
+          - link "Блог" [ref=e11] [cursor=pointer]:
+            - /url: /blog
+        - link "Записаться" [ref=e13] [cursor=pointer]:
+          - /url: /booking
+          - button "Записаться" [ref=e14]
+    - main [ref=e15]:
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - generic [ref=e20]:
+            - generic [ref=e21]:
+              - generic [ref=e22]: Шаг 1 из 5
+              - generic [ref=e23]: 20%
+            - progressbar [ref=e24]
+          - generic [ref=e26]:
+            - heading "Выберите услугу" [level=1] [ref=e27]
+            - paragraph [ref=e28]: Подберите формат консультации и перейдите к выбору времени.
+        - generic [ref=e29]:
+          - paragraph [ref=e30]: Список услуг временно недоступен. Попробуйте позже.
+          - button "С чего начать" [ref=e32]
+    - contentinfo [ref=e33]:
+      - generic [ref=e34]:
+        - generic [ref=e35]:
+          - generic [ref=e36]:
+            - link "Эмоциональный баланс Эмоциональный баланс" [ref=e37] [cursor=pointer]:
+              - /url: /
+              - img "Эмоциональный баланс" [ref=e38]
+              - generic [ref=e39]: Эмоциональный баланс
+            - paragraph [ref=e40]: Профессиональная психологическая помощь и поддержка на пути к вашему внутреннему балансу.
+          - generic [ref=e41]:
+            - heading "Навигация" [level=3] [ref=e42]
+            - navigation [ref=e43]:
+              - link "С чего начать" [ref=e44] [cursor=pointer]:
+                - /url: /start
+              - link "С чем я помогаю" [ref=e45] [cursor=pointer]:
+                - /url: /s-chem-ya-pomogayu
+              - link "Услуги" [ref=e46] [cursor=pointer]:
+                - /url: /services
+              - link "О психологе" [ref=e47] [cursor=pointer]:
+                - /url: /about
+              - link "Как проходит консультация" [ref=e48] [cursor=pointer]:
+                - /url: /how-it-works
+              - link "Блог" [ref=e49] [cursor=pointer]:
+                - /url: /blog
+          - generic [ref=e50]:
+            - heading "⚠️ Экстренная помощь" [level=3] [ref=e51]
+            - paragraph [ref=e52]: "Если вам нужна немедленная помощь:"
+            - list [ref=e53]:
+              - listitem [ref=e54]:
+                - text: "Телефон доверия:"
+                - strong [ref=e55]: 8-800-2000-122
+              - listitem [ref=e56]:
+                - text: "МЧС:"
+                - strong [ref=e57]: +7 (495) 989-50-50
+              - listitem [ref=e58]:
+                - text: "Скорая помощь:"
+                - strong [ref=e59]: "112"
+            - link "Все экстренные контакты" [ref=e60] [cursor=pointer]:
+              - /url: /emergency
+          - generic [ref=e61]:
+            - heading "Юридическая информация" [level=3] [ref=e62]
+            - navigation [ref=e63]:
+              - link "Политика конфиденциальности" [ref=e64] [cursor=pointer]:
+                - /url: /legal/privacy
+              - link "Согласие на обработку ПДн" [ref=e65] [cursor=pointer]:
+                - /url: /legal/personal-data-consent
+              - link "Публичная оферта" [ref=e66] [cursor=pointer]:
+                - /url: /legal/offer
+              - link "Отказ от ответственности" [ref=e67] [cursor=pointer]:
+                - /url: /legal/disclaimer
+              - link "Cookie Policy" [ref=e68] [cursor=pointer]:
+                - /url: /legal/cookies
+        - generic [ref=e69]:
+          - paragraph [ref=e70]: © 2026 Эмоциональный баланс. Все права защищены.
+          - paragraph [ref=e71]: Информация на сайте не является публичной офертой и носит информационный характер.
+  - alert [ref=e72]
+```

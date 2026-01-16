@@ -48,41 +48,61 @@ export default async function ServicesPage() {
   const services = await getServices();
 
   return (
-    <main>
+    <>
       <Section>
         <Container>
-          <header className="mb-10 max-w-3xl">
-            <h1 className="text-4xl font-bold text-foreground">Услуги</h1>
-            <p className="mt-4 text-lg text-muted-foreground">
-              Выберите формат консультации, который подходит вашему состоянию и запросу.
+          <header className="mb-12 max-w-3xl">
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground">Услуги</h1>
+            <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
+              Выберите формат консультации, который подходит вашему состоянию и запросу. 
+              Я провожу встречи онлайн по всему миру и очно в кабинете.
             </p>
           </header>
 
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-8 md:grid-cols-2">
             {services.map(service => (
-              <Card key={service.id} className="p-6 flex h-full flex-col justify-between">
-                <div>
-                  <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    {formatLabels[service.format]}
-                  </div>
-                  <h2 className="text-2xl font-semibold text-foreground">{service.title}</h2>
-                  <div className="mt-4 text-sm text-muted-foreground">
-                    <div>Длительность: {service.duration_minutes} минут</div>
-                    <div>Стоимость: {service.price_amount} ₽</div>
-                    {service.deposit_amount ? (
-                      <div>Депозит: {service.deposit_amount} ₽</div>
-                    ) : null}
-                  </div>
-                  <div className="prose prose-slate dark:prose-invert mt-4 max-w-none text-muted-foreground">
-                    <SafeMarkdownRenderer content={service.description_markdown} />
+              <Card key={service.id} className="overflow-hidden group flex flex-col h-full border-2 hover:border-primary/50 transition-all duration-300">
+                <div className="aspect-[3/2] overflow-hidden relative">
+                  <img 
+                    src={
+                      service.slug.includes('individual') ? "/assets/graphics/services/service-individual-therapy-1264x848.png" :
+                      service.slug.includes('couple') ? "/assets/graphics/services/service-couples-therapy-1264x848.jpg" :
+                      service.slug.includes('group') ? "/assets/graphics/services/service-group-therapy-1264x848.jpg" :
+                      "/assets/graphics/photos/photo-desk-journal-1264x848.webp"
+                    } 
+                    alt={service.title} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute top-4 left-4">
+                    <div className="bg-background/90 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider text-primary shadow-sm">
+                      {formatLabels[service.format]}
+                    </div>
                   </div>
                 </div>
-
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <Button asChild variant="outline">
-                    <Link href={`/services/${service.slug}`}>Подробнее</Link>
-                  </Button>
-                  <ServiceBookingButton serviceSlug={service.slug} />
+                <div className="p-8 flex flex-col flex-1">
+                  <h2 className="text-2xl font-bold text-foreground mb-4 group-hover:text-primary transition-colors">
+                    {service.title}
+                  </h2>
+                  <div className="flex gap-4 mb-6 text-sm text-muted-foreground font-medium">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                      {service.duration_minutes} минут
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                      {service.price_amount} ₽
+                    </div>
+                  </div>
+                  <div className="prose prose-slate dark:prose-invert mb-8 max-w-none text-muted-foreground line-clamp-4">
+                    <SafeMarkdownRenderer content={service.description_markdown} />
+                  </div>
+                  
+                  <div className="mt-auto pt-6 border-t flex flex-wrap gap-4">
+                    <Button asChild variant="outline" className="flex-1">
+                      <Link href={`/services/${service.slug}`}>Подробнее</Link>
+                    </Button>
+                    <ServiceBookingButton serviceSlug={service.slug} className="flex-1" />
+                  </div>
                 </div>
               </Card>
             ))}
@@ -100,6 +120,6 @@ export default async function ServicesPage() {
           )}
         </Container>
       </Section>
-    </main>
+    </>
   );
 }

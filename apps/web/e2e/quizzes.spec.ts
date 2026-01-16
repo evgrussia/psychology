@@ -16,16 +16,22 @@ test.describe('Quiz E2E Tests', () => {
     // Click start button
     await page.click('button:has-text("Начать тест")');
     
+    // Wait for transition to questions
+    await page.waitForSelector('h2');
+    
     // Answer all 7 questions (selecting option with value 1 for each)
     for (let i = 0; i < 7; i++) {
       // Wait for question to appear
-      await expect(page.locator('h2')).toBeVisible();
+      const question = page.locator('h2');
+      await expect(question).toBeVisible();
       
       // Click first option (usually value 0 or 1)
-      await page.locator('button:has-text("несколько дней"), button:has-text("совсем нет")').first().click();
+      const option = page.getByRole('button').filter({ hasText: /несколько дней|совсем нет/i }).first();
+      await expect(option).toBeVisible({ timeout: 10000 });
+      await option.click();
       
-      // Wait a bit for next question or result
-      await page.waitForTimeout(500);
+      // Wait for next question or result transition
+      await page.waitForTimeout(300);
     }
     
     // Should see result
@@ -77,11 +83,16 @@ test.describe('Quiz E2E Tests', () => {
     await page.goto('/start/quizzes/anxiety');
     await page.click('button:has-text("Начать тест")');
     
+    // Wait for transition to questions
+    await page.waitForSelector('h2');
+    
     // Select maximum values for all questions to trigger high score
     for (let i = 0; i < 7; i++) {
       // Select option with highest value (usually "почти каждый день" or similar)
-      await page.locator('button:has-text("почти каждый день"), button:has-text("каждый день")').first().click();
-      await page.waitForTimeout(500);
+      const option = page.getByRole('button').filter({ hasText: /почти каждый день|каждый день/i }).first();
+      await expect(option).toBeVisible({ timeout: 10000 });
+      await option.click();
+      await page.waitForTimeout(300);
     }
     
     // Should see crisis banner

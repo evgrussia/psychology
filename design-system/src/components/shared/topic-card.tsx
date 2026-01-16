@@ -3,11 +3,12 @@ import { Card, CardContent } from "../ui/card";
 import { ChevronRight } from "lucide-react";
 import { cn } from "../ui/utils";
 
-interface TopicCardProps extends React.ComponentProps<typeof Card> {
+export interface TopicCardProps extends React.ComponentProps<typeof Card> {
   title: string;
   description: string;
   href?: string;
   icon?: React.ReactNode;
+  image?: string;
   onClick?: () => void;
   className?: string;
 }
@@ -17,29 +18,41 @@ export function TopicCard({
   description,
   href,
   icon,
+  image,
   onClick,
   className,
   ...props
 }: TopicCardProps) {
   const content = (
-    <CardContent className="p-6 h-full flex flex-col">
-      <div className="flex items-start gap-4 mb-4 flex-1">
-        {icon && (
-          <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary">
-            {icon}
-          </div>
-        )}
-        <div className="flex-1">
-          <h3 className="font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
-            {title}
-          </h3>
-          <p className="text-sm text-muted-foreground line-clamp-3">
-            {description}
-          </p>
+    <CardContent className="p-0 h-full flex flex-col">
+      {image && (
+        <div className="w-full aspect-[3/2] overflow-hidden">
+          <img 
+            src={image} 
+            alt={title} 
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
         </div>
-      </div>
-      <div className="flex justify-end mt-auto">
-        <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+      )}
+      <div className="p-6 flex flex-col flex-1">
+        <div className="flex items-start gap-4 mb-4 flex-1">
+          {icon && (
+            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary">
+              {icon}
+            </div>
+          )}
+          <div className="flex-1">
+            <h3 className="font-semibold text-lg text-foreground mb-2 group-hover:text-primary transition-colors">
+              {title}
+            </h3>
+            <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+              {description}
+            </p>
+          </div>
+        </div>
+        <div className="flex justify-end mt-4">
+          <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+        </div>
       </div>
     </CardContent>
   );

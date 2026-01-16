@@ -37,18 +37,29 @@ export default function EmergencyClient() {
   ];
 
   return (
-    <main className="min-h-screen bg-background">
+    <>
       <Section className="py-12 md:py-24">
         <Container className="max-w-3xl">
-          <header className="text-center mb-12">
-            <h1 className="text-4xl font-bold mb-4 text-foreground">
+          <header className="text-center mb-12 relative">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 opacity-10 pointer-events-none">
+              <img src="/assets/graphics/icons/icon-chat-outline-1024x1024.svg" alt="" className="w-full h-full" />
+            </div>
+            <h1 className="text-4xl font-bold mb-4 text-foreground relative z-10">
               Экстренная помощь
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto relative z-10">
               Если вы чувствуете, что находитесь в опасности или не справляетесь прямо сейчас, 
               пожалуйста, обратитесь к специалистам экстренных служб.
             </p>
           </header>
+
+          <div className="mb-12 flex justify-center">
+            <img 
+              src="/assets/graphics/spot/spot-safe-space-1024x1024.svg" 
+              alt="Безопасное пространство" 
+              className="w-48 h-48 opacity-80"
+            />
+          </div>
 
           <Disclaimer variant="destructive" title="Важное уточнение">
             Этот ресурс и консультации наших психологов <strong className="font-bold">не являются службой экстренной помощи</strong>. 
@@ -121,6 +132,6 @@ export default function EmergencyClient() {
           </div>
         </Container>
       </Section>
-    </main>
+    </>
   );
 }
