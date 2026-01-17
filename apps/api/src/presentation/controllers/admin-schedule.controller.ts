@@ -22,9 +22,11 @@ import { DeleteScheduleSlotsUseCase } from '../../application/admin/use-cases/sc
 import { GetScheduleSettingsUseCase } from '../../application/admin/use-cases/schedule/GetScheduleSettingsUseCase';
 import { UpdateScheduleSettingsUseCase } from '../../application/admin/use-cases/schedule/UpdateScheduleSettingsUseCase';
 import { CancelAppointmentUseCase } from '../../application/admin/use-cases/schedule/CancelAppointmentUseCase';
+import { RecordAppointmentOutcomeUseCase } from '../../application/admin/use-cases/schedule/RecordAppointmentOutcomeUseCase';
 import {
   CreateScheduleSlotsRequestDto,
   DeleteScheduleSlotsRequestDto,
+  RecordAppointmentOutcomeRequestDto,
   UpdateScheduleSettingsRequestDto,
   UpdateScheduleSlotRequestDto,
 } from '../../application/admin/dto/schedule.dto';
@@ -45,6 +47,7 @@ export class AdminScheduleController {
     private readonly getScheduleSettingsUseCase: GetScheduleSettingsUseCase,
     private readonly updateScheduleSettingsUseCase: UpdateScheduleSettingsUseCase,
     private readonly cancelAppointmentUseCase: CancelAppointmentUseCase,
+    private readonly recordAppointmentOutcomeUseCase: RecordAppointmentOutcomeUseCase,
   ) {}
 
   @Get('slots')
@@ -167,6 +170,25 @@ export class AdminScheduleController {
     const actorUserId = req.user?.id;
     const actorRole = req.user?.roles?.[0] || 'owner';
     await this.cancelAppointmentUseCase.execute(appointmentId, actorUserId, actorRole);
+    return { status: 'ok' };
+  }
+
+  @Post('appointments/:id/outcome')
+  @Roles('owner', 'assistant')
+  @ApiOperation({ summary: 'Record appointment outcome' })
+  @ApiResponse({ status: 200, description: 'Outcome recorded' })
+  async recordOutcome(
+    @Param('id') appointmentId: string,
+    @Body() dto: RecordAppointmentOutcomeRequestDto,
+    @Request() req: any,
+  ) {
+    const actorRole = req.user?.roles?.[0] || 'owner';
+    await this.recordAppointmentOutcomeUseCase.execute({
+      appointmentId,
+      outcome: dto.outcome,
+      reasonCategory: dto.reason_category ?? null,
+      recordedByRole: actorRole,
+    });
     return { status: 'ok' };
   }
 }

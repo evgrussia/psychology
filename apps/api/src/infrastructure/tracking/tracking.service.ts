@@ -1,5 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MediaType } from '../../domain/media/value-objects/MediaType';
+import { IngestAnalyticsEventUseCase } from '@application/analytics/use-cases/IngestAnalyticsEventUseCase';
+import * as crypto from 'crypto';
 
 /**
  * Tracking Service
@@ -12,6 +14,8 @@ import { MediaType } from '../../domain/media/value-objects/MediaType';
 export class TrackingService {
   private readonly logger = new Logger(TrackingService.name);
 
+  constructor(private readonly ingestAnalyticsEventUseCase: IngestAnalyticsEventUseCase) {}
+
   /**
    * Send admin_login event
    *
@@ -20,16 +24,9 @@ export class TrackingService {
    * - Prohibited: email, phone, identifiers
    */
   async trackAdminLogin(params: { role: string }): Promise<void> {
-    const event = {
-      event_name: 'admin_login',
-      source: 'admin/backend',
-      occurred_at: new Date().toISOString(),
-      properties: {
-        role: params.role,
-      },
-    };
-
-    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+    await this.sendEvent('admin_login', 'admin', {
+      role: params.role,
+    });
   }
 
   /**
@@ -49,22 +46,15 @@ export class TrackingService {
     rejectionReason?: string | null;
     hasCrisisTrigger?: boolean;
   }): Promise<void> {
-    const event = {
-      event_name: 'ugc_moderated',
-      source: 'admin/backend',
-      occurred_at: new Date().toISOString(),
-      properties: {
-        ugc_type: params.ugcType,
-        ugc_id: params.ugcId,
-        moderation_status: params.moderationStatus,
-        moderator_role: params.moderatorRole,
-        duration_ms: params.durationMs,
-        rejection_reason: params.rejectionReason ?? undefined,
-        has_crisis_trigger: params.hasCrisisTrigger ?? undefined,
-      },
-    };
-
-    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+    await this.sendEvent('ugc_moderated', 'admin', {
+      ugc_type: params.ugcType,
+      ugc_id: params.ugcId,
+      moderation_status: params.moderationStatus,
+      moderator_role: params.moderatorRole,
+      duration_ms: params.durationMs,
+      rejection_reason: params.rejectionReason ?? undefined,
+      has_crisis_trigger: params.hasCrisisTrigger ?? undefined,
+    });
   }
 
   /**
@@ -79,18 +69,11 @@ export class TrackingService {
     ugcId: string;
     escalationReason: string;
   }): Promise<void> {
-    const event = {
-      event_name: 'moderation_escalated',
-      source: 'admin/backend',
-      occurred_at: new Date().toISOString(),
-      properties: {
-        ugc_type: params.ugcType,
-        ugc_id: params.ugcId,
-        escalation_reason: params.escalationReason,
-      },
-    };
-
-    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+    await this.sendEvent('moderation_escalated', 'admin', {
+      ugc_type: params.ugcType,
+      ugc_id: params.ugcId,
+      escalation_reason: params.escalationReason,
+    });
   }
 
   /**
@@ -105,18 +88,11 @@ export class TrackingService {
     answerLengthBucket: 'short' | 'medium' | 'long';
     timeToAnswerHours: number;
   }): Promise<void> {
-    const event = {
-      event_name: 'ugc_answered',
-      source: 'admin/backend',
-      occurred_at: new Date().toISOString(),
-      properties: {
-        ugc_id: params.ugcId,
-        answer_length_bucket: params.answerLengthBucket,
-        time_to_answer_hours: params.timeToAnswerHours,
-      },
-    };
-
-    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+    await this.sendEvent('ugc_answered', 'admin', {
+      ugc_id: params.ugcId,
+      answer_length_bucket: params.answerLengthBucket,
+      time_to_answer_hours: params.timeToAnswerHours,
+    });
   }
 
   /**
@@ -134,20 +110,15 @@ export class TrackingService {
     const sizeBytesNum = parseInt(params.sizeBytes, 10);
     const sizeBucket = this.getSizeBucket(sizeBytesNum);
 
-    const event = {
-      event_name: 'admin_media_uploaded',
-      source: 'admin/backend',
-      occurred_at: new Date().toISOString(),
-      user_id: params.userId,
-      properties: {
+    await this.sendEvent(
+      'admin_media_uploaded',
+      'admin',
+      {
         media_type: params.mediaType,
         size_bucket: sizeBucket,
       },
-    };
-
-    // In production, send to analytics provider
-    // For now, log it
-    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+      { userId: params.userId },
+    );
   }
 
   /**
@@ -157,18 +128,16 @@ export class TrackingService {
    * - Props: service_id/service_slug
    * - Prohibited: PII
    */
-  async trackBookingConflict(params: { serviceId: string; serviceSlug: string }): Promise<void> {
-    const event = {
-      event_name: 'booking_conflict',
-      source: 'backend',
-      occurred_at: new Date().toISOString(),
-      properties: {
+  async trackBookingConflict(params: { serviceId: string; serviceSlug: string; leadId?: string | null }): Promise<void> {
+    await this.sendEvent(
+      'booking_conflict',
+      'backend',
+      {
         service_id: params.serviceId,
         service_slug: params.serviceSlug,
       },
-    };
-
-    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+      { leadId: params.leadId ?? null },
+    );
   }
 
   /**
@@ -184,21 +153,20 @@ export class TrackingService {
     currency: string;
     serviceId: string;
     serviceSlug: string;
+    leadId?: string | null;
   }): Promise<void> {
-    const event = {
-      event_name: 'payment_started',
-      source: 'backend',
-      occurred_at: new Date().toISOString(),
-      properties: {
+    await this.sendEvent(
+      'payment_started',
+      'backend',
+      {
         payment_provider: params.paymentProvider,
         amount: params.amount,
         currency: params.currency,
         service_id: params.serviceId,
         service_slug: params.serviceSlug,
       },
-    };
-
-    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+      { leadId: params.leadId ?? null },
+    );
   }
 
   /**
@@ -214,21 +182,22 @@ export class TrackingService {
     currency: string;
     serviceId: string;
     serviceSlug: string;
+    leadId?: string | null;
+    deepLinkId?: string | null;
   }): Promise<void> {
-    const event = {
-      event_name: 'booking_paid',
-      source: 'backend',
-      occurred_at: new Date().toISOString(),
-      properties: {
+    await this.sendEvent(
+      'booking_paid',
+      'backend',
+      {
         payment_provider: params.paymentProvider,
         amount: params.amount,
         currency: params.currency,
         service_id: params.serviceId,
         service_slug: params.serviceSlug,
+        deep_link_id: params.deepLinkId ?? undefined,
       },
-    };
-
-    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+      { leadId: params.leadId ?? null },
+    );
   }
 
   /**
@@ -244,21 +213,58 @@ export class TrackingService {
     serviceId: string;
     serviceSlug: string;
     format: string;
+    leadId?: string | null;
+    deepLinkId?: string | null;
   }): Promise<void> {
-    const event = {
-      event_name: 'booking_confirmed',
-      source: 'backend',
-      occurred_at: new Date().toISOString(),
-      properties: {
+    await this.sendEvent(
+      'booking_confirmed',
+      'backend',
+      {
         appointment_start_at: params.appointmentStartAt.toISOString(),
         timezone: params.timezone,
         service_id: params.serviceId,
         service_slug: params.serviceSlug,
         format: params.format,
+        deep_link_id: params.deepLinkId ?? undefined,
       },
-    };
+      { leadId: params.leadId ?? null },
+    );
+  }
 
-    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+  /**
+   * Send appointment_outcome_recorded event (server-side source of truth)
+   *
+   * According to Tracking Plan:
+   * - Props: appointment_id, scheduled_start_at, service_id/service_slug, outcome
+   * - Optional: recorded_by_role, reason_category
+   * - Prohibited: free text
+   */
+  async trackAppointmentOutcomeRecorded(params: {
+    appointmentId: string;
+    scheduledStartAt: Date;
+    serviceId: string;
+    serviceSlug: string;
+    outcome: string;
+    recordedByRole?: string | null;
+    reasonCategory?: string | null;
+    leadId?: string | null;
+    deepLinkId?: string | null;
+  }): Promise<void> {
+    await this.sendEvent(
+      'appointment_outcome_recorded',
+      'admin',
+      {
+        appointment_id: params.appointmentId,
+        scheduled_start_at: params.scheduledStartAt.toISOString(),
+        service_id: params.serviceId,
+        service_slug: params.serviceSlug,
+        outcome: params.outcome,
+        recorded_by_role: params.recordedByRole ?? undefined,
+        reason_category: params.reasonCategory ?? undefined,
+        deep_link_id: params.deepLinkId ?? undefined,
+      },
+      { leadId: params.leadId ?? null },
+    );
   }
 
   /**
@@ -273,20 +279,19 @@ export class TrackingService {
     failureCategory: string;
     serviceId: string;
     serviceSlug: string;
+    leadId?: string | null;
   }): Promise<void> {
-    const event = {
-      event_name: 'payment_failed',
-      source: 'backend',
-      occurred_at: new Date().toISOString(),
-      properties: {
+    await this.sendEvent(
+      'payment_failed',
+      'backend',
+      {
         payment_provider: params.paymentProvider,
         failure_category: params.failureCategory,
         service_id: params.serviceId,
         service_slug: params.serviceSlug,
       },
-    };
-
-    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+      { leadId: params.leadId ?? null },
+    );
   }
 
   /**
@@ -301,20 +306,19 @@ export class TrackingService {
     serviceSlug: string;
     preferredContact: string;
     preferredTimeWindow: string;
+    leadId?: string | null;
   }): Promise<void> {
-    const event = {
-      event_name: 'waitlist_submitted',
-      source: 'backend',
-      occurred_at: new Date().toISOString(),
-      properties: {
+    await this.sendEvent(
+      'waitlist_submitted',
+      'backend',
+      {
         service_id: params.serviceId,
         service_slug: params.serviceSlug,
         preferred_contact: params.preferredContact,
         preferred_time_window: params.preferredTimeWindow,
       },
-    };
-
-    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+      { leadId: params.leadId ?? null },
+    );
   }
 
   /**
@@ -324,18 +328,16 @@ export class TrackingService {
    * - Props: diary_type, has_text
    * - Prohibited: payload contents
    */
-  async trackDiaryEntryCreated(params: { diaryType: string; hasText: boolean }): Promise<void> {
-    const event = {
-      event_name: 'diary_entry_created',
-      source: 'backend',
-      occurred_at: new Date().toISOString(),
-      properties: {
+  async trackDiaryEntryCreated(params: { diaryType: string; hasText: boolean; userId?: string | null }): Promise<void> {
+    await this.sendEvent(
+      'diary_entry_created',
+      'backend',
+      {
         diary_type: params.diaryType,
         has_text: params.hasText,
       },
-    };
-
-    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+      { userId: params.userId ?? null },
+    );
   }
 
   /**
@@ -345,17 +347,15 @@ export class TrackingService {
    * - Props: diary_type
    * - Prohibited: payload contents
    */
-  async trackDiaryEntryDeleted(params: { diaryType: string }): Promise<void> {
-    const event = {
-      event_name: 'diary_entry_deleted',
-      source: 'backend',
-      occurred_at: new Date().toISOString(),
-      properties: {
+  async trackDiaryEntryDeleted(params: { diaryType: string; userId?: string | null }): Promise<void> {
+    await this.sendEvent(
+      'diary_entry_deleted',
+      'backend',
+      {
         diary_type: params.diaryType,
       },
-    };
-
-    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+      { userId: params.userId ?? null },
+    );
   }
 
   /**
@@ -365,18 +365,16 @@ export class TrackingService {
    * - Props: export_type, period
    * - Prohibited: diary contents
    */
-  async trackPdfExported(params: { exportType: string; period: string }): Promise<void> {
-    const event = {
-      event_name: 'pdf_exported',
-      source: 'backend',
-      occurred_at: new Date().toISOString(),
-      properties: {
+  async trackPdfExported(params: { exportType: string; period: string; userId?: string | null }): Promise<void> {
+    await this.sendEvent(
+      'pdf_exported',
+      'backend',
+      {
         export_type: params.exportType,
         period: params.period,
       },
-    };
-
-    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+      { userId: params.userId ?? null },
+    );
   }
 
   /**
@@ -386,18 +384,16 @@ export class TrackingService {
    * - Props: consent_type, new_value
    * - Prohibited: PII, free text
    */
-  async trackConsentUpdated(params: { consentType: string; newValue: boolean }): Promise<void> {
-    const event = {
-      event_name: 'consent_updated',
-      source: 'backend',
-      occurred_at: new Date().toISOString(),
-      properties: {
+  async trackConsentUpdated(params: { consentType: string; newValue: boolean; userId?: string | null }): Promise<void> {
+    await this.sendEvent(
+      'consent_updated',
+      'backend',
+      {
         consent_type: params.consentType,
         new_value: params.newValue,
       },
-    };
-
-    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+      { userId: params.userId ?? null },
+    );
   }
 
   /**
@@ -407,17 +403,15 @@ export class TrackingService {
    * - Props: method
    * - Prohibited: PII, free text
    */
-  async trackAccountDeleted(params: { method: string }): Promise<void> {
-    const event = {
-      event_name: 'account_deleted',
-      source: 'backend',
-      occurred_at: new Date().toISOString(),
-      properties: {
+  async trackAccountDeleted(params: { method: string; userId?: string | null }): Promise<void> {
+    await this.sendEvent(
+      'account_deleted',
+      'backend',
+      {
         method: params.method,
       },
-    };
-
-    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+      { userId: params.userId ?? null },
+    );
   }
 
   /**
@@ -433,19 +427,12 @@ export class TrackingService {
     tgFlow?: string | null;
     topic?: string | null;
   }): Promise<void> {
-    const event = {
-      event_name: 'tg_subscribe_confirmed',
-      source: 'telegram',
-      occurred_at: new Date().toISOString(),
-      properties: {
-        tg_target: params.tgTarget,
-        deep_link_id: params.deepLinkId ?? undefined,
-        tg_flow: params.tgFlow ?? undefined,
-        topic: params.topic ?? undefined,
-      },
-    };
-
-    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+    await this.sendEvent('tg_subscribe_confirmed', 'telegram', {
+      tg_target: params.tgTarget,
+      deep_link_id: params.deepLinkId ?? undefined,
+      tg_flow: params.tgFlow ?? undefined,
+      topic: params.topic ?? undefined,
+    });
   }
 
   /**
@@ -460,18 +447,11 @@ export class TrackingService {
     segment: string;
     frequency: string;
   }): Promise<void> {
-    const event = {
-      event_name: 'tg_onboarding_completed',
-      source: 'telegram',
-      occurred_at: new Date().toISOString(),
-      properties: {
-        deep_link_id: params.deepLinkId ?? undefined,
-        segment: params.segment,
-        frequency: params.frequency,
-      },
-    };
-
-    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+    await this.sendEvent('tg_onboarding_completed', 'telegram', {
+      deep_link_id: params.deepLinkId ?? undefined,
+      segment: params.segment,
+      frequency: params.frequency,
+    });
   }
 
   /**
@@ -491,23 +471,16 @@ export class TrackingService {
     hasText?: boolean;
     textLengthBucket?: string | null;
   }): Promise<void> {
-    const event = {
-      event_name: 'tg_interaction',
-      source: 'telegram',
-      occurred_at: new Date().toISOString(),
-      properties: {
-        interaction_type: params.interactionType,
-        tg_flow: params.tgFlow,
-        deep_link_id: params.deepLinkId ?? undefined,
-        button_id: params.buttonId ?? undefined,
-        message_template_id: params.messageTemplateId ?? undefined,
-        topic: params.topic ?? undefined,
-        has_text: params.hasText ?? undefined,
-        text_length_bucket: params.textLengthBucket ?? undefined,
-      },
-    };
-
-    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+    await this.sendEvent('tg_interaction', 'telegram', {
+      interaction_type: params.interactionType,
+      tg_flow: params.tgFlow,
+      deep_link_id: params.deepLinkId ?? undefined,
+      button_id: params.buttonId ?? undefined,
+      message_template_id: params.messageTemplateId ?? undefined,
+      topic: params.topic ?? undefined,
+      has_text: params.hasText ?? undefined,
+      text_length_bucket: params.textLengthBucket ?? undefined,
+    });
   }
 
   /**
@@ -522,18 +495,55 @@ export class TrackingService {
     stopMethod: string;
     deepLinkId?: string | null;
   }): Promise<void> {
-    const event = {
-      event_name: 'tg_series_stopped',
-      source: 'telegram',
+    await this.sendEvent('tg_series_stopped', 'telegram', {
+      tg_flow: params.tgFlow,
+      stop_method: params.stopMethod,
+      deep_link_id: params.deepLinkId ?? undefined,
+    });
+  }
+
+  private async sendEvent(
+    eventName: string,
+    source: 'web' | 'backend' | 'telegram' | 'admin',
+    properties: Record<string, unknown>,
+    context?: {
+      userId?: string | null;
+      leadId?: string | null;
+    },
+  ): Promise<void> {
+    const payload = {
+      schema_version: '1.0',
+      event_name: eventName,
+      event_version: 1,
+      event_id: crypto.randomUUID(),
       occurred_at: new Date().toISOString(),
-      properties: {
-        tg_flow: params.tgFlow,
-        stop_method: params.stopMethod,
-        deep_link_id: params.deepLinkId ?? undefined,
-      },
+      source,
+      environment: this.resolveEnvironment(),
+      session_id: null,
+      anonymous_id: null,
+      user_id: context?.userId ?? null,
+      lead_id: context?.leadId ?? null,
+      page: null,
+      acquisition: null,
+      properties,
     };
 
-    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+    try {
+      await this.ingestAnalyticsEventUseCase.execute(payload);
+      this.logger.log(`[Tracking] ${eventName} ingested`);
+    } catch (error: any) {
+      this.logger.warn(`[Tracking] Failed to ingest ${eventName}: ${error?.message ?? error}`);
+    }
+  }
+
+  private resolveEnvironment(): 'prod' | 'stage' | 'dev' {
+    if (process.env.APP_ENV === 'prod' || process.env.NODE_ENV === 'production') {
+      return 'prod';
+    }
+    if (process.env.APP_ENV === 'stage') {
+      return 'stage';
+    }
+    return 'dev';
   }
 
   /**

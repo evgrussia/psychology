@@ -18,6 +18,7 @@ import { InteractiveModule } from './infrastructure/interactive/interactive.modu
 import { CommonModule } from './infrastructure/common/common.module';
 import { WebhooksModule } from './infrastructure/webhooks/webhooks.module';
 import { TelegramModule } from './infrastructure/telegram/telegram.module';
+import { AnalyticsModule } from './infrastructure/analytics/analytics.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { TelegramModule } from './infrastructure/telegram/telegram.module';
     WebhooksModule,
     TelegramModule,
     CabinetModule,
+    AnalyticsModule,
   ],
   controllers: [HealthController, AdminAuditLogController],
   providers: [],

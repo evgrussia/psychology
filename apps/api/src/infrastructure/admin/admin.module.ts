@@ -53,6 +53,7 @@ import { TrackingService } from '../tracking/tracking.service';
 import { AdminAuthTrackingHandler } from '../tracking/admin-auth-tracking.handler';
 import { BookingModule } from '../booking/booking.module';
 import { CrmModule } from '../crm/crm.module';
+import { AnalyticsModule } from '../analytics/analytics.module';
 import { ListScheduleSlotsUseCase } from '../../application/admin/use-cases/schedule/ListScheduleSlotsUseCase';
 import { ListScheduleAppointmentsUseCase } from '../../application/admin/use-cases/schedule/ListScheduleAppointmentsUseCase';
 import { CreateScheduleSlotsUseCase } from '../../application/admin/use-cases/schedule/CreateScheduleSlotsUseCase';
@@ -61,6 +62,7 @@ import { DeleteScheduleSlotsUseCase } from '../../application/admin/use-cases/sc
 import { GetScheduleSettingsUseCase } from '../../application/admin/use-cases/schedule/GetScheduleSettingsUseCase';
 import { UpdateScheduleSettingsUseCase } from '../../application/admin/use-cases/schedule/UpdateScheduleSettingsUseCase';
 import { CancelAppointmentUseCase } from '../../application/admin/use-cases/schedule/CancelAppointmentUseCase';
+import { RecordAppointmentOutcomeUseCase } from '../../application/admin/use-cases/schedule/RecordAppointmentOutcomeUseCase';
 import { ListLeadsUseCase } from '../../application/admin/use-cases/leads/ListLeadsUseCase';
 import { GetLeadDetailsUseCase } from '../../application/admin/use-cases/leads/GetLeadDetailsUseCase';
 import { UpdateLeadStatusUseCase } from '../../application/admin/use-cases/leads/UpdateLeadStatusUseCase';
@@ -74,9 +76,10 @@ import { EscalateModerationItemUseCase } from '../../application/admin/use-cases
 import { AnswerModerationItemUseCase } from '../../application/admin/use-cases/moderation/AnswerModerationItemUseCase';
 import { ListModerationTemplatesUseCase } from '../../application/admin/use-cases/moderation/ListModerationTemplatesUseCase';
 import { GetModerationMetricsUseCase } from '../../application/admin/use-cases/moderation/GetModerationMetricsUseCase';
+import { ModerationAlertsScheduler } from '../moderation/moderation-alerts.scheduler';
 
 @Module({
-  imports: [IdentityModule, AuditModule, DatabaseModule, ContentModule, InteractiveModule, IntegrationsModule, BookingModule, CrmModule, ModerationModule],
+  imports: [IdentityModule, AuditModule, DatabaseModule, ContentModule, InteractiveModule, IntegrationsModule, BookingModule, CrmModule, ModerationModule, AnalyticsModule],
   controllers: [
     AdminController, 
     AdminAnalyticsController,
@@ -132,6 +135,7 @@ import { GetModerationMetricsUseCase } from '../../application/admin/use-cases/m
     GetScheduleSettingsUseCase,
     UpdateScheduleSettingsUseCase,
     CancelAppointmentUseCase,
+    RecordAppointmentOutcomeUseCase,
     ListLeadsUseCase,
     GetLeadDetailsUseCase,
     UpdateLeadStatusUseCase,
@@ -144,6 +148,7 @@ import { GetModerationMetricsUseCase } from '../../application/admin/use-cases/m
     AnswerModerationItemUseCase,
     ListModerationTemplatesUseCase,
     GetModerationMetricsUseCase,
+    ModerationAlertsScheduler,
     TrackingService,
     AdminAuthTrackingHandler,
   ],

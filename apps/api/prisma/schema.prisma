@@ -615,6 +615,30 @@ model LeadTimelineEvent {
   @@map("lead_timeline_events")
 }
 
+model AnalyticsEvent {
+  id            String   @id @default(uuid()) @db.Uuid
+  schema_version String
+  event_name    String
+  event_version Int
+  event_id      String   @unique
+  occurred_at   DateTime
+  source        String
+  environment   String
+  session_id    String?
+  anonymous_id  String?
+  user_id       String?
+  lead_id       String?  @db.Uuid
+  page          Json?
+  acquisition   Json?
+  properties    Json?
+  created_at    DateTime @default(now())
+
+  @@index([event_name, occurred_at])
+  @@index([source])
+  @@index([lead_id])
+  @@map("analytics_events")
+}
+
 model LeadNote {
   id              String   @id @default(uuid()) @db.Uuid
   lead_id         String   @db.Uuid

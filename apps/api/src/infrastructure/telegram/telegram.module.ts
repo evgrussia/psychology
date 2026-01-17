@@ -16,9 +16,10 @@ import { HandleTelegramUpdateUseCase } from '@application/telegram/use-cases/Han
 import { StartOnboardingUseCase } from '@application/telegram/use-cases/StartOnboardingUseCase';
 import { SendPlanMessageUseCase } from '@application/telegram/use-cases/SendPlanMessageUseCase';
 import { TrackingService } from '../tracking/tracking.service';
+import { AnalyticsModule } from '../analytics/analytics.module';
 
 @Module({
-  imports: [DatabaseModule, CommonModule, HttpModule],
+  imports: [DatabaseModule, CommonModule, HttpModule, AnalyticsModule],
   controllers: [TelegramDeepLinksController],
   providers: [
     {

@@ -3,7 +3,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Card, Label, RadioGroup, RadioGroupItem, Input } from '@psychology/design-system';
-import { track } from '@/lib/tracking';
+import { getLeadId, track } from '@/lib/tracking';
 import { BookingStepLayout } from '../BookingStepLayout';
 import { loadBookingDraft, saveBookingDraft } from '../bookingStorage';
 
@@ -149,6 +149,7 @@ export function BookingSlotClient() {
           timezone,
           format: draft.serviceFormat,
           client_request_id: clientRequestId,
+          lead_id: getLeadId(),
         }),
       });
 

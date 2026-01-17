@@ -20,9 +20,10 @@ import { PrismaAccountDataExporter } from '@infrastructure/cabinet/account-data-
 import { PrismaAccountCleanupService } from '@infrastructure/cabinet/account-cleanup.service';
 import { PrismaTelegramSessionRepository } from '@infrastructure/persistence/prisma/telegram/prisma-telegram-session.repository';
 import { AuditModule } from '@infrastructure/audit/audit.module';
+import { AnalyticsModule } from '@infrastructure/analytics/analytics.module';
 
 @Module({
-  imports: [DatabaseModule, BookingModule, AuditModule],
+  imports: [DatabaseModule, BookingModule, AuditModule, AnalyticsModule],
   controllers: [CabinetController],
   providers: [
     {

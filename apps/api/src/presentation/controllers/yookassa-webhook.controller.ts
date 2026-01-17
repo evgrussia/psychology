@@ -1,10 +1,12 @@
-import { Body, Controller, Logger, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Inject, Logger, Post, Req, Res } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { HandlePaymentWebhookUseCase } from '@application/payment/use-cases/HandlePaymentWebhookUseCase';
 import { YooKassaWebhookVerifier } from '@infrastructure/webhooks/yookassa-webhook-verifier';
+import { IAlertService } from '@domain/observability/services/IAlertService';
 
 interface RawBodyRequest extends Request {
   rawBody?: Buffer;
+  requestId?: string;
 }
 
 @Controller('webhooks/yookassa')
@@ -14,6 +16,8 @@ export class YooKassaWebhookController {
   constructor(
     private readonly handleWebhookUseCase: HandlePaymentWebhookUseCase,
     private readonly webhookVerifier: YooKassaWebhookVerifier,
+    @Inject('IAlertService')
+    private readonly alertService: IAlertService,
   ) {}
 
   @Post()
@@ -21,6 +25,16 @@ export class YooKassaWebhookController {
     const verification = this.webhookVerifier.verify(req);
     if (!verification.ok) {
       this.logger.warn(`Webhook rejected: ${verification.reason ?? 'verification_failed'}`);
+      await this.alertService.notify({
+        key: 'yookassa_webhook_verification_failed',
+        message: 'YooKassa webhook verification failed',
+        severity: 'critical',
+        source: 'payments',
+        details: {
+          reason: verification.reason ?? 'verification_failed',
+          request_id: req.requestId ?? null,
+        },
+      });
       res.status(401).json({ status: 'unauthorized' });
       return;
     }
@@ -37,6 +51,16 @@ export class YooKassaWebhookController {
         `Webhook processing failed: ${error?.message ?? 'unknown_error'}`,
         error?.stack,
       );
+      await this.alertService.notify({
+        key: 'yookassa_webhook_processing_failed',
+        message: 'YooKassa webhook processing failed',
+        severity: 'critical',
+        source: 'payments',
+        details: {
+          request_id: req.requestId ?? null,
+          reason: error?.message ?? 'unknown_error',
+        },
+      });
       res.status(500).json({ status: 'error' });
     }
   }

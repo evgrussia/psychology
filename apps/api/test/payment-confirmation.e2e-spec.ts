@@ -58,6 +58,7 @@ describe('Payment confirmation flow (e2e)', () => {
       await prisma.service.deleteMany({});
       await prisma.googleCalendarIntegration.deleteMany({});
       await prisma.paymentWebhookEvent.deleteMany({});
+      await prisma.analyticsEvent.deleteMany({});
     }
   });
 
@@ -135,5 +136,12 @@ describe('Payment confirmation flow (e2e)', () => {
     expect(updatedAppointment?.status).toBe('confirmed');
     expect(updatedAppointment?.external_calendar_event_id).toBe('gcal-event-1');
     expect(googleCalendarService.createEvent).toHaveBeenCalled();
+
+    const analyticsEvents = await prisma.analyticsEvent.findMany({
+      where: { event_name: { in: ['booking_paid', 'booking_confirmed'] } },
+    });
+    expect(analyticsEvents).toHaveLength(2);
+    const eventNames = analyticsEvents.map((event) => event.event_name).sort();
+    expect(eventNames).toEqual(['booking_confirmed', 'booking_paid']);
   });
 });

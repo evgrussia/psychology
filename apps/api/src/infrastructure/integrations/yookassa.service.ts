@@ -1,8 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { IPaymentService } from '@domain/payment/services/IPaymentService';
+import { IAlertService } from '@domain/observability/services/IAlertService';
 
 @Injectable()
 export class YooKassaService implements IPaymentService {
@@ -14,6 +15,8 @@ export class YooKassaService implements IPaymentService {
   constructor(
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
+    @Inject('IAlertService')
+    private readonly alertService: IAlertService,
   ) {
     this.shopId = this.configService.get<string>('YOOKASSA_SHOP_ID') || '';
     this.secretKey = this.configService.get<string>('YOOKASSA_SECRET_KEY') || '';
@@ -83,6 +86,16 @@ export class YooKassaService implements IPaymentService {
       if (error.response?.data) {
         this.logger.error(`YooKassa error details: ${JSON.stringify(error.response.data)}`);
       }
+      await this.alertService.notify({
+        key: 'yookassa_payment_create_failed',
+        message: 'YooKassa payment creation failed',
+        severity: 'critical',
+        source: 'payments',
+        details: {
+          error_code: errorCode ?? 'unknown',
+          reason: errorMessage,
+        },
+      });
       
       throw new Error(`YooKassa Error: ${errorMessage}`);
     }

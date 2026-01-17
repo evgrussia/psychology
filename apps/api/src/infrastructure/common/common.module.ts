@@ -6,6 +6,7 @@ import { PrismaPaymentRepository } from '../persistence/prisma/payment/prisma-pa
 import { AesGcmEncryptionService } from '../security/encryption.service';
 import { HttpClientConfig } from '../config/http-client.config';
 import { AnalyticsCacheService } from './analytics-cache.service';
+import { AlertService } from '../observability/alert.service';
 
 @Global()
 @Module({
@@ -14,6 +15,10 @@ import { AnalyticsCacheService } from './analytics-cache.service';
     {
       provide: 'IEmailService',
       useClass: EmailService,
+    },
+    {
+      provide: 'IAlertService',
+      useClass: AlertService,
     },
     {
       provide: 'IPaymentService',
@@ -32,6 +37,7 @@ import { AnalyticsCacheService } from './analytics-cache.service';
   ],
   exports: [
     'IEmailService',
+    'IAlertService',
     'IPaymentService',
     'IPaymentRepository',
     'IEncryptionService',

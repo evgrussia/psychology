@@ -13,9 +13,10 @@ import { TrackingService } from '../tracking/tracking.service';
 import { MediaTrackingHandler } from '../tracking/media-tracking.handler';
 import { EventsModule } from '../events/events.module';
 import { AuditModule } from '../audit/audit.module';
+import { AnalyticsModule } from '../analytics/analytics.module';
 
 @Module({
-  imports: [ConfigModule, EventsModule, AuditModule],
+  imports: [ConfigModule, EventsModule, AuditModule, AnalyticsModule],
   controllers: [AdminMediaController],
   providers: [
     {

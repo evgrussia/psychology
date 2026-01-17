@@ -97,6 +97,7 @@ export class CreatePaymentUseCase {
       currency: 'RUB',
       serviceId: service.id,
       serviceSlug: service.slug,
+      leadId: appointment.leadId ?? null,
     });
 
     return {

@@ -6,6 +6,7 @@ import * as crypto from 'crypto';
 
 export interface CreateOrUpdateLeadRequest {
   leadId?: string | null;
+  anonymousId?: string | null;
   source: LeadSource;
   topicCode?: string | null;
   utm?: Record<string, any> | null;
@@ -34,8 +35,16 @@ export class CreateOrUpdateLeadUseCase {
   ) {}
 
   async execute(request: CreateOrUpdateLeadRequest): Promise<CreateOrUpdateLeadResult> {
-    const leadId = request.leadId?.trim() || crypto.randomUUID();
-    let lead = await this.leadRepository.findById(leadId);
+    const normalizedLeadId = request.leadId?.trim() || null;
+    const normalizedAnonymousId = request.anonymousId?.trim() || null;
+    let lead = normalizedLeadId ? await this.leadRepository.findById(normalizedLeadId) : null;
+
+    if (!lead && normalizedAnonymousId) {
+      lead = await this.leadRepository.findByAnonymousId(normalizedAnonymousId);
+    }
+
+    const leadId = lead?.id ?? normalizedLeadId ?? crypto.randomUUID();
+    const isNewLead = !lead;
 
     if (!lead) {
       const now = new Date();
@@ -49,6 +58,14 @@ export class CreateOrUpdateLeadUseCase {
         updatedAt: now,
       });
       await this.leadRepository.create(lead);
+    }
+
+    if (isNewLead && normalizedAnonymousId) {
+      await this.leadRepository.addIdentity({
+        leadId: lead.id,
+        anonymousId: normalizedAnonymousId,
+        isPrimary: true,
+      });
     }
 
     if (request.contact?.encryptedValue) {

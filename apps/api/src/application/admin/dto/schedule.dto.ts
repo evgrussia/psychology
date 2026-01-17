@@ -59,3 +59,8 @@ export interface UpdateScheduleSettingsRequestDto {
 export interface DeleteScheduleSlotsRequestDto {
   slot_ids: string[];
 }
+
+export interface RecordAppointmentOutcomeRequestDto {
+  outcome: 'attended' | 'no_show' | 'canceled_by_client' | 'canceled_by_provider' | 'rescheduled';
+  reason_category?: 'late_cancel' | 'tech_issue' | 'illness' | 'other' | 'unknown';
+}

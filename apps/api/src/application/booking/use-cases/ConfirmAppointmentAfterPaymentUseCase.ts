@@ -10,6 +10,7 @@ import { PaymentStatus } from '@domain/payment/value-objects/PaymentEnums';
 import { IServiceRepository } from '@domain/booking/repositories/IServiceRepository';
 import { TrackingService } from '@infrastructure/tracking/tracking.service';
 import { Appointment } from '@domain/booking/entities/Appointment';
+import { ILeadRepository } from '@domain/crm/repositories/ILeadRepository';
 
 @Injectable()
 export class ConfirmAppointmentAfterPaymentUseCase {
@@ -20,6 +21,8 @@ export class ConfirmAppointmentAfterPaymentUseCase {
     private readonly paymentRepository: IPaymentRepository,
     @Inject('IServiceRepository')
     private readonly serviceRepository: IServiceRepository,
+    @Inject('ILeadRepository')
+    private readonly leadRepository: ILeadRepository,
     @Inject('IEmailService')
     private readonly emailService: IEmailService,
     @Inject('IUserRepository')
@@ -72,6 +75,9 @@ export class ConfirmAppointmentAfterPaymentUseCase {
     if (!service) {
       return;
     }
+    const deepLinkId = appointment.leadId
+      ? await this.leadRepository.findLatestDeepLinkId(appointment.leadId)
+      : null;
 
     await this.trackingService.trackBookingConfirmed({
       appointmentStartAt: appointment.startAtUtc,
@@ -79,6 +85,8 @@ export class ConfirmAppointmentAfterPaymentUseCase {
       serviceId: service.id,
       serviceSlug: service.slug,
       format: appointment.format,
+      leadId: appointment.leadId ?? null,
+      deepLinkId,
     });
   }
 

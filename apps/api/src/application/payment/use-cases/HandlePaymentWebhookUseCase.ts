@@ -6,6 +6,7 @@ import { ConfirmAppointmentAfterPaymentUseCase } from '@application/booking/use-
 import { PaymentProvider, PaymentStatus } from '@domain/payment/value-objects/PaymentEnums';
 import { IServiceRepository } from '@domain/booking/repositories/IServiceRepository';
 import { TrackingService } from '@infrastructure/tracking/tracking.service';
+import { ILeadRepository } from '@domain/crm/repositories/ILeadRepository';
 
 @Injectable()
 export class HandlePaymentWebhookUseCase {
@@ -20,6 +21,8 @@ export class HandlePaymentWebhookUseCase {
     private readonly appointmentRepository: IAppointmentRepository,
     @Inject('IServiceRepository')
     private readonly serviceRepository: IServiceRepository,
+    @Inject('ILeadRepository')
+    private readonly leadRepository: ILeadRepository,
     private readonly confirmAppointmentUseCase: ConfirmAppointmentAfterPaymentUseCase,
     private readonly trackingService: TrackingService,
   ) {}
@@ -115,12 +118,17 @@ export class HandlePaymentWebhookUseCase {
     if (!service) {
       return;
     }
+    const deepLinkId = appointment.leadId
+      ? await this.leadRepository.findLatestDeepLinkId(appointment.leadId)
+      : null;
     await this.trackingService.trackBookingPaid({
       paymentProvider: PaymentProvider.yookassa,
       amount: payment.amount,
       currency: payment.currency,
       serviceId: service.id,
       serviceSlug: service.slug,
+      leadId: appointment.leadId ?? null,
+      deepLinkId,
     });
   }
 
@@ -138,6 +146,7 @@ export class HandlePaymentWebhookUseCase {
       failureCategory,
       serviceId: service.id,
       serviceSlug: service.slug,
+      leadId: appointment.leadId ?? null,
     });
   }
 

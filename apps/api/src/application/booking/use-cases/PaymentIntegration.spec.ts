@@ -35,6 +35,17 @@ describe('Payment Integration', () => {
     findById: jest.fn(),
   };
 
+  const trackingServiceMock = {
+    trackBookingPaid: jest.fn(),
+    trackPaymentFailed: jest.fn(),
+    trackBookingConfirmed: jest.fn(),
+    trackPaymentStarted: jest.fn(),
+  };
+
+  const leadRepositoryMock = {
+    findLatestDeepLinkId: jest.fn().mockResolvedValue(null),
+  };
+
   beforeAll(async () => {
     dotenv.config({ path: path.join(__dirname, '../../../../test.env') });
     configureTestSchema();
@@ -57,7 +68,6 @@ describe('Payment Integration', () => {
         CreatePaymentUseCase,
         HandlePaymentWebhookUseCase,
         ConfirmAppointmentAfterPaymentUseCase,
-        TrackingService,
         { provide: 'IAppointmentRepository', useClass: PrismaAppointmentRepository },
         { provide: 'IPaymentRepository', useClass: PrismaPaymentRepository },
         { provide: 'IServiceRepository', useClass: PrismaServiceRepository },
@@ -66,6 +76,8 @@ describe('Payment Integration', () => {
         { provide: 'IEventBus', useValue: eventBusMock },
         { provide: 'IEmailService', useValue: emailServiceMock },
         { provide: 'IUserRepository', useValue: userRepositoryMock },
+        { provide: 'ILeadRepository', useValue: leadRepositoryMock },
+        { provide: TrackingService, useValue: trackingServiceMock },
       ],
     }).compile();
 

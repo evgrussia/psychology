@@ -128,6 +128,22 @@ class EnvironmentVariables {
   @IsOptional()
   @IsString()
   PUBLIC_WEB_URL?: string;
+
+  @IsOptional()
+  @IsString()
+  ALERTS_ENABLED?: string;
+
+  @IsOptional()
+  @IsString()
+  ALERT_EMAIL_TO?: string;
+
+  @IsOptional()
+  @IsNumber()
+  ALERT_MIN_INTERVAL_MINUTES?: number;
+
+  @IsOptional()
+  @IsNumber()
+  MODERATION_ALERT_INTERVAL_MINUTES?: number;
 }
 
 export function validate(config: Record<string, any>) {

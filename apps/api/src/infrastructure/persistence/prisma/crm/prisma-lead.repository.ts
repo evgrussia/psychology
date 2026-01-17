@@ -24,6 +24,17 @@ export class PrismaLeadRepository implements ILeadRepository {
     return LeadMapper.toDomain(record);
   }
 
+  async findByAnonymousId(anonymousId: string): Promise<Lead | null> {
+    const identity = await this.prisma.leadIdentity.findFirst({
+      where: { anonymous_id: anonymousId },
+      include: { lead: true },
+    });
+    if (!identity?.lead) {
+      return null;
+    }
+    return LeadMapper.toDomain(identity.lead);
+  }
+
   async create(lead: Lead): Promise<void> {
     const data = LeadMapper.toPersistence(lead);
     await this.prisma.lead.create({ data });
@@ -66,6 +77,19 @@ export class PrismaLeadRepository implements ILeadRepository {
         properties: input.properties ?? {},
       },
     });
+  }
+
+  async findLatestDeepLinkId(leadId: string): Promise<string | null> {
+    const record = await this.prisma.leadTimelineEvent.findFirst({
+      where: {
+        lead_id: leadId,
+        deep_link_id: { not: null },
+      },
+      orderBy: { occurred_at: 'desc' },
+      select: { deep_link_id: true },
+    });
+
+    return record?.deep_link_id ?? null;
   }
 
   async listLeads(filters: LeadListFilters): Promise<{

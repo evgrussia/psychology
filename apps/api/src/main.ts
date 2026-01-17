@@ -2,10 +2,12 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import { Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { AppLogger } from './infrastructure/logging/logger.service';
 import * as cookieParser from 'cookie-parser';
 import * as bodyParser from 'body-parser';
+import { requestContextMiddleware } from './infrastructure/observability/request-context.middleware';
 
 async function bootstrap() {
   const logger = new AppLogger('Bootstrap');
@@ -13,6 +15,7 @@ async function bootstrap() {
     logger: logger,
     bodyParser: false,
   });
+  Logger.overrideLogger(logger);
 
   app.use(
     bodyParser.json({
@@ -22,6 +25,7 @@ async function bootstrap() {
     }),
   );
   app.use(bodyParser.urlencoded({ extended: true }));
+  app.use(requestContextMiddleware);
 
   const configService = app.get(ConfigService);
   const storagePath = configService.get<string>('MEDIA_STORAGE_PATH');

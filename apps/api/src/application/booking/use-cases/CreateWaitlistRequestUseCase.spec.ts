@@ -97,6 +97,7 @@ describe('CreateWaitlistRequestUseCase', () => {
       serviceSlug: 'intro-session',
       preferredContact: PreferredContactMethod.email,
       preferredTimeWindow: PreferredTimeWindow.any,
+      leadId: 'lead-1',
     });
     expect(emailService.sendEmail).toHaveBeenCalled();
   });

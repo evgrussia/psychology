@@ -3,6 +3,7 @@
  * 
  * Единая точка отправки событий аналитики согласно Tracking Plan
  */
+import { ANALYTICS_ALLOWED_EVENTS } from './analytics-events';
 
 export interface TrackProperties {
   [key: string]: any;
@@ -23,11 +24,17 @@ const FORBIDDEN_FIELDS = [
   'text',
   'message',
   'content',
+  'body',
+  'payload',
   'diary_text',
   'answer',
   'question_text',
   'intake_text',
+  'note',
 ];
+
+const EMAIL_PATTERN = /[^\s@]+@[^\s@]+\.[^\s@]+/i;
+const PHONE_PATTERN = /(?:\+?\d[\d\s\-().]{8,}\d)/;
 
 // Генерация стабильного anonymous_id
 function getAnonymousId(): string {
@@ -66,6 +73,9 @@ function getSessionId(): string {
 
 // Генерация event_id
 function generateEventId(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID();
+  }
   return `evt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
@@ -73,6 +83,21 @@ function generateEventId(): string {
 function validateProperties(properties: TrackProperties): { valid: boolean; violations: string[] } {
   const violations: string[] = [];
   
+  function checkValue(value: any, currentPath: string): void {
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (EMAIL_PATTERN.test(trimmed)) {
+        violations.push(`${currentPath}:email`);
+      }
+      if (PHONE_PATTERN.test(trimmed)) {
+        violations.push(`${currentPath}:phone`);
+      }
+      if (trimmed.length > 400) {
+        violations.push(`${currentPath}:text_length`);
+      }
+    }
+  }
+
   function checkObject(obj: any, path: string = ''): void {
     for (const key in obj) {
       const currentPath = path ? `${path}.${key}` : key;
@@ -83,6 +108,11 @@ function validateProperties(properties: TrackProperties): { valid: boolean; viol
         violations.push(currentPath);
       }
       
+      checkValue(obj[key], currentPath);
+      if (Array.isArray(obj[key])) {
+        obj[key].forEach((item: any, index: number) => checkValue(item, `${currentPath}[${index}]`));
+      }
+
       // Рекурсивно проверяем вложенные объекты
       if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
         checkObject(obj[key], currentPath);
@@ -98,9 +128,76 @@ function validateProperties(properties: TrackProperties): { valid: boolean; viol
   };
 }
 
+function getStoredLeadId(): string | null {
+  if (typeof window === 'undefined') return null;
+  const value = localStorage.getItem('lead_id');
+  return value && value.trim().length > 0 ? value : null;
+}
+
+function setStoredLeadId(leadId: string | null | undefined): void {
+  if (typeof window === 'undefined') return;
+  if (leadId && leadId.trim().length > 0) {
+    localStorage.setItem('lead_id', leadId);
+  }
+}
+
+function getEnvironment(): 'prod' | 'stage' | 'dev' {
+  if (process.env.NODE_ENV === 'production') {
+    return 'prod';
+  }
+  if (process.env.NODE_ENV === 'test') {
+    return 'stage';
+  }
+  return 'dev';
+}
+
+function getAcquisitionParams(): Record<string, any> {
+  const stored = typeof window !== 'undefined' ? localStorage.getItem('utm_params') : null;
+  const parsed = stored ? safeJsonParse(stored) : null;
+  return {
+    entry_point: typeof window !== 'undefined' ? localStorage.getItem('entry_point') || 'direct' : 'direct',
+    ...(parsed || {}),
+  };
+}
+
+function safeJsonParse(raw: string): Record<string, any> | null {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+async function sendToIngest(payload: Record<string, any>): Promise<void> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
+  const url = `${apiUrl}/analytics/ingest`;
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      keepalive: true,
+    });
+    if (!response.ok) {
+      return;
+    }
+    const data = await response.json().catch(() => null);
+    if (data?.lead_id) {
+      setStoredLeadId(data.lead_id);
+    }
+  } catch (error) {
+    console.error('[Tracking] Failed to send event:', error);
+  }
+}
+
 export const track = (eventName: string, properties: TrackProperties = {}) => {
   if (typeof window === 'undefined') {
     console.log('[Tracking] Skipping server-side tracking');
+    return;
+  }
+
+  if (!ANALYTICS_ALLOWED_EVENTS.has(eventName)) {
+    console.warn(`[Tracking] BLOCKED: Event "${eventName}" is not in the tracking dictionary.`);
     return;
   }
   
@@ -121,9 +218,10 @@ export const track = (eventName: string, properties: TrackProperties = {}) => {
     event_id: generateEventId(),
     occurred_at: new Date().toISOString(),
     source: 'web',
-    environment: process.env.NODE_ENV || 'development',
+    environment: getEnvironment(),
     session_id: getSessionId(),
     anonymous_id: getAnonymousId(),
+    lead_id: getStoredLeadId(),
     // user_id будет добавлен после авторизации
     // lead_id будет добавлен после первого контактного события
     page: {
@@ -131,10 +229,7 @@ export const track = (eventName: string, properties: TrackProperties = {}) => {
       page_title: document.title,
       referrer: document.referrer || null,
     },
-    acquisition: {
-      // UTM параметры будут извлечены из URL при первом визите
-      entry_point: localStorage.getItem('entry_point') || 'direct',
-    },
+    acquisition: getAcquisitionParams(),
     properties,
   };
 
@@ -144,18 +239,8 @@ export const track = (eventName: string, properties: TrackProperties = {}) => {
   }
 
   console.log(`[Tracking] ${eventName}:`, payload);
-  
-  // In production this will send events to the backend
-  if (process.env.NODE_ENV === 'production') {
-    // Backend endpoint for tracking will be implemented in a future feature
-    /*
-    fetch('/api/tracking', { 
-      method: 'POST', 
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload) 
-    }).catch(err => console.error('[Tracking] Failed to send event:', err));
-    */
-  }
+
+  void sendToIngest(payload);
 };
 
 // Утилита для трекинга UTM параметров при первом визите
@@ -194,4 +279,8 @@ export function captureUTMParameters() {
   } else if (!localStorage.getItem('entry_point')) {
     localStorage.setItem('entry_point', 'direct');
   }
+}
+
+export function getLeadId(): string | null {
+  return getStoredLeadId();
 }

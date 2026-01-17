@@ -1,49 +1,66 @@
 import { Injectable, LoggerService, ConsoleLogger } from '@nestjs/common';
+import { redactSensitiveData } from '../observability/redaction';
+import { RequestContext } from '../observability/request-context';
 
 @Injectable()
 export class AppLogger extends ConsoleLogger implements LoggerService {
-  private static PII_FIELDS = ['password', 'token', 'email', 'phone', 'card_number'];
-
   constructor(context?: string) {
     super(context);
   }
 
   log(message: any, context?: string) {
-    super.log(this.maskPii(message), context);
+    super.log(this.formatLog('log', message, context));
   }
 
   error(message: any, stack?: string, context?: string) {
-    super.error(this.maskPii(message), stack, context);
+    super.error(this.formatLog('error', message, context, stack));
   }
 
   warn(message: any, context?: string) {
-    super.warn(this.maskPii(message), context);
+    super.warn(this.formatLog('warn', message, context));
   }
 
   debug(message: any, context?: string) {
-    super.debug(this.maskPii(message), context);
+    super.debug(this.formatLog('debug', message, context));
   }
 
   verbose(message: any, context?: string) {
-    super.verbose(this.maskPii(message), context);
+    super.verbose(this.formatLog('verbose', message, context));
   }
 
-  private maskPii(data: any): any {
-    if (typeof data === 'string') {
-      return data;
-    }
-    if (typeof data !== 'object' || data === null) {
-      return data;
+  private formatLog(level: string, message: any, context?: string, stack?: string): string {
+    const requestId = RequestContext.getRequestId();
+    const normalized = this.normalizeMessage(message, stack);
+    const payload = {
+      timestamp: new Date().toISOString(),
+      level,
+      context: context ?? this.context,
+      request_id: requestId ?? undefined,
+      ...normalized,
+    };
+
+    return JSON.stringify(redactSensitiveData(payload));
+  }
+
+  private normalizeMessage(message: any, stack?: string): { message: string; meta?: unknown; stack?: string } {
+    if (message instanceof Error) {
+      return {
+        message: message.message,
+        stack: message.stack ?? stack,
+      };
     }
 
-    const masked = { ...data };
-    for (const key in masked) {
-      if (AppLogger.PII_FIELDS.includes(key.toLowerCase())) {
-        masked[key] = '***MASKED***';
-      } else if (typeof masked[key] === 'object') {
-        masked[key] = this.maskPii(masked[key]);
-      }
+    if (typeof message === 'string') {
+      return {
+        message,
+        stack,
+      };
     }
-    return masked;
+
+    return {
+      message: 'log',
+      meta: message,
+      stack,
+    };
   }
 }

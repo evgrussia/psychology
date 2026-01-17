@@ -9,6 +9,7 @@ export interface StartBookingRequestDto {
   entry_point?: string | null;
   topic_code?: string | null;
   client_request_id?: string | null;
+  lead_id?: string | null;
 }
 
 export interface StartBookingResponseDto {

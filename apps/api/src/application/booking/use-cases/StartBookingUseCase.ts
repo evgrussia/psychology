@@ -77,6 +77,7 @@ export class StartBookingUseCase {
       await this.trackingService.trackBookingConflict({
         serviceId: service.id,
         serviceSlug: service.slug,
+        leadId: dto.lead_id ?? null,
       });
       throw new ConflictException({ code: 'slot_conflict' });
     }
@@ -86,7 +87,7 @@ export class StartBookingUseCase {
       id: crypto.randomUUID(),
       serviceId: service.id,
       clientUserId: null,
-      leadId: null,
+      leadId: dto.lead_id ?? null,
       clientRequestId: idempotencyKey,
       startAtUtc: slot.startAtUtc,
       endAtUtc: slot.endAtUtc,
@@ -117,6 +118,7 @@ export class StartBookingUseCase {
         await this.trackingService.trackBookingConflict({
           serviceId: service.id,
           serviceSlug: service.slug,
+          leadId: dto.lead_id ?? null,
         });
         throw new ConflictException({ code: 'slot_conflict' });
       }

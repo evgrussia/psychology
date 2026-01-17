@@ -63,7 +63,7 @@ export class CreateWaitlistRequestUseCase {
 
     await this.waitlistRepository.create(waitlistRequest);
 
-    await this.createOrUpdateLeadUseCase.execute({
+    const leadResult = await this.createOrUpdateLeadUseCase.execute({
       source: LeadSource.waitlist,
       topicCode: service.topicCode ?? null,
       contact: {
@@ -87,6 +87,7 @@ export class CreateWaitlistRequestUseCase {
       serviceSlug: service.slug,
       preferredContact: dto.preferred_contact,
       preferredTimeWindow,
+      leadId: leadResult.leadId ?? null,
     });
 
     await this.sendConfirmationIfNeeded(dto.preferred_contact, normalizedContact, service.title);

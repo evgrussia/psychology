@@ -108,10 +108,12 @@ export interface LeadDetails {
 
 export interface ILeadRepository {
   findById(id: string): Promise<Lead | null>;
+  findByAnonymousId(anonymousId: string): Promise<Lead | null>;
   create(lead: Lead): Promise<void>;
   updateStatus(id: string, status: string): Promise<void>;
   addIdentity(input: LeadIdentityInput): Promise<void>;
   addTimelineEvent(input: LeadTimelineEventInput): Promise<void>;
+  findLatestDeepLinkId(leadId: string): Promise<string | null>;
   listLeads(filters: LeadListFilters): Promise<{
     items: LeadListItem[];
     total: number;

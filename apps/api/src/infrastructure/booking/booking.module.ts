@@ -21,9 +21,10 @@ import { GetNoSlotsModelUseCase } from '@application/booking/use-cases/GetNoSlot
 import { AesGcmEncryptionService } from '../security/encryption.service';
 import { TrackingService } from '../tracking/tracking.service';
 import { CrmModule } from '../crm/crm.module';
+import { AnalyticsModule } from '../analytics/analytics.module';
 
 @Module({
-  imports: [DatabaseModule, CrmModule],
+  imports: [DatabaseModule, CrmModule, AnalyticsModule],
   providers: [
     {
       provide: 'IAvailabilitySlotRepository',

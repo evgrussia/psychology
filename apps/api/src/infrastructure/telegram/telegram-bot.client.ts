@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
@@ -9,6 +9,7 @@ import {
   TelegramUpdate,
   TelegramWebhookConfig,
 } from '@domain/telegram/services/ITelegramBotClient';
+import { IAlertService } from '@domain/observability/services/IAlertService';
 
 @Injectable()
 export class TelegramBotClient implements ITelegramBotClient {
@@ -17,6 +18,8 @@ export class TelegramBotClient implements ITelegramBotClient {
   constructor(
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
+    @Inject('IAlertService')
+    private readonly alertService: IAlertService,
   ) {}
 
   async sendMessage(chatId: string, text: string, options?: TelegramSendMessageOptions): Promise<void> {
@@ -61,6 +64,15 @@ export class TelegramBotClient implements ITelegramBotClient {
     const token = this.configService.get<string>('TELEGRAM_BOT_TOKEN');
     if (!token) {
       this.logger.error({ message: 'Telegram bot token is not configured', method });
+      await this.alertService.notify({
+        key: 'telegram_bot_token_missing',
+        message: 'Telegram bot token is not configured',
+        severity: 'critical',
+        source: 'telegram',
+        details: {
+          method,
+        },
+      });
       return { ok: false };
     }
     const url = `https://api.telegram.org/bot${token}/${method}`;
@@ -70,6 +82,16 @@ export class TelegramBotClient implements ITelegramBotClient {
     } catch (error: any) {
       const reason = error?.response?.data?.description || error?.message || 'unknown_error';
       this.logger.error({ message: 'Telegram Bot API call failed', method, reason });
+      await this.alertService.notify({
+        key: 'telegram_api_call_failed',
+        message: 'Telegram Bot API call failed',
+        severity: 'critical',
+        source: 'telegram',
+        details: {
+          method,
+          reason,
+        },
+      });
       return { ok: false };
     }
   }
