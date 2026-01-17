@@ -5,6 +5,7 @@ import { YooKassaService } from '../integrations/yookassa.service';
 import { PrismaPaymentRepository } from '../persistence/prisma/payment/prisma-payment.repository';
 import { AesGcmEncryptionService } from '../security/encryption.service';
 import { HttpClientConfig } from '../config/http-client.config';
+import { AnalyticsCacheService } from './analytics-cache.service';
 
 @Global()
 @Module({
@@ -27,6 +28,7 @@ import { HttpClientConfig } from '../config/http-client.config';
       useClass: AesGcmEncryptionService,
     },
     HttpClientConfig,
+    AnalyticsCacheService,
   ],
   exports: [
     'IEmailService',
@@ -34,6 +36,7 @@ import { HttpClientConfig } from '../config/http-client.config';
     'IPaymentRepository',
     'IEncryptionService',
     HttpClientConfig,
+    AnalyticsCacheService,
   ],
 })
 export class CommonModule {}

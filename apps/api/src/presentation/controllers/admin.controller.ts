@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, SetMetadata, Request, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, SetMetadata, Request, Patch, Query } from '@nestjs/common';
 import { AuthGuard } from '../guards/auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { CreateAdminUserInviteUseCase } from '../../application/identity/use-cases/CreateAdminUserInviteUseCase';
@@ -6,6 +6,7 @@ import { ExportDataUseCase, ExportDataDto } from '../../application/admin/use-ca
 import { UpdateServicePriceUseCase, UpdateServicePriceDto } from '../../application/admin/use-cases/UpdateServicePriceUseCase';
 import { UpdateSystemSettingsUseCase, UpdateSystemSettingsDto } from '../../application/admin/use-cases/UpdateSystemSettingsUseCase';
 import { CreateAdminInviteDto } from '../../application/identity/dto/invite.dto';
+import { GetAdminDashboardUseCase } from '../../application/admin/use-cases/GetAdminDashboardUseCase';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 const Roles = (...roles: string[]) => SetMetadata('roles', roles);
@@ -19,6 +20,7 @@ export class AdminController {
     private readonly exportDataUseCase: ExportDataUseCase,
     private readonly updateServicePriceUseCase: UpdateServicePriceUseCase,
     private readonly updateSystemSettingsUseCase: UpdateSystemSettingsUseCase,
+    private readonly getAdminDashboardUseCase: GetAdminDashboardUseCase,
   ) {}
 
   @Get('dashboard')
@@ -26,14 +28,12 @@ export class AdminController {
   @ApiOperation({ summary: 'Get dashboard data' })
   @ApiResponse({ status: 200, description: 'Return dashboard data' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  async getDashboard() {
-    return {
-      stats: {
-        totalLeads: 42,
-        upcomingAppointments: 5,
-        pendingModeration: 3,
-      },
-    };
+  async getDashboard(
+    @Query('range') range?: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+  ) {
+    return this.getAdminDashboardUseCase.execute({ range, from, to });
   }
 
   @Get('settings')

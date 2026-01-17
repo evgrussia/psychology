@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AdminController } from '../../presentation/controllers/admin.controller';
+import { AdminAnalyticsController } from '../../presentation/controllers/admin-analytics.controller';
 import { AdminContentController } from '../../presentation/controllers/admin-content.controller';
 import { AdminInteractiveController } from '../../presentation/controllers/admin-interactive.controller';
 import { ExportDataUseCase } from '../../application/admin/use-cases/ExportDataUseCase';
@@ -37,24 +38,65 @@ import { InteractiveModule } from '../interactive/interactive.module';
 import { AdminGlossaryController } from '../../presentation/controllers/admin-glossary.controller';
 import { AdminCuratedController } from '../../presentation/controllers/admin-curated.controller';
 import { AdminGoogleCalendarController } from '../../presentation/controllers/admin-google-calendar.controller';
+import { AdminScheduleController } from '../../presentation/controllers/admin-schedule.controller';
+import { AdminLeadsController } from '../../presentation/controllers/admin-leads.controller';
+import { AdminModerationController } from '../../presentation/controllers/admin-moderation.controller';
 import { ConnectGoogleCalendarUseCase } from '../../application/integrations/use-cases/ConnectGoogleCalendarUseCase';
 import { GetGoogleCalendarStatusUseCase } from '../../application/integrations/use-cases/GetGoogleCalendarStatusUseCase';
 import { IntegrationsModule } from '../integrations/integrations.module';
+import { GetAdminDashboardUseCase } from '../../application/admin/use-cases/GetAdminDashboardUseCase';
+import { GetAdminBookingFunnelUseCase } from '../../application/admin/use-cases/analytics/GetAdminBookingFunnelUseCase';
+import { GetAdminTelegramFunnelUseCase } from '../../application/admin/use-cases/analytics/GetAdminTelegramFunnelUseCase';
+import { GetAdminInteractiveFunnelUseCase } from '../../application/admin/use-cases/analytics/GetAdminInteractiveFunnelUseCase';
+import { GetAdminNoShowStatsUseCase } from '../../application/admin/use-cases/analytics/GetAdminNoShowStatsUseCase';
+import { TrackingService } from '../tracking/tracking.service';
+import { AdminAuthTrackingHandler } from '../tracking/admin-auth-tracking.handler';
+import { BookingModule } from '../booking/booking.module';
+import { CrmModule } from '../crm/crm.module';
+import { ListScheduleSlotsUseCase } from '../../application/admin/use-cases/schedule/ListScheduleSlotsUseCase';
+import { ListScheduleAppointmentsUseCase } from '../../application/admin/use-cases/schedule/ListScheduleAppointmentsUseCase';
+import { CreateScheduleSlotsUseCase } from '../../application/admin/use-cases/schedule/CreateScheduleSlotsUseCase';
+import { UpdateScheduleSlotUseCase } from '../../application/admin/use-cases/schedule/UpdateScheduleSlotUseCase';
+import { DeleteScheduleSlotsUseCase } from '../../application/admin/use-cases/schedule/DeleteScheduleSlotsUseCase';
+import { GetScheduleSettingsUseCase } from '../../application/admin/use-cases/schedule/GetScheduleSettingsUseCase';
+import { UpdateScheduleSettingsUseCase } from '../../application/admin/use-cases/schedule/UpdateScheduleSettingsUseCase';
+import { CancelAppointmentUseCase } from '../../application/admin/use-cases/schedule/CancelAppointmentUseCase';
+import { ListLeadsUseCase } from '../../application/admin/use-cases/leads/ListLeadsUseCase';
+import { GetLeadDetailsUseCase } from '../../application/admin/use-cases/leads/GetLeadDetailsUseCase';
+import { UpdateLeadStatusUseCase } from '../../application/admin/use-cases/leads/UpdateLeadStatusUseCase';
+import { AddLeadNoteUseCase } from '../../application/admin/use-cases/leads/AddLeadNoteUseCase';
+import { ModerationModule } from '../moderation/moderation.module';
+import { ListModerationItemsUseCase } from '../../application/admin/use-cases/moderation/ListModerationItemsUseCase';
+import { GetModerationItemUseCase } from '../../application/admin/use-cases/moderation/GetModerationItemUseCase';
+import { ApproveModerationItemUseCase } from '../../application/admin/use-cases/moderation/ApproveModerationItemUseCase';
+import { RejectModerationItemUseCase } from '../../application/admin/use-cases/moderation/RejectModerationItemUseCase';
+import { EscalateModerationItemUseCase } from '../../application/admin/use-cases/moderation/EscalateModerationItemUseCase';
+import { AnswerModerationItemUseCase } from '../../application/admin/use-cases/moderation/AnswerModerationItemUseCase';
+import { ListModerationTemplatesUseCase } from '../../application/admin/use-cases/moderation/ListModerationTemplatesUseCase';
 
 @Module({
-  imports: [IdentityModule, AuditModule, DatabaseModule, ContentModule, InteractiveModule, IntegrationsModule],
+  imports: [IdentityModule, AuditModule, DatabaseModule, ContentModule, InteractiveModule, IntegrationsModule, BookingModule, CrmModule, ModerationModule],
   controllers: [
     AdminController, 
+    AdminAnalyticsController,
     AdminContentController, 
     AdminInteractiveController, 
     AdminGlossaryController,
     AdminCuratedController,
     AdminGoogleCalendarController,
+    AdminScheduleController,
+    AdminLeadsController,
+    AdminModerationController,
   ],
   providers: [
     ExportDataUseCase,
     UpdateServicePriceUseCase,
     UpdateSystemSettingsUseCase,
+    GetAdminDashboardUseCase,
+    GetAdminBookingFunnelUseCase,
+    GetAdminTelegramFunnelUseCase,
+    GetAdminInteractiveFunnelUseCase,
+    GetAdminNoShowStatsUseCase,
     CreateContentItemUseCase,
     UpdateContentItemUseCase,
     ListContentItemsUseCase,
@@ -81,11 +123,33 @@ import { IntegrationsModule } from '../integrations/integrations.module';
     ReorderCuratedItemsUseCase,
     ConnectGoogleCalendarUseCase,
     GetGoogleCalendarStatusUseCase,
+    ListScheduleSlotsUseCase,
+    ListScheduleAppointmentsUseCase,
+    CreateScheduleSlotsUseCase,
+    UpdateScheduleSlotUseCase,
+    DeleteScheduleSlotsUseCase,
+    GetScheduleSettingsUseCase,
+    UpdateScheduleSettingsUseCase,
+    CancelAppointmentUseCase,
+    ListLeadsUseCase,
+    GetLeadDetailsUseCase,
+    UpdateLeadStatusUseCase,
+    AddLeadNoteUseCase,
+    ListModerationItemsUseCase,
+    GetModerationItemUseCase,
+    ApproveModerationItemUseCase,
+    RejectModerationItemUseCase,
+    EscalateModerationItemUseCase,
+    AnswerModerationItemUseCase,
+    ListModerationTemplatesUseCase,
+    TrackingService,
+    AdminAuthTrackingHandler,
   ],
   exports: [
     ExportDataUseCase,
     UpdateServicePriceUseCase,
     UpdateSystemSettingsUseCase,
+    GetAdminDashboardUseCase,
     CreateContentItemUseCase,
     UpdateContentItemUseCase,
     ListContentItemsUseCase,

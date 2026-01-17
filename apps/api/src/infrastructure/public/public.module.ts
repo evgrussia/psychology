@@ -13,16 +13,20 @@ import { GetCuratedCollectionUseCase } from '@application/public/use-cases/GetCu
 import { ListServicesUseCase } from '@application/public/use-cases/ListServicesUseCase';
 import { GetServiceBySlugUseCase } from '@application/public/use-cases/GetServiceBySlugUseCase';
 import { ListAvailableSlotsUseCase } from '@application/booking/use-cases/ListAvailableSlotsUseCase';
+import { SubmitAnonymousQuestionUseCase } from '@application/public/use-cases/SubmitAnonymousQuestionUseCase';
+import { GetAnonymousQuestionStatusUseCase } from '@application/public/use-cases/GetAnonymousQuestionStatusUseCase';
+import { PublicUgcController } from '@presentation/controllers/public/ugc.controller';
 import { PrismaInteractiveDefinitionRepository } from '../persistence/prisma/interactive/prisma-interactive-definition.repository';
 import { DatabaseModule } from '../database/database.module';
 import { ContentModule } from '../content/content.module';
 import { BookingModule } from '../booking/booking.module';
 import { IntegrationsModule } from '../integrations/integrations.module';
 import { TelegramModule } from '../telegram/telegram.module';
+import { ModerationModule } from '../moderation/moderation.module';
 
 @Module({
-  imports: [DatabaseModule, ContentModule, BookingModule, IntegrationsModule, TelegramModule],
-  controllers: [PublicController],
+  imports: [DatabaseModule, ContentModule, BookingModule, IntegrationsModule, TelegramModule, ModerationModule],
+  controllers: [PublicController, PublicUgcController],
   providers: [
     GetHomepageModelUseCase,
     GetPageBySlugUseCase,
@@ -37,6 +41,8 @@ import { TelegramModule } from '../telegram/telegram.module';
     ListServicesUseCase,
     GetServiceBySlugUseCase,
     ListAvailableSlotsUseCase,
+    SubmitAnonymousQuestionUseCase,
+    GetAnonymousQuestionStatusUseCase,
     {
       provide: 'IInteractiveDefinitionRepository',
       useClass: PrismaInteractiveDefinitionRepository,

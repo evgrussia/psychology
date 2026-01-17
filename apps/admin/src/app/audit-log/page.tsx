@@ -36,8 +36,9 @@ export default function AuditLogPage() {
   const fetchAuditLogs = async (page = 1) => {
     setLoading(true);
     try {
-      // In a real app, this would be an environment variable or shared config
-      const response = await fetch(`http://127.0.0.1:3001/api/admin/audit-log?page=${page}`);
+      const response = await fetch(`/api/admin/audit-log?page=${page}`, {
+        credentials: 'include',
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch audit logs');
       }

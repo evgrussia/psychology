@@ -162,4 +162,42 @@ describe('ListAvailableSlotsUseCase (Integration)', () => {
     expect(result.slots).toHaveLength(0);
     expect(syncUseCase.execute).not.toHaveBeenCalled();
   });
+
+  it('should exclude slots that overlap admin exceptions', async () => {
+    const service = await prisma.service.findUnique({ where: { slug: serviceSlug } });
+    if (!service) throw new Error('Service not found');
+
+    const slotStart = new Date(syncRangeFrom.getTime() + 10 * 60 * 1000);
+    const slotEnd = new Date(syncRangeFrom.getTime() + 70 * 60 * 1000);
+
+    await prisma.availabilitySlot.create({
+      data: {
+        service_id: service.id,
+        start_at_utc: slotStart,
+        end_at_utc: slotEnd,
+        status: 'available',
+        source: 'product',
+      },
+    });
+
+    await prisma.availabilitySlot.create({
+      data: {
+        service_id: null,
+        start_at_utc: new Date(syncRangeFrom.getTime() + 30 * 60 * 1000),
+        end_at_utc: new Date(syncRangeFrom.getTime() + 90 * 60 * 1000),
+        status: 'blocked',
+        source: 'product',
+        block_type: 'exception',
+      },
+    });
+
+    const result = await useCase.execute({
+      serviceSlug,
+      from: syncRangeFrom.toISOString(),
+      to: syncRangeTo.toISOString(),
+      timezone: 'Europe/Moscow',
+    });
+
+    expect(result.slots).toHaveLength(0);
+  });
 });

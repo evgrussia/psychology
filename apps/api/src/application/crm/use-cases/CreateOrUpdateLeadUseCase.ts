@@ -61,15 +61,81 @@ export class CreateOrUpdateLeadUseCase {
       });
     }
 
+    const sanitizedProperties = this.sanitizeTimelineProperties(request.timelineEvent.properties);
+
     await this.leadRepository.addTimelineEvent({
       leadId: lead.id,
       eventName: request.timelineEvent.eventName,
       source: request.timelineEvent.source,
       occurredAt: request.timelineEvent.occurredAt,
       deepLinkId: request.timelineEvent.deepLinkId,
-      properties: request.timelineEvent.properties,
+      properties: sanitizedProperties,
     });
 
+    const nextStatus = this.resolveStatusFromEvent(
+      request.timelineEvent.eventName,
+      request.timelineEvent.properties,
+    );
+    if (nextStatus && this.shouldPromoteStatus(lead.status, nextStatus)) {
+      await this.leadRepository.updateStatus(lead.id, nextStatus);
+    }
+
     return { leadId: lead.id };
+  }
+
+  private resolveStatusFromEvent(eventName: string, properties: Record<string, any>): LeadStatus | null {
+    switch (eventName) {
+      case 'start_quiz':
+      case 'complete_quiz':
+      case 'navigator_start':
+      case 'navigator_complete':
+      case 'resource_thermometer_start':
+      case 'resource_thermometer_complete':
+      case 'cta_tg_click':
+      case 'tg_subscribe_confirmed':
+        return LeadStatus.engaged;
+      case 'booking_start':
+        return LeadStatus.booking_started;
+      case 'booking_confirmed':
+        return LeadStatus.booked_confirmed;
+      case 'booking_paid':
+        return LeadStatus.paid;
+      case 'appointment_outcome_recorded':
+        if (properties?.outcome === 'attended') {
+          return LeadStatus.completed_session;
+        }
+        return null;
+      default:
+        return null;
+    }
+  }
+
+  private shouldPromoteStatus(current: LeadStatus, next: LeadStatus): boolean {
+    const order: LeadStatus[] = [
+      LeadStatus.new,
+      LeadStatus.engaged,
+      LeadStatus.booking_started,
+      LeadStatus.booked_confirmed,
+      LeadStatus.paid,
+      LeadStatus.completed_session,
+      LeadStatus.follow_up_needed,
+      LeadStatus.inactive,
+    ];
+
+    return order.indexOf(next) > order.indexOf(current);
+  }
+
+  private sanitizeTimelineProperties(properties: Record<string, any>): Record<string, any> {
+    const sanitized: Record<string, any> = {};
+    const blockedKeyPattern = /(email|phone|name|text|message|question|answer|note|payload|content|body|diagnos)/i;
+
+    Object.entries(properties ?? {}).forEach(([key, value]) => {
+      if (blockedKeyPattern.test(key)) {
+        return;
+      }
+      sanitized[key] = value;
+    });
+
+    return sanitized;
   }
 }

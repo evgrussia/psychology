@@ -39,6 +39,7 @@ model User {
   roles             UserRole[]
   waitlist_requests WaitlistRequest[]
   google_calendar_integrations GoogleCalendarIntegration[]
+  lead_notes        LeadNote[]
 
   @@map("users")
 }
@@ -356,6 +357,8 @@ model AvailabilitySlot {
   end_at_utc        DateTime
   status            SlotStatus   @default(available)
   source            SlotSource   @default(product)
+  block_type        ScheduleBlockType?
+  note              String?
   external_event_id String?
   created_at        DateTime     @default(now())
   appointment       Appointment?
@@ -365,6 +368,16 @@ model AvailabilitySlot {
   @@index([source])
   @@unique([start_at_utc, end_at_utc, source, service_id])
   @@map("availability_slots")
+}
+
+model ScheduleSettings {
+  id             String   @id @default(uuid()) @db.Uuid
+  timezone       String
+  buffer_minutes Int      @default(0)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  @@map("schedule_settings")
 }
 
 model Appointment {
@@ -565,6 +578,7 @@ model Lead {
   deep_links      DeepLink[]
   identities      LeadIdentity[]
   timeline_events LeadTimelineEvent[]
+  notes           LeadNote[]
   topic           Topic?              @relation(fields: [topic_code], references: [code])
 
   @@map("leads")
@@ -599,6 +613,19 @@ model LeadTimelineEvent {
 
   @@index([lead_id, occurred_at])
   @@map("lead_timeline_events")
+}
+
+model LeadNote {
+  id              String   @id @default(uuid()) @db.Uuid
+  lead_id         String   @db.Uuid
+  author_user_id  String   @db.Uuid
+  note_encrypted  String
+  created_at      DateTime @default(now())
+  lead            Lead     @relation(fields: [lead_id], references: [id])
+  author          User     @relation(fields: [author_user_id], references: [id])
+
+  @@index([lead_id, created_at])
+  @@map("lead_notes")
 }
 
 model AnonymousQuestion {
@@ -878,6 +905,11 @@ enum SlotStatus {
 enum SlotSource {
   product
   google_calendar
+}
+
+enum ScheduleBlockType {
+  exception
+  buffer
 }
 
 enum AppointmentStatus {

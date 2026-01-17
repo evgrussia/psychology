@@ -11,6 +11,14 @@ export enum AuditLogAction {
   ADMIN_SETTINGS_CHANGED = 'admin_settings_changed',
   ADMIN_GOOGLE_CALENDAR_CONNECT_STARTED = 'admin_google_calendar_connect_started',
   ADMIN_GOOGLE_CALENDAR_CONNECTED = 'admin_google_calendar_connected',
+  ADMIN_INTERACTIVE_UPDATED = 'admin_interactive_updated',
+  ADMIN_INTERACTIVE_PUBLISHED = 'admin_interactive_published',
+  ADMIN_LEAD_STATUS_CHANGED = 'admin_lead_status_changed',
+  ADMIN_LEAD_NOTE_ADDED = 'admin_lead_note_added',
+  ADMIN_MODERATION_APPROVED = 'admin_moderation_approved',
+  ADMIN_MODERATION_REJECTED = 'admin_moderation_rejected',
+  ADMIN_MODERATION_ESCALATED = 'admin_moderation_escalated',
+  ADMIN_MODERATION_ANSWERED = 'admin_moderation_answered',
 }
 
 export class ListAuditLogDto {

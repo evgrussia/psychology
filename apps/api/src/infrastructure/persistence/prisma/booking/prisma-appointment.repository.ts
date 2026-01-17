@@ -40,6 +40,17 @@ export class PrismaAppointmentRepository implements IAppointmentRepository {
     return records.map(AppointmentMapper.toDomain);
   }
 
+  async findByRange(from: Date, to: Date): Promise<Appointment[]> {
+    const records = await this.prisma.appointment.findMany({
+      where: {
+        start_at_utc: { lt: to },
+        end_at_utc: { gt: from },
+      },
+      orderBy: { start_at_utc: 'asc' },
+    });
+    return records.map(AppointmentMapper.toDomain);
+  }
+
   async create(appointment: Appointment): Promise<void> {
     await this.prisma.appointment.create({
       data: {

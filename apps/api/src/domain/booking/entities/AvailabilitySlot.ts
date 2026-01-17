@@ -1,4 +1,4 @@
-import { SlotSource, SlotStatus } from '../value-objects/BookingEnums';
+import { ScheduleBlockType, SlotSource, SlotStatus } from '../value-objects/BookingEnums';
 
 export interface AvailabilitySlotProps {
   id: string;
@@ -7,6 +7,8 @@ export interface AvailabilitySlotProps {
   endAtUtc: Date;
   status: SlotStatus;
   source: SlotSource;
+  blockType?: ScheduleBlockType | null;
+  note?: string | null;
   externalEventId?: string | null;
   createdAt: Date;
 }
@@ -20,6 +22,8 @@ export class AvailabilitySlot {
   get endAtUtc(): Date { return this.props.endAtUtc; }
   get status(): SlotStatus { return this.props.status; }
   get source(): SlotSource { return this.props.source; }
+  get blockType(): ScheduleBlockType | null | undefined { return this.props.blockType; }
+  get note(): string | null | undefined { return this.props.note; }
   get externalEventId(): string | null | undefined { return this.props.externalEventId; }
   get createdAt(): Date { return this.props.createdAt; }
 

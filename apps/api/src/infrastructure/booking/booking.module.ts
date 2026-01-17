@@ -5,6 +5,7 @@ import { PrismaAppointmentRepository } from '../persistence/prisma/booking/prism
 import { PrismaServiceRepository } from '../persistence/prisma/booking/prisma-service.repository';
 import { PrismaIntakeFormRepository } from '../persistence/prisma/booking/prisma-intake-form.repository';
 import { PrismaWaitlistRequestRepository } from '../persistence/prisma/booking/prisma-waitlist-request.repository';
+import { PrismaScheduleSettingsRepository } from '../persistence/prisma/booking/prisma-schedule-settings.repository';
 import { PrismaPaymentWebhookEventRepository } from '../persistence/prisma/payment/prisma-payment-webhook-event.repository';
 import { PrismaPaymentRepository } from '../persistence/prisma/payment/prisma-payment.repository';
 import { ReserveSlotForAppointmentUseCase } from '@application/booking/use-cases/ReserveSlotForAppointmentUseCase';
@@ -27,6 +28,10 @@ import { CrmModule } from '../crm/crm.module';
     {
       provide: 'IAvailabilitySlotRepository',
       useClass: PrismaAvailabilitySlotRepository,
+    },
+    {
+      provide: 'IScheduleSettingsRepository',
+      useClass: PrismaScheduleSettingsRepository,
     },
     {
       provide: 'IAppointmentRepository',
@@ -70,6 +75,7 @@ import { CrmModule } from '../crm/crm.module';
   ],
   exports: [
     'IAvailabilitySlotRepository',
+    'IScheduleSettingsRepository',
     'IAppointmentRepository',
     'IServiceRepository',
     'IIntakeFormRepository',

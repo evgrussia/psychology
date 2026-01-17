@@ -392,7 +392,7 @@ export default function EditContentPage() {
             <div className="qa-checklist">
               <label>
                 <input type="checkbox" checked={qaChecklist.hasDisclaimer} onChange={e => setQaChecklist({...qaChecklist, hasDisclaimer: e.target.checked})} />
-                Есть дисклеймер "не диагноз/не лечим"
+                Есть дисклеймер &quot;не диагноз/не лечим&quot;
               </label>
               <label>
                 <input type="checkbox" checked={qaChecklist.isToneGentle} onChange={e => setQaChecklist({...qaChecklist, isToneGentle: e.target.checked})} />
@@ -400,7 +400,7 @@ export default function EditContentPage() {
               </label>
               <label>
                 <input type="checkbox" checked={qaChecklist.hasTryNowBlock} onChange={e => setQaChecklist({...qaChecklist, hasTryNowBlock: e.target.checked})} />
-                Есть блок "попробовать сейчас"
+                Есть блок &quot;попробовать сейчас&quot;
               </label>
               <label>
                 <input type="checkbox" checked={qaChecklist.hasCTA} onChange={e => setQaChecklist({...qaChecklist, hasCTA: e.target.checked})} />

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 
 interface QuizQuestion {
@@ -48,7 +48,6 @@ interface QuizDefinition {
 }
 
 export default function EditQuizPage() {
-  const router = useRouter();
   const params = useParams();
   const id = params.id as string;
 
@@ -58,18 +57,29 @@ export default function EditQuizPage() {
   const [publishing, setPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [previewVersion, setPreviewVersion] = useState<'draft' | 'published'>('draft');
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+  const [previewQuiz, setPreviewQuiz] = useState<QuizDefinition | null>(null);
 
   useEffect(() => {
     fetchQuiz();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  useEffect(() => {
+    if (!showPreview) {
+      return;
+    }
+    fetchPreview();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showPreview, previewVersion, id]);
 
   const fetchQuiz = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://127.0.0.1:3001/api/admin/interactive/definitions/${id}`, {
-        headers: {
-          'Authorization': 'Bearer test-token',
-        },
+      const response = await fetch(`/api/admin/interactive/definitions/${id}`, {
+        credentials: 'include',
       });
       if (!response.ok) {
         throw new Error('Failed to fetch quiz');
@@ -88,12 +98,12 @@ export default function EditQuizPage() {
     setSaving(true);
     setError(null);
     try {
-      const response = await fetch(`http://127.0.0.1:3001/api/admin/interactive/definitions/${id}`, {
+      const response = await fetch(`/api/admin/interactive/definitions/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer test-token',
         },
+        credentials: 'include',
         body: JSON.stringify({
           title: quiz.title,
           topicCode: quiz.topicCode,
@@ -117,11 +127,9 @@ export default function EditQuizPage() {
     setPublishing(true);
     setError(null);
     try {
-      const response = await fetch(`http://127.0.0.1:3001/api/admin/interactive/definitions/${id}/publish`, {
+      const response = await fetch(`/api/admin/interactive/definitions/${id}/publish`, {
         method: 'POST',
-        headers: {
-          'Authorization': 'Bearer test-token',
-        },
+        credentials: 'include',
       });
       if (!response.ok) {
         const err = await response.json();
@@ -133,6 +141,29 @@ export default function EditQuizPage() {
       setError(err.message);
     } finally {
       setPublishing(false);
+    }
+  };
+
+  const fetchPreview = async () => {
+    setPreviewLoading(true);
+    setPreviewError(null);
+    try {
+      const response = await fetch(
+        `/api/admin/interactive/definitions/${id}/preview?version=${previewVersion}`,
+        { credentials: 'include' },
+      );
+      if (!response.ok) {
+        throw new Error(previewVersion === 'published'
+          ? 'Опубликованная версия не найдена'
+          : 'Не удалось загрузить черновик');
+      }
+      const data = await response.json();
+      setPreviewQuiz(data);
+    } catch (err: any) {
+      setPreviewQuiz(null);
+      setPreviewError(err.message);
+    } finally {
+      setPreviewLoading(false);
     }
   };
 
@@ -213,35 +244,52 @@ export default function EditQuizPage() {
         </button>
       </div>
 
-      {showPreview && quiz.config && (
+      {showPreview && (
         <div className="mb-8 p-4 bg-gray-50 rounded border">
-          <h2 className="text-xl font-bold mb-4">Превью квиза</h2>
-          <div className="bg-white p-6 rounded">
-            <h3 className="text-lg font-semibold mb-2">{quiz.title}</h3>
-            <p className="text-sm text-gray-600 mb-4">Вопросов: {quiz.config.questions.length}</p>
-            <div className="space-y-2">
-              {quiz.config.questions.map((q, idx) => (
-                <div key={q.id} className="p-3 bg-gray-50 rounded">
-                  <p className="font-medium">{idx + 1}. {q.text}</p>
-                  <ul className="mt-2 space-y-1">
-                    {q.options.map((opt, optIdx) => (
-                      <li key={optIdx} className="text-sm text-gray-600">
-                        • {opt.text} (значение: {opt.value})
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 pt-4 border-t">
-              <h4 className="font-semibold mb-2">Пороги:</h4>
-              {quiz.config.thresholds.map((t, idx) => (
-                <div key={idx} className="text-sm">
-                  {t.level}: {t.minScore} - {t.maxScore}
-                </div>
-              ))}
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <h2 className="text-xl font-bold">Превью квиза</h2>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-muted-foreground">Версия:</span>
+              <select
+                value={previewVersion}
+                onChange={(event) => setPreviewVersion(event.target.value as 'draft' | 'published')}
+                className="rounded border px-2 py-1"
+              >
+                <option value="draft">Черновик</option>
+                <option value="published">Опубликовано</option>
+              </select>
             </div>
           </div>
+          {previewLoading && <div className="text-sm text-muted-foreground">Загрузка превью...</div>}
+          {previewError && <div className="text-sm text-red-500">{previewError}</div>}
+          {previewQuiz?.config && (
+            <div className="bg-white p-6 rounded">
+              <h3 className="text-lg font-semibold mb-2">{previewQuiz.title}</h3>
+              <p className="text-sm text-gray-600 mb-4">Вопросов: {previewQuiz.config.questions.length}</p>
+              <div className="space-y-2">
+                {previewQuiz.config.questions.map((q, idx) => (
+                  <div key={q.id} className="p-3 bg-gray-50 rounded">
+                    <p className="font-medium">{idx + 1}. {q.text}</p>
+                    <ul className="mt-2 space-y-1">
+                      {q.options.map((opt, optIdx) => (
+                        <li key={optIdx} className="text-sm text-gray-600">
+                          • {opt.text} (значение: {opt.value})
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 pt-4 border-t">
+                <h4 className="font-semibold mb-2">Пороги:</h4>
+                {previewQuiz.config.thresholds.map((t, idx) => (
+                  <div key={idx} className="text-sm">
+                    {t.level}: {t.minScore} - {t.maxScore}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -316,7 +364,7 @@ export default function EditQuizPage() {
                       <label className="block text-sm font-medium mb-1">Уровень</label>
                       <select
                         value={threshold.level}
-                        onChange={(e) => updateThreshold(idx, 'level', e.target.value)}
+                        onChange={(e) => updateThreshold(idx, 'level', e.target.value as any)}
                         className="w-full px-3 py-2 border rounded"
                       >
                         <option value="low">Low</option>
@@ -355,7 +403,7 @@ export default function EditQuizPage() {
                     <label className="block text-sm font-medium mb-1">Уровень</label>
                     <select
                       value={result.level}
-                      onChange={(e) => updateResult(idx, 'level', e.target.value)}
+                      onChange={(e) => updateResult(idx, 'level', e.target.value as any)}
                       className="w-full px-3 py-2 border rounded"
                     >
                       <option value="low">Low</option>
@@ -382,7 +430,7 @@ export default function EditQuizPage() {
                     />
                   </div>
                   <div className="mb-2">
-                    <label className="block text-sm font-medium mb-1">Рекомендации "Прямо сейчас" (каждая с новой строки)</label>
+                    <label className="block text-sm font-medium mb-1">Рекомендации &quot;Прямо сейчас&quot; (каждая с новой строки)</label>
                     <textarea
                       value={result.recommendations.now.join('\n')}
                       onChange={(e) => updateResultRecommendation(idx, 'now', e.target.value.split('\n').filter(s => s.trim()))}
@@ -391,7 +439,7 @@ export default function EditQuizPage() {
                     />
                   </div>
                   <div className="mb-2">
-                    <label className="block text-sm font-medium mb-1">Рекомендации "На этой неделе" (каждая с новой строки)</label>
+                    <label className="block text-sm font-medium mb-1">Рекомендации &quot;На этой неделе&quot; (каждая с новой строки)</label>
                     <textarea
                       value={result.recommendations.week.join('\n')}
                       onChange={(e) => updateResultRecommendation(idx, 'week', e.target.value.split('\n').filter(s => s.trim()))}

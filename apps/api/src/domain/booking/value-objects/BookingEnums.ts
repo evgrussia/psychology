@@ -9,6 +9,11 @@ export enum SlotSource {
   google_calendar = 'google_calendar',
 }
 
+export enum ScheduleBlockType {
+  exception = 'exception',
+  buffer = 'buffer',
+}
+
 export enum AppointmentStatus {
   pending_payment = 'pending_payment',
   paid = 'paid',

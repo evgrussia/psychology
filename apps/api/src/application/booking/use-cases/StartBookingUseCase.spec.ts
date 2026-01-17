@@ -30,8 +30,14 @@ describe('StartBookingUseCase', () => {
       findById: jest.fn(),
       findAvailableSlots: jest.fn(),
       findBusySlots: jest.fn(),
+      findBlockedSlots: jest.fn(),
+      listSlots: jest.fn(),
+      createSlots: jest.fn(),
+      updateSlot: jest.fn(),
+      deleteSlots: jest.fn(),
       replaceBusySlots: jest.fn(),
       reserveSlot: jest.fn(),
+      releaseSlot: jest.fn(),
     };
     appointmentRepository = {
       findById: jest.fn(),

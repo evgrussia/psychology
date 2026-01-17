@@ -1,6 +1,11 @@
-import { AvailabilitySlot as PrismaAvailabilitySlot, SlotSource as PrismaSlotSource, SlotStatus as PrismaSlotStatus } from '@prisma/client';
+import { 
+  AvailabilitySlot as PrismaAvailabilitySlot, 
+  SlotSource as PrismaSlotSource, 
+  SlotStatus as PrismaSlotStatus,
+  ScheduleBlockType as PrismaScheduleBlockType
+} from '@prisma/client';
 import { AvailabilitySlot } from '@domain/booking/entities/AvailabilitySlot';
-import { SlotSource, SlotStatus } from '@domain/booking/value-objects/BookingEnums';
+import { ScheduleBlockType, SlotSource, SlotStatus } from '@domain/booking/value-objects/BookingEnums';
 
 export class AvailabilitySlotMapper {
   static toDomain(record: PrismaAvailabilitySlot): AvailabilitySlot {
@@ -11,6 +16,8 @@ export class AvailabilitySlotMapper {
       endAtUtc: record.end_at_utc,
       status: this.mapStatusToDomain(record.status),
       source: this.mapSourceToDomain(record.source),
+      blockType: record.block_type ? this.mapBlockTypeToDomain(record.block_type) : null,
+      note: record.note ?? null,
       externalEventId: record.external_event_id,
       createdAt: record.created_at,
     });
@@ -24,7 +31,9 @@ export class AvailabilitySlotMapper {
       end_at_utc: slot.endAtUtc,
       status: this.mapStatusToPrisma(slot.status),
       source: this.mapSourceToPrisma(slot.source),
-      external_event_id: slot.externalEventId,
+      block_type: slot.blockType ? this.mapBlockTypeToPrisma(slot.blockType) : null,
+      note: slot.note ?? null,
+      external_event_id: slot.externalEventId ?? null,
       created_at: slot.createdAt,
     };
   }
@@ -74,6 +83,28 @@ export class AvailabilitySlotMapper {
         return PrismaSlotSource.google_calendar;
       default:
         throw new Error(`Unknown SlotSource: ${source}`);
+    }
+  }
+
+  private static mapBlockTypeToDomain(blockType: PrismaScheduleBlockType): ScheduleBlockType {
+    switch (blockType) {
+      case PrismaScheduleBlockType.exception:
+        return ScheduleBlockType.exception;
+      case PrismaScheduleBlockType.buffer:
+        return ScheduleBlockType.buffer;
+      default:
+        throw new Error(`Unknown ScheduleBlockType: ${blockType}`);
+    }
+  }
+
+  private static mapBlockTypeToPrisma(blockType: ScheduleBlockType): PrismaScheduleBlockType {
+    switch (blockType) {
+      case ScheduleBlockType.exception:
+        return PrismaScheduleBlockType.exception;
+      case ScheduleBlockType.buffer:
+        return PrismaScheduleBlockType.buffer;
+      default:
+        throw new Error(`Unknown ScheduleBlockType: ${blockType}`);
     }
   }
 }

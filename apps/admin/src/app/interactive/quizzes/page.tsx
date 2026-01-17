@@ -24,10 +24,8 @@ export default function QuizzesListPage() {
   const fetchQuizzes = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://127.0.0.1:3001/api/admin/interactive/definitions?type=quiz', {
-        headers: {
-          'Authorization': 'Bearer test-token',
-        },
+      const response = await fetch('/api/admin/interactive/definitions?type=quiz', {
+        credentials: 'include',
       });
       if (!response.ok) {
         throw new Error('Failed to fetch quizzes');

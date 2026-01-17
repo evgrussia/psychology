@@ -14,6 +14,11 @@
 
 ## Отчёты о реализации
 
+- `FEAT-ADM-01-Implementation-Report.md`
+- `FEAT-ADM-02-Implementation-Report.md`
+- `FEAT-ADM-03-Implementation-Report.md`
+- `FEAT-ADM-04-Implementation-Report.md`
+- `FEAT-ADM-06-Implementation-Report.md`
 - `FEAT-BKG-01-Implementation-Report.md`
 - `FEAT-BKG-02-Implementation-Report.md`
 - `FEAT-BKG-03-Implementation-Report.md`

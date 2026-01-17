@@ -28,6 +28,10 @@ describe('UpdateInteractiveDefinitionUseCase', () => {
       execute: jest.fn(),
     };
 
+    const mockAuditLogHelper = {
+      logAction: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UpdateInteractiveDefinitionUseCase,
@@ -38,6 +42,10 @@ describe('UpdateInteractiveDefinitionUseCase', () => {
         {
           provide: ValidateNavigatorDefinitionUseCase,
           useValue: mockValidateNavigatorUseCase,
+        },
+        {
+          provide: 'AuditLogHelper',
+          useValue: mockAuditLogHelper,
         },
       ],
     }).compile();

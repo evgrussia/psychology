@@ -26,6 +26,9 @@ describe('Auth (e2e)', () => {
     hasher = new BcryptHasher();
 
     // Clean up
+    await prisma.ugcModerationAction.deleteMany();
+    await prisma.questionAnswer.deleteMany();
+    await prisma.anonymousQuestion.deleteMany();
     await prisma.contentRevision.deleteMany();
     await prisma.contentItem.deleteMany();
     await prisma.session.deleteMany();
@@ -204,6 +207,90 @@ describe('Auth (e2e)', () => {
 
       await request(app.getHttpServer())
         .get('/api/admin/settings')
+        .set('Cookie', [cookie])
+        .expect(403);
+    });
+
+    it('should allow owner to access dashboard', async () => {
+      const password = 'password123';
+      const passwordHash = await hasher.hash(password);
+
+      await prisma.user.create({
+        data: {
+          email: 'dashboard-owner@example.com',
+          password_hash: passwordHash,
+          status: 'active',
+          roles: {
+            create: { role_code: 'owner' },
+          },
+        },
+      });
+
+      const loginRes = await request(app.getHttpServer())
+        .post('/api/auth/admin/login')
+        .send({ email: 'dashboard-owner@example.com', password })
+        .expect(200);
+
+      const cookie = loginRes.headers['set-cookie'][0];
+
+      await request(app.getHttpServer())
+        .get('/api/admin/dashboard?range=7d')
+        .set('Cookie', [cookie])
+        .expect(200);
+    });
+
+    it('should allow assistant to access dashboard', async () => {
+      const password = 'password123';
+      const passwordHash = await hasher.hash(password);
+
+      await prisma.user.create({
+        data: {
+          email: 'dashboard-assistant@example.com',
+          password_hash: passwordHash,
+          status: 'active',
+          roles: {
+            create: { role_code: 'assistant' },
+          },
+        },
+      });
+
+      const loginRes = await request(app.getHttpServer())
+        .post('/api/auth/admin/login')
+        .send({ email: 'dashboard-assistant@example.com', password })
+        .expect(200);
+
+      const cookie = loginRes.headers['set-cookie'][0];
+
+      await request(app.getHttpServer())
+        .get('/api/admin/dashboard?range=today')
+        .set('Cookie', [cookie])
+        .expect(200);
+    });
+
+    it('should forbid editor from accessing dashboard', async () => {
+      const password = 'password123';
+      const passwordHash = await hasher.hash(password);
+
+      await prisma.user.create({
+        data: {
+          email: 'dashboard-editor@example.com',
+          password_hash: passwordHash,
+          status: 'active',
+          roles: {
+            create: { role_code: 'editor' },
+          },
+        },
+      });
+
+      const loginRes = await request(app.getHttpServer())
+        .post('/api/auth/admin/login')
+        .send({ email: 'dashboard-editor@example.com', password })
+        .expect(200);
+
+      const cookie = loginRes.headers['set-cookie'][0];
+
+      await request(app.getHttpServer())
+        .get('/api/admin/dashboard?range=7d')
         .set('Cookie', [cookie])
         .expect(403);
     });

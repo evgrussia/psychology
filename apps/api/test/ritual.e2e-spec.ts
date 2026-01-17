@@ -28,6 +28,9 @@ describe('Rituals (e2e)', () => {
   });
 
   beforeEach(async () => {
+    await prisma.ugcModerationAction.deleteMany({});
+    await prisma.questionAnswer.deleteMany({});
+    await prisma.anonymousQuestion.deleteMany({});
     await prisma.interactiveRun.deleteMany({});
     await prisma.interactiveDefinition.deleteMany({});
     await prisma.mediaAsset.deleteMany({});

@@ -86,8 +86,11 @@ export class ListAvailableSlotsUseCase {
 
     const availableSlots = await this.slotRepository.findAvailableSlots(service.id, fromDate, toDate);
     const busySlots = await this.slotRepository.findBusySlots(fromDate, toDate);
+    const blockedSlots = await this.slotRepository.findBlockedSlots(fromDate, toDate);
 
-    const busyTimeSlots = busySlots.map((slot) => new TimeSlot(slot.startAtUtc, slot.endAtUtc));
+    const busyTimeSlots = [...busySlots, ...blockedSlots].map(
+      (slot) => new TimeSlot(slot.startAtUtc, slot.endAtUtc),
+    );
     const filteredSlots = availableSlots.filter((slot) => {
       const candidate = new TimeSlot(slot.startAtUtc, slot.endAtUtc);
       return !busyTimeSlots.some((busy) => busy.overlaps(candidate));

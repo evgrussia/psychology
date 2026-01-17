@@ -13,6 +13,26 @@ export class TrackingService {
   private readonly logger = new Logger(TrackingService.name);
 
   /**
+   * Send admin_login event
+   *
+   * According to Tracking Plan:
+   * - Props: role
+   * - Prohibited: email, phone, identifiers
+   */
+  async trackAdminLogin(params: { role: string }): Promise<void> {
+    const event = {
+      event_name: 'admin_login',
+      source: 'admin/backend',
+      occurred_at: new Date().toISOString(),
+      properties: {
+        role: params.role,
+      },
+    };
+
+    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+  }
+
+  /**
    * Send admin_media_uploaded event
    * 
    * According to Tracking Plan:

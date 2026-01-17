@@ -21,11 +21,11 @@ export default function ContentListPage() {
   });
 
   useEffect(() => {
-    let url = 'http://127.0.0.1:3001/api/admin/content?';
+    let url = '/api/admin/content?';
     if (filters.type) url += `type=${filters.type}&`;
     if (filters.status) url += `status=${filters.status}&`;
 
-    fetch(url)
+    fetch(url, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         setItems(data);

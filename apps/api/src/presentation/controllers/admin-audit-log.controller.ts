@@ -21,7 +21,7 @@ export class AdminAuditLogController {
   @ApiResponse({ status: 200, description: 'Returns paginated audit log entries' })
   @ApiResponse({ status: 403, description: 'Forbidden - insufficient permissions' })
   @ApiQuery({ name: 'actorUserId', required: false, type: String })
-  @ApiQuery({ name: 'action', required: false, enum: ['admin_price_changed', 'admin_data_exported', 'admin_content_published', 'admin_content_deleted', 'admin_appointment_deleted', 'admin_role_changed', 'admin_login', 'admin_settings_changed'] })
+  @ApiQuery({ name: 'action', required: false, enum: ['admin_price_changed', 'admin_data_exported', 'admin_content_published', 'admin_content_deleted', 'admin_appointment_deleted', 'admin_role_changed', 'admin_login', 'admin_settings_changed', 'admin_google_calendar_connect_started', 'admin_google_calendar_connected', 'admin_interactive_updated', 'admin_interactive_published', 'admin_lead_status_changed', 'admin_lead_note_added', 'admin_moderation_approved', 'admin_moderation_rejected', 'admin_moderation_escalated', 'admin_moderation_answered'] })
   @ApiQuery({ name: 'entityType', required: false, type: String })
   @ApiQuery({ name: 'entityId', required: false, type: String })
   @ApiQuery({ name: 'fromDate', required: false, type: String, description: 'ISO 8601 date-time string' })
