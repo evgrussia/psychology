@@ -34,6 +34,20 @@ export class ListModerationItemsQueryDto {
   pageSize?: number = 30;
 }
 
+export class ModerationMetricsQueryDto {
+  @IsOptional()
+  @IsString()
+  range?: string;
+
+  @IsOptional()
+  @IsDateString()
+  from?: string;
+
+  @IsOptional()
+  @IsDateString()
+  to?: string;
+}
+
 export class RejectModerationItemDto {
   @IsEnum(ModerationReasonCategory)
   reasonCategory!: ModerationReasonCategory;
@@ -131,4 +145,37 @@ export interface ModerationTemplateDto {
     } | null;
     createdAt: Date;
   } | null;
+}
+
+export interface ModerationMetricsResponseDto {
+  range: {
+    preset: string;
+    from: string;
+    to: string;
+    label: string;
+  };
+  queue: {
+    pendingCount: number;
+    flaggedCount: number;
+    overdueCount: number;
+    crisisOverdueCount: number;
+  };
+  sla: {
+    averageDecisionHours: number | null;
+    averageAnswerHours: number | null;
+  };
+  ratios: {
+    rejectedShare: number | null;
+    crisisShare: number | null;
+  };
+  totals: {
+    submittedCount: number;
+    rejectedCount: number;
+    crisisCount: number;
+    answeredCount: number;
+  };
+  alerts: Array<{
+    type: 'queue_overflow' | 'crisis_overdue' | 'slow_moderation';
+    message: string;
+  }>;
 }

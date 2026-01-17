@@ -73,6 +73,7 @@ import { RejectModerationItemUseCase } from '../../application/admin/use-cases/m
 import { EscalateModerationItemUseCase } from '../../application/admin/use-cases/moderation/EscalateModerationItemUseCase';
 import { AnswerModerationItemUseCase } from '../../application/admin/use-cases/moderation/AnswerModerationItemUseCase';
 import { ListModerationTemplatesUseCase } from '../../application/admin/use-cases/moderation/ListModerationTemplatesUseCase';
+import { GetModerationMetricsUseCase } from '../../application/admin/use-cases/moderation/GetModerationMetricsUseCase';
 
 @Module({
   imports: [IdentityModule, AuditModule, DatabaseModule, ContentModule, InteractiveModule, IntegrationsModule, BookingModule, CrmModule, ModerationModule],
@@ -142,6 +143,7 @@ import { ListModerationTemplatesUseCase } from '../../application/admin/use-case
     EscalateModerationItemUseCase,
     AnswerModerationItemUseCase,
     ListModerationTemplatesUseCase,
+    GetModerationMetricsUseCase,
     TrackingService,
     AdminAuthTrackingHandler,
   ],

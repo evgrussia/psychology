@@ -31,6 +31,8 @@
 - `FEAT-PAY-01-Implementation-Report.md`
 - `FEAT-PAY-02-Implementation-Report.md`
 - `FEAT-PAY-03-Implementation-Report.md`
+- `FEAT-MOD-01-Implementation-Report.md`
+- `FEAT-MOD-02-Implementation-Report.md`
 - `FEAT-TG-01-Implementation-Report.md`
 - `FEAT-TG-02-Implementation-Report.md`
 - `FEAT-TG-03-Implementation-Report.md`

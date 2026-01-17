@@ -2,6 +2,7 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { IUgcModerationRepository } from '@domain/moderation/repositories/IUgcModerationRepository';
 import { AuditLogHelper } from '@application/audit/helpers/audit-log.helper';
 import { ModerationActionType, ModerationReasonCategory, UgcStatus } from '@domain/moderation/value-objects/ModerationEnums';
+import { TrackingService } from '@infrastructure/tracking/tracking.service';
 
 @Injectable()
 export class EscalateModerationItemUseCase {
@@ -9,6 +10,7 @@ export class EscalateModerationItemUseCase {
     @Inject('IUgcModerationRepository')
     private readonly moderationRepository: IUgcModerationRepository,
     private readonly auditLogHelper: AuditLogHelper,
+    private readonly trackingService: TrackingService,
   ) {}
 
   async execute(
@@ -42,6 +44,12 @@ export class EscalateModerationItemUseCase {
       reasonCategory: reasonCategory ?? null,
     });
 
+    await this.trackingService.trackModerationEscalated({
+      ugcType: 'anonymous_question',
+      ugcId: id,
+      escalationReason: this.mapEscalationReason(reasonCategory),
+    });
+
     await this.auditLogHelper.logAction(
       actorUserId,
       actorRole,
@@ -53,5 +61,15 @@ export class EscalateModerationItemUseCase {
       ipAddress ?? null,
       userAgent ?? null,
     );
+  }
+
+  private mapEscalationReason(reasonCategory?: ModerationReasonCategory | null): string {
+    if (!reasonCategory) {
+      return 'other';
+    }
+    if (reasonCategory === ModerationReasonCategory.crisis) {
+      return 'crisis';
+    }
+    return 'complex';
   }
 }

@@ -37,6 +37,8 @@ describe('Admin Interactive (e2e)', () => {
     await prisma.auditLogEntry.deleteMany({});
     await prisma.interactiveRun.deleteMany({});
     await prisma.interactiveDefinition.deleteMany({});
+    await prisma.messageTemplateVersion.deleteMany({});
+    await prisma.messageTemplate.deleteMany({});
     await prisma.session.deleteMany({});
     await prisma.userRole.deleteMany({});
     await prisma.user.deleteMany({});

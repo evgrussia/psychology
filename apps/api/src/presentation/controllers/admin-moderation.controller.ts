@@ -9,10 +9,12 @@ import { RejectModerationItemUseCase } from '../../application/admin/use-cases/m
 import { EscalateModerationItemUseCase } from '../../application/admin/use-cases/moderation/EscalateModerationItemUseCase';
 import { AnswerModerationItemUseCase } from '../../application/admin/use-cases/moderation/AnswerModerationItemUseCase';
 import { ListModerationTemplatesUseCase } from '../../application/admin/use-cases/moderation/ListModerationTemplatesUseCase';
+import { GetModerationMetricsUseCase } from '../../application/admin/use-cases/moderation/GetModerationMetricsUseCase';
 import {
   AnswerModerationItemDto,
   EscalateModerationItemDto,
   ListModerationItemsQueryDto,
+  ModerationMetricsQueryDto,
   RejectModerationItemDto,
 } from '../../application/admin/dto/moderation.dto';
 import { AuditLogHelper } from '../../application/audit/helpers/audit-log.helper';
@@ -31,6 +33,7 @@ export class AdminModerationController {
     private readonly escalateModerationItemUseCase: EscalateModerationItemUseCase,
     private readonly answerModerationItemUseCase: AnswerModerationItemUseCase,
     private readonly listModerationTemplatesUseCase: ListModerationTemplatesUseCase,
+    private readonly getModerationMetricsUseCase: GetModerationMetricsUseCase,
   ) {}
 
   @Get('items')
@@ -125,5 +128,13 @@ export class AdminModerationController {
   @ApiResponse({ status: 200, description: 'Moderation templates list' })
   async listTemplates() {
     return this.listModerationTemplatesUseCase.execute();
+  }
+
+  @Get('metrics')
+  @Roles('owner', 'assistant')
+  @ApiOperation({ summary: 'Get moderation metrics' })
+  @ApiResponse({ status: 200, description: 'Moderation metrics' })
+  async metrics(@Query() query: ModerationMetricsQueryDto) {
+    return this.getModerationMetricsUseCase.execute(query);
   }
 }

@@ -31,6 +31,8 @@ describe('Auth (e2e)', () => {
     await prisma.anonymousQuestion.deleteMany();
     await prisma.contentRevision.deleteMany();
     await prisma.contentItem.deleteMany();
+    await prisma.messageTemplateVersion.deleteMany();
+    await prisma.messageTemplate.deleteMany();
     await prisma.session.deleteMany();
     await prisma.userRole.deleteMany();
     await prisma.user.deleteMany();

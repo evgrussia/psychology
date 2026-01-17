@@ -1,7 +1,8 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { IUgcModerationRepository } from '@domain/moderation/repositories/IUgcModerationRepository';
 import { AuditLogHelper } from '@application/audit/helpers/audit-log.helper';
-import { ModerationActionType, ModerationReasonCategory, UgcStatus } from '@domain/moderation/value-objects/ModerationEnums';
+import { ModerationActionType, ModerationReasonCategory, UgcStatus, UgcTriggerFlag } from '@domain/moderation/value-objects/ModerationEnums';
+import { TrackingService } from '@infrastructure/tracking/tracking.service';
 
 @Injectable()
 export class RejectModerationItemUseCase {
@@ -9,6 +10,7 @@ export class RejectModerationItemUseCase {
     @Inject('IUgcModerationRepository')
     private readonly moderationRepository: IUgcModerationRepository,
     private readonly auditLogHelper: AuditLogHelper,
+    private readonly trackingService: TrackingService,
   ) {}
 
   async execute(
@@ -40,6 +42,16 @@ export class RejectModerationItemUseCase {
       moderatorUserId: actorUserId,
       action: ModerationActionType.reject,
       reasonCategory,
+    });
+
+    await this.trackingService.trackUgcModerated({
+      ugcType: 'anonymous_question',
+      ugcId: id,
+      moderationStatus: reasonCategory === ModerationReasonCategory.crisis ? 'flagged_crisis' : 'rejected',
+      moderatorRole: actorRole,
+      durationMs: Date.now() - item.submittedAt.getTime(),
+      rejectionReason: reasonCategory,
+      hasCrisisTrigger: item.triggerFlags.includes(UgcTriggerFlag.crisis),
     });
 
     await this.auditLogHelper.logAction(

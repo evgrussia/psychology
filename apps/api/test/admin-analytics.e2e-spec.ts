@@ -31,6 +31,8 @@ describe('Admin Analytics (e2e)', () => {
     await prisma.leadTimelineEvent.deleteMany();
     await prisma.leadIdentity.deleteMany();
     await prisma.lead.deleteMany();
+    await prisma.messageTemplateVersion.deleteMany();
+    await prisma.messageTemplate.deleteMany();
     await prisma.session.deleteMany();
     await prisma.userRole.deleteMany();
     await prisma.user.deleteMany();

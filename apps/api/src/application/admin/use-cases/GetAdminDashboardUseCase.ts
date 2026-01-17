@@ -363,6 +363,7 @@ export class GetAdminDashboardUseCase {
         FROM ugc_moderation_actions a
         JOIN anonymous_questions q ON q.id = a.ugc_id
         WHERE a.ugc_type = 'anonymous_question'
+          AND a.action IN ('approve', 'reject', 'escalate')
           AND a.created_at >= ${from}
           AND a.created_at <= ${to};
       `,

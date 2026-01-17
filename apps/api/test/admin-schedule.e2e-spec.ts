@@ -34,6 +34,8 @@ describe('Admin Schedule (e2e)', () => {
     await prisma.appointment.deleteMany();
     await prisma.service.deleteMany();
     await (prisma as any).googleCalendarIntegration.deleteMany();
+    await prisma.messageTemplateVersion.deleteMany();
+    await prisma.messageTemplate.deleteMany();
     await prisma.session.deleteMany();
     await prisma.userRole.deleteMany();
     await prisma.user.deleteMany();

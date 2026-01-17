@@ -9,7 +9,7 @@ export default function StartHubPage() {
       id: 'anxiety',
       title: 'Тест на тревогу',
       description: 'Оцените уровень своего беспокойства по шкале GAD-7 за 2 минуты.',
-      slug: 'quizzes/anxiety',
+      href: '/start/quizzes/anxiety',
       topic: 'anxiety',
       time: '2 мин',
     },
@@ -17,7 +17,7 @@ export default function StartHubPage() {
       id: 'burnout',
       title: 'Проверка выгорания',
       description: 'Узнайте, насколько вы близки к эмоциональному истощению.',
-      slug: 'quizzes/burnout',
+      href: '/start/quizzes/burnout',
       topic: 'burnout',
       time: '3 мин',
     },
@@ -25,7 +25,7 @@ export default function StartHubPage() {
       id: 'navigator',
       title: 'Навигатор состояния',
       description: 'Поможем понять, что с вами происходит, и найти верный путь.',
-      slug: 'navigator',
+      href: '/start/navigator',
       topic: 'any',
       time: '3 мин',
     },
@@ -33,7 +33,7 @@ export default function StartHubPage() {
       id: 'thermometer',
       title: 'Термометр ресурса',
       description: 'Быстрая проверка вашего энергобюджета на сегодня.',
-      slug: 'resource-thermometer',
+      href: '/start/resource-thermometer',
       topic: 'energy',
       time: '1 мин',
     },
@@ -41,9 +41,17 @@ export default function StartHubPage() {
       id: 'rituals',
       title: 'Библиотека ритуалов',
       description: 'Короткие практики для восстановления баланса и снятия напряжения.',
-      slug: 'rituals',
+      href: '/start/rituals',
       topic: 'balance',
       time: '2-5 мин',
+    },
+    {
+      id: 'anonymous-question',
+      title: 'Анонимный вопрос',
+      description: 'Задайте вопрос психологу без регистрации и получите бережный ответ.',
+      href: '/interactive/anonymous-question',
+      topic: 'support',
+      time: '2 мин',
     },
   ];
 
@@ -64,7 +72,7 @@ export default function StartHubPage() {
                 key={item.id}
                 title={item.title}
                 description={item.description}
-                href={`/start/${item.slug}`}
+                href={item.href}
                 image={
                   item.id === 'anxiety' ? "/assets/graphics/modules/module-anxiety-test-1264x848.jpg" :
                   item.id === 'rituals' ? "/assets/graphics/modules/module-emotions-journal-1264x848.png" :

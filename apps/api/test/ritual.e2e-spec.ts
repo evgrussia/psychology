@@ -34,6 +34,8 @@ describe('Rituals (e2e)', () => {
     await prisma.interactiveRun.deleteMany({});
     await prisma.interactiveDefinition.deleteMany({});
     await prisma.mediaAsset.deleteMany({});
+    await prisma.messageTemplateVersion.deleteMany({});
+    await prisma.messageTemplate.deleteMany({});
     await prisma.session.deleteMany({});
     await prisma.userRole.deleteMany({});
     await prisma.user.deleteMany({});

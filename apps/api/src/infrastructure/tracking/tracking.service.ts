@@ -33,6 +33,93 @@ export class TrackingService {
   }
 
   /**
+   * Send ugc_moderated event
+   *
+   * According to Tracking Plan:
+   * - Props: ugc_type, ugc_id, moderation_status, moderator_role, duration_ms
+   * - Optional: rejection_reason, has_crisis_trigger
+   * - Prohibited: free text content
+   */
+  async trackUgcModerated(params: {
+    ugcType: string;
+    ugcId: string;
+    moderationStatus: string;
+    moderatorRole: string;
+    durationMs: number;
+    rejectionReason?: string | null;
+    hasCrisisTrigger?: boolean;
+  }): Promise<void> {
+    const event = {
+      event_name: 'ugc_moderated',
+      source: 'admin/backend',
+      occurred_at: new Date().toISOString(),
+      properties: {
+        ugc_type: params.ugcType,
+        ugc_id: params.ugcId,
+        moderation_status: params.moderationStatus,
+        moderator_role: params.moderatorRole,
+        duration_ms: params.durationMs,
+        rejection_reason: params.rejectionReason ?? undefined,
+        has_crisis_trigger: params.hasCrisisTrigger ?? undefined,
+      },
+    };
+
+    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+  }
+
+  /**
+   * Send moderation_escalated event
+   *
+   * According to Tracking Plan:
+   * - Props: ugc_type, ugc_id, escalation_reason
+   * - Prohibited: free text content
+   */
+  async trackModerationEscalated(params: {
+    ugcType: string;
+    ugcId: string;
+    escalationReason: string;
+  }): Promise<void> {
+    const event = {
+      event_name: 'moderation_escalated',
+      source: 'admin/backend',
+      occurred_at: new Date().toISOString(),
+      properties: {
+        ugc_type: params.ugcType,
+        ugc_id: params.ugcId,
+        escalation_reason: params.escalationReason,
+      },
+    };
+
+    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+  }
+
+  /**
+   * Send ugc_answered event
+   *
+   * According to Tracking Plan:
+   * - Props: ugc_id, answer_length_bucket, time_to_answer_hours
+   * - Prohibited: answer text
+   */
+  async trackUgcAnswered(params: {
+    ugcId: string;
+    answerLengthBucket: 'short' | 'medium' | 'long';
+    timeToAnswerHours: number;
+  }): Promise<void> {
+    const event = {
+      event_name: 'ugc_answered',
+      source: 'admin/backend',
+      occurred_at: new Date().toISOString(),
+      properties: {
+        ugc_id: params.ugcId,
+        answer_length_bucket: params.answerLengthBucket,
+        time_to_answer_hours: params.timeToAnswerHours,
+      },
+    };
+
+    this.logger.log(`[Tracking] ${JSON.stringify(event)}`);
+  }
+
+  /**
    * Send admin_media_uploaded event
    * 
    * According to Tracking Plan:

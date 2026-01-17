@@ -11,6 +11,7 @@ describe('Admin Moderation (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
   let adminCookie: string;
+  let assistantCookie: string;
   let questionId: string;
 
   beforeAll(async () => {
@@ -37,6 +38,8 @@ describe('Admin Moderation (e2e)', () => {
     await prisma.ugcModerationAction.deleteMany();
     await prisma.anonymousQuestion.deleteMany();
     await prisma.auditLogEntry.deleteMany();
+    await prisma.messageTemplateVersion.deleteMany();
+    await prisma.messageTemplate.deleteMany();
     await prisma.session.deleteMany();
     await prisma.userRole.deleteMany();
     await prisma.user.deleteMany();
@@ -70,6 +73,24 @@ describe('Admin Moderation (e2e)', () => {
       .expect(200);
 
     adminCookie = loginRes.headers['set-cookie'][0];
+
+    await prisma.user.create({
+      data: {
+        email: 'assistant-moderation@example.com',
+        password_hash: passwordHash,
+        status: 'active',
+        roles: {
+          create: { role_code: 'assistant' },
+        },
+      },
+    });
+
+    const assistantLoginRes = await request(app.getHttpServer())
+      .post('/api/auth/admin/login')
+      .send({ email: 'assistant-moderation@example.com', password })
+      .expect(200);
+
+    assistantCookie = assistantLoginRes.headers['set-cookie'][0];
 
     const question = await prisma.anonymousQuestion.create({
       data: {
@@ -136,5 +157,25 @@ describe('Admin Moderation (e2e)', () => {
       },
     });
     expect(auditEntry).not.toBeNull();
+  });
+
+  it('prevents assistant from answering question', async () => {
+    await request(app.getHttpServer())
+      .post(`/api/admin/moderation/items/${questionId}/answer`)
+      .set('Cookie', [assistantCookie])
+      .send({ text: 'Ответ ассистента, который не должен пройти.' })
+      .expect(403);
+  });
+
+  it('returns moderation metrics', async () => {
+    const metricsRes = await request(app.getHttpServer())
+      .get('/api/admin/moderation/metrics')
+      .set('Cookie', [adminCookie])
+      .expect(200);
+
+    expect(metricsRes.body).toHaveProperty('sla');
+    expect(metricsRes.body).toHaveProperty('totals');
+    expect(metricsRes.body.sla).toHaveProperty('averageDecisionHours');
+    expect(metricsRes.body.sla).toHaveProperty('averageAnswerHours');
   });
 });

@@ -3,6 +3,7 @@ import { IUgcModerationRepository } from '@domain/moderation/repositories/IUgcMo
 import { IEncryptionService } from '@domain/security/services/IEncryptionService';
 import { AuditLogHelper } from '@application/audit/helpers/audit-log.helper';
 import { ModerationActionType, UgcStatus } from '@domain/moderation/value-objects/ModerationEnums';
+import { TrackingService } from '@infrastructure/tracking/tracking.service';
 
 @Injectable()
 export class AnswerModerationItemUseCase {
@@ -12,6 +13,7 @@ export class AnswerModerationItemUseCase {
     @Inject('IEncryptionService')
     private readonly encryptionService: IEncryptionService,
     private readonly auditLogHelper: AuditLogHelper,
+    private readonly trackingService: TrackingService,
   ) {}
 
   async execute(
@@ -52,6 +54,13 @@ export class AnswerModerationItemUseCase {
       action: ModerationActionType.publish,
     });
 
+    const timeToAnswerHours = (publishedAt.getTime() - item.submittedAt.getTime()) / (60 * 60 * 1000);
+    await this.trackingService.trackUgcAnswered({
+      ugcId: id,
+      answerLengthBucket: this.getAnswerLengthBucket(answerText),
+      timeToAnswerHours,
+    });
+
     await this.auditLogHelper.logAction(
       actorUserId,
       actorRole,
@@ -63,5 +72,12 @@ export class AnswerModerationItemUseCase {
       ipAddress ?? null,
       userAgent ?? null,
     );
+  }
+
+  private getAnswerLengthBucket(text: string): 'short' | 'medium' | 'long' {
+    const words = text.trim().split(/\s+/).filter(Boolean).length;
+    if (words <= 60) return 'short';
+    if (words <= 150) return 'medium';
+    return 'long';
   }
 }

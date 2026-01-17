@@ -39,6 +39,8 @@ describe('Admin Leads (e2e)', () => {
     await prisma.leadNote.deleteMany();
     await prisma.lead.deleteMany();
     await prisma.auditLogEntry.deleteMany();
+    await prisma.messageTemplateVersion.deleteMany();
+    await prisma.messageTemplate.deleteMany();
     await prisma.session.deleteMany();
     await prisma.userRole.deleteMany();
     await prisma.user.deleteMany();
