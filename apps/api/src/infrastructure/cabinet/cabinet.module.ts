@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CabinetController } from '@presentation/controllers/cabinet.controller';
+import { ConsentsController } from '@presentation/controllers/consents.controller';
 import { ListClientAppointmentsUseCase } from '@application/cabinet/use-cases/ListClientAppointmentsUseCase';
 import { ListClientMaterialsUseCase } from '@application/cabinet/use-cases/ListClientMaterialsUseCase';
 import { PrismaAppointmentMaterialRepository } from '@infrastructure/persistence/prisma/booking/prisma-appointment-material.repository';
@@ -24,7 +25,7 @@ import { AnalyticsModule } from '@infrastructure/analytics/analytics.module';
 
 @Module({
   imports: [DatabaseModule, BookingModule, AuditModule, AnalyticsModule],
-  controllers: [CabinetController],
+  controllers: [CabinetController, ConsentsController],
   providers: [
     {
       provide: 'IAppointmentMaterialRepository',

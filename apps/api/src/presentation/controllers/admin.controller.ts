@@ -1,6 +1,8 @@
-import { Controller, Get, Post, Body, UseGuards, SetMetadata, Request, Patch, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Request, Patch, Query } from '@nestjs/common';
 import { AuthGuard } from '../guards/auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
+import { Roles } from '../decorators/roles.decorator';
+import { AdminPermissions } from '../permissions/admin-permissions';
 import { CreateAdminUserInviteUseCase } from '../../application/identity/use-cases/CreateAdminUserInviteUseCase';
 import { ExportDataUseCase, ExportDataDto } from '../../application/admin/use-cases/ExportDataUseCase';
 import { UpdateServicePriceUseCase, UpdateServicePriceDto } from '../../application/admin/use-cases/UpdateServicePriceUseCase';
@@ -8,8 +10,6 @@ import { UpdateSystemSettingsUseCase, UpdateSystemSettingsDto } from '../../appl
 import { CreateAdminInviteDto } from '../../application/identity/dto/invite.dto';
 import { GetAdminDashboardUseCase } from '../../application/admin/use-cases/GetAdminDashboardUseCase';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-
-const Roles = (...roles: string[]) => SetMetadata('roles', roles);
 
 @ApiTags('admin')
 @Controller('admin')
@@ -24,7 +24,7 @@ export class AdminController {
   ) {}
 
   @Get('dashboard')
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.dashboard)
   @ApiOperation({ summary: 'Get dashboard data' })
   @ApiResponse({ status: 200, description: 'Return dashboard data' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
@@ -37,7 +37,7 @@ export class AdminController {
   }
 
   @Get('settings')
-  @Roles('owner')
+  @Roles(...AdminPermissions.settings.read)
   @ApiOperation({ summary: 'Get system settings' })
   async getSettings() {
     return {
@@ -47,7 +47,7 @@ export class AdminController {
   }
 
   @Patch('settings')
-  @Roles('owner')
+  @Roles(...AdminPermissions.settings.update)
   @ApiOperation({ summary: 'Update system settings' })
   async updateSettings(@Body() dto: UpdateSystemSettingsDto, @Request() req: any) {
     const actorUserId = req.user?.id;
@@ -56,7 +56,7 @@ export class AdminController {
   }
 
   @Get('content')
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.content.list)
   @ApiOperation({ summary: 'Get content list' })
   async getContent() {
     return {
@@ -65,7 +65,7 @@ export class AdminController {
   }
 
   @Post('invites')
-  @Roles('owner')
+  @Roles(...AdminPermissions.invites.create)
   @ApiOperation({ summary: 'Create admin invite' })
   @ApiResponse({ status: 201, description: 'Invite created' })
   async createInvite(@Body() dto: CreateAdminInviteDto, @Request() req: any) {
@@ -75,7 +75,7 @@ export class AdminController {
   }
 
   @Post('export')
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.exports.data)
   @ApiOperation({ summary: 'Export data' })
   @ApiResponse({ status: 200, description: 'Export initiated' })
   async exportData(@Body() dto: ExportDataDto, @Request() req: any) {
@@ -85,7 +85,7 @@ export class AdminController {
   }
 
   @Patch('services/price')
-  @Roles('owner')
+  @Roles(...AdminPermissions.services.updatePrice)
   @ApiOperation({ summary: 'Update service price' })
   async updateServicePrice(@Body() dto: UpdateServicePriceDto, @Request() req: any) {
     const actorUserId = req.user?.id;

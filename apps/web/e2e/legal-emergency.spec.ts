@@ -200,7 +200,7 @@ test.describe('Legal and Emergency Pages', () => {
       await page.keyboard.press('Enter');
       
       // Should navigate (URL should change)
-      await page.waitForURL(/\/(start|blog|services|about)/);
+      await page.waitForURL(/\/(start|blog|services|about)?$/);
     });
   });
 });

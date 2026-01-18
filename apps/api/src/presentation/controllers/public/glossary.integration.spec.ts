@@ -22,6 +22,7 @@ import { GetBookingStatusUseCase } from '../../../application/booking/use-cases/
 import { CreatePaymentUseCase } from '../../../application/booking/use-cases/CreatePaymentUseCase';
 import { CreateWaitlistRequestUseCase } from '../../../application/booking/use-cases/CreateWaitlistRequestUseCase';
 import { GetNoSlotsModelUseCase } from '../../../application/booking/use-cases/GetNoSlotsModelUseCase';
+import { GetBookingAlternativesUseCase } from '../../../application/booking/use-cases/GetBookingAlternativesUseCase';
 import { CreateDeepLinkUseCase } from '../../../application/telegram/use-cases/CreateDeepLinkUseCase';
 import { NotFoundException } from '@nestjs/common';
 import { GlossaryTermCategory } from '../../../domain/content/value-objects/ContentEnums';
@@ -143,10 +144,6 @@ describe('PublicController - Glossary (Integration)', () => {
           useValue: { execute: jest.fn() },
         },
         {
-          provide: CreatePaymentUseCase,
-          useValue: { execute: jest.fn() },
-        },
-        {
           provide: CreateWaitlistRequestUseCase,
           useValue: { execute: jest.fn() },
         },
@@ -156,6 +153,10 @@ describe('PublicController - Glossary (Integration)', () => {
         },
         {
           provide: CreateDeepLinkUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: GetBookingAlternativesUseCase,
           useValue: { execute: jest.fn() },
         },
       ],

@@ -48,11 +48,20 @@ function formatDateTime(value: string, timezone: string) {
 
 export function BookingSlotClient() {
   const router = useRouter();
+  const fieldIds = React.useMemo(
+    () => ({
+      slots: 'booking-slots',
+      timezone: 'booking-timezone',
+    }),
+    [],
+  );
+  const errorSummaryRef = React.useRef<HTMLDivElement>(null);
   const [timezone, setTimezone] = React.useState<string>('');
   const [slots, setSlots] = React.useState<SlotResponse['slots']>([]);
   const [status, setStatus] = React.useState<SlotResponse['status']>('available');
   const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
+  const [formError, setFormError] = React.useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>({});
   const [selectedSlotId, setSelectedSlotId] = React.useState<string>('');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -76,7 +85,8 @@ export function BookingSlotClient() {
     const controller = new AbortController();
     const loadSlots = async () => {
       setLoading(true);
-      setError(null);
+      setFormError(null);
+      setFieldErrors({});
       const from = new Date();
       const to = new Date();
       to.setDate(from.getDate() + defaultRangeDays);
@@ -105,7 +115,7 @@ export function BookingSlotClient() {
         }
       } catch (err: any) {
         if (err.name !== 'AbortError') {
-          setError('Слоты временно недоступны. Пожалуйста, попробуйте позже.');
+          setFormError('Слоты временно недоступны. Пожалуйста, попробуйте позже.');
         }
       } finally {
         setLoading(false);
@@ -116,16 +126,24 @@ export function BookingSlotClient() {
     return () => controller.abort();
   }, [timezone]);
 
+  React.useEffect(() => {
+    if (Object.keys(fieldErrors).length > 0) {
+      errorSummaryRef.current?.focus();
+    }
+  }, [fieldErrors]);
+
   const handleReserve = async () => {
     const draft = loadBookingDraft();
     if (!draft?.serviceSlug || !draft?.serviceFormat || !selectedSlotId || !timezone) {
-      setError('Пожалуйста, выберите слот.');
+      setFieldErrors({ slot: 'Пожалуйста, выберите слот.' });
+      setFormError(null);
       return;
     }
 
     const slot = slots.find((item) => item.id === selectedSlotId);
     if (!slot) {
-      setError('Выбранный слот недоступен. Пожалуйста, обновите список.');
+      setFormError('Выбранный слот недоступен. Пожалуйста, обновите список.');
+      setFieldErrors({});
       return;
     }
 
@@ -136,7 +154,8 @@ export function BookingSlotClient() {
     }
 
     setIsSubmitting(true);
-    setError(null);
+    setFormError(null);
+    setFieldErrors({});
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
@@ -157,7 +176,7 @@ export function BookingSlotClient() {
         if (res.status === 409) {
           const data = await res.json();
           if (data.code === 'slot_conflict') {
-            setError('К сожалению, этот слот только что забронировали. Пожалуйста, выберите другое время.');
+            setFormError('К сожалению, этот слот только что забронировали. Пожалуйста, выберите другое время.');
             // Refresh slots to show updated availability
             const from = new Date();
             const to = new Date();
@@ -195,7 +214,7 @@ export function BookingSlotClient() {
 
       router.push('/booking/intake');
     } catch (err: any) {
-      setError(err.message || 'Не удалось забронировать слот. Попробуйте ещё раз.');
+      setFormError(err.message || 'Не удалось забронировать слот. Попробуйте ещё раз.');
     } finally {
       setIsSubmitting(false);
     }
@@ -210,11 +229,31 @@ export function BookingSlotClient() {
       step={2}
       total={5}
     >
+      {Object.keys(fieldErrors).length > 0 && (
+        <div
+          ref={errorSummaryRef}
+          tabIndex={-1}
+          role="alert"
+          aria-live="assertive"
+          className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive"
+        >
+          <p className="font-semibold">Пожалуйста, проверьте выбор:</p>
+          <ul className="mt-2 list-disc pl-5">
+            {Object.entries(fieldErrors).map(([key, message]) => (
+              <li key={key}>
+                <a className="underline underline-offset-2" href={`#${fieldIds.slots}`}>
+                  {message}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <Card className="p-6">
         <div className="space-y-3">
-          <Label htmlFor="timezone">Ваша таймзона</Label>
+          <Label htmlFor={fieldIds.timezone}>Ваша таймзона</Label>
           <Input
-            id="timezone"
+            id={fieldIds.timezone}
             value={timezone}
             onChange={(event) => {
               const value = event.target.value;
@@ -230,12 +269,14 @@ export function BookingSlotClient() {
       </Card>
 
       {loading && (
-        <Card className="p-6 text-muted-foreground">Загружаем доступные слоты...</Card>
+        <Card className="p-6 text-muted-foreground" aria-live="polite">
+          Загружаем доступные слоты...
+        </Card>
       )}
 
-      {error && (
+      {formError && (
         <div role="alert" aria-live="polite" className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
-          {error}
+          {formError}
         </div>
       )}
 
@@ -269,20 +310,34 @@ export function BookingSlotClient() {
 
       {!loading && slots.length > 0 && (
         <Card className="p-6">
-          <RadioGroup value={selectedSlotId} onValueChange={setSelectedSlotId} className="space-y-4">
-            {slots.map((slot) => {
-              const formatted = formatDateTime(slot.start_at_utc, timezone);
-              return (
-                <div key={slot.id} className="flex items-center gap-3 rounded-xl border border-border p-4">
-                  <RadioGroupItem id={`slot-${slot.id}`} value={slot.id} />
-                  <Label htmlFor={`slot-${slot.id}`} className="flex flex-col gap-1">
-                    <span className="text-foreground font-medium">{formatted.date}</span>
-                    <span className="text-sm text-muted-foreground">{formatted.time}</span>
-                  </Label>
-                </div>
-              );
-            })}
-          </RadioGroup>
+          <fieldset className="space-y-4" id={fieldIds.slots} tabIndex={-1}>
+            <legend className="text-sm font-medium text-foreground">Доступные слоты</legend>
+            <RadioGroup
+              value={selectedSlotId}
+              onValueChange={setSelectedSlotId}
+              className="space-y-4"
+              aria-invalid={!!fieldErrors.slot}
+              aria-describedby={fieldErrors.slot ? `${fieldIds.slots}-error` : undefined}
+            >
+              {slots.map((slot) => {
+                const formatted = formatDateTime(slot.start_at_utc, timezone);
+                return (
+                  <div key={slot.id} className="flex items-center gap-3 rounded-xl border border-border p-4">
+                    <RadioGroupItem id={`slot-${slot.id}`} value={slot.id} />
+                    <Label htmlFor={`slot-${slot.id}`} className="flex flex-col gap-1">
+                      <span className="text-foreground font-medium">{formatted.date}</span>
+                      <span className="text-sm text-muted-foreground">{formatted.time}</span>
+                    </Label>
+                  </div>
+                );
+              })}
+            </RadioGroup>
+            {fieldErrors.slot && (
+              <p id={`${fieldIds.slots}-error`} className="text-xs text-destructive">
+                {fieldErrors.slot}
+              </p>
+            )}
+          </fieldset>
 
           <div className="mt-6">
             <Button onClick={handleReserve} disabled={!selectedSlotId || isSubmitting}>

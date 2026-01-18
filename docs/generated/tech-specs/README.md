@@ -24,6 +24,7 @@
 - `FEAT-BKG-03-Implementation-Report.md`
 - `FEAT-BKG-04-Implementation-Report.md`
 - `FEAT-BKG-05-Implementation-Report.md`
+- `FEAT-BKG-11-Implementation-Report.md`
 - `FEAT-LK-01-Implementation-Report.md`
 - `FEAT-LK-02-Implementation-Report.md`
 - `FEAT-LK-03-Implementation-Report.md`
@@ -39,6 +40,14 @@
 - `FEAT-AN-01-Implementation-Report.md`
 - `FEAT-AN-02-Implementation-Report.md`
 - `FEAT-AN-03-Implementation-Report.md`
+- `FEAT-AN-11-Implementation-Report.md`
+- `FEAT-INT-11-Implementation-Report.md`
+- `FEAT-SEC-01-Implementation-Report.md`
+- `FEAT-SEC-02-Implementation-Report.md`
+- `FEAT-SEC-03-Implementation-Report.md`
+- `FEAT-A11Y-01-Implementation-Report.md`
+- `FEAT-DS-01-Implementation-Report.md`
+- `FEAT-WEB-11-Implementation-Report.md`
 
 ## Список фич (P0) и оценки токенов
 

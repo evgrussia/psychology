@@ -37,6 +37,7 @@ describe('Crisis Mode (e2e)', () => {
 
   beforeEach(async () => {
     await prisma.interactiveRun.deleteMany({});
+    await prisma.interactiveDefinitionVersion.deleteMany({});
     await prisma.interactiveDefinition.deleteMany({});
     // Don't delete topics as they might be used by other tests running in parallel
     // instead use unique codes for each test
@@ -56,7 +57,7 @@ describe('Crisis Mode (e2e)', () => {
 
       const slug = `quiz-crisis-${Date.now()}`;
       // Create quiz definition
-      const quizDef = await prisma.interactiveDefinition.create({
+      await prisma.interactiveDefinition.create({
         data: {
           interactive_type: 'quiz',
           slug: slug,
@@ -113,7 +114,7 @@ describe('Crisis Mode (e2e)', () => {
       });
 
       const slug = `quiz-types-${Date.now()}`;
-      const quizDef = await prisma.interactiveDefinition.create({
+      await prisma.interactiveDefinition.create({
         data: {
           interactive_type: 'quiz',
           slug: slug,
@@ -172,7 +173,7 @@ describe('Crisis Mode (e2e)', () => {
       });
 
       const slug = `quiz-false-${Date.now()}`;
-      const quizDef = await prisma.interactiveDefinition.create({
+      await prisma.interactiveDefinition.create({
         data: {
           interactive_type: 'quiz',
           slug: slug,
@@ -226,7 +227,7 @@ describe('Crisis Mode (e2e)', () => {
       });
 
       const slug = `quiz-privacy-${Date.now()}`;
-      const quizDef = await prisma.interactiveDefinition.create({
+      await prisma.interactiveDefinition.create({
         data: {
           interactive_type: 'quiz',
           slug: slug,

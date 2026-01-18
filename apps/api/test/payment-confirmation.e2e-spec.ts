@@ -45,6 +45,14 @@ describe('Payment confirmation flow (e2e)', () => {
     await app.init();
 
     prisma = app.get(PrismaService);
+    
+    // Initial cleanup
+    await prisma.payment.deleteMany({});
+    await prisma.appointment.deleteMany({});
+    await prisma.service.deleteMany({});
+    await prisma.googleCalendarIntegration.deleteMany({});
+    await prisma.paymentWebhookEvent.deleteMany({});
+    await prisma.analyticsEvent.deleteMany({});
   });
 
   afterAll(async () => {

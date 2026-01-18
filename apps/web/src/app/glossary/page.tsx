@@ -1,6 +1,17 @@
 import React from 'react';
 import Link from 'next/link';
 import { Metadata } from 'next';
+import {
+  Badge,
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  Container,
+  Section,
+} from '@psychology/design-system';
 import GlossaryClient from './GlossaryClient';
 
 async function getGlossaryTerms() {
@@ -45,86 +56,59 @@ export default async function GlossaryPage() {
   return (
     <>
       <GlossaryClient termsCount={terms.length} />
-      <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 20px' }}>
-        <header style={{ marginBottom: '60px', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '3em', marginBottom: '20px' }}>Словарь</h1>
-        <p style={{ color: '#666', fontSize: '1.2em', maxWidth: '600px', margin: '0 auto' }}>
-          Понятный гид по психологическим терминам, состояниям и направлениям терапии
-        </p>
-      </header>
+      <Section>
+        <Container>
+          <header className="mx-auto mb-12 max-w-3xl space-y-4 text-center">
+            <h1 className="text-4xl font-semibold md:text-5xl">Словарь</h1>
+            <p className="text-muted-foreground text-lg">
+              Понятный гид по психологическим терминам, состояниям и направлениям терапии
+            </p>
+          </header>
 
-      {sortedLetters.length === 0 ? (
-        <div style={{ padding: '60px', textAlign: 'center', color: '#999', backgroundColor: '#f9f9f9', borderRadius: '12px' }}>
-          <p>В словаре пока нет терминов</p>
-        </div>
-      ) : (
-        <div style={{ display: 'grid', gap: '50px' }}>
-          {sortedLetters.map((letter) => (
-            <section key={letter} style={{ borderTop: '2px solid #f0f0f0', paddingTop: '30px' }}>
-              <h2 style={{ fontSize: '2em', color: '#3498db', marginBottom: '30px', position: 'sticky', top: '20px' }}>
-                {letter}
-              </h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '30px' }}>
-                {groupedTerms[letter].map((term: any) => (
-                  <Link
-                    key={term.slug}
-                    href={`/glossary/${term.slug}`}
-                    tabIndex={0}
-                    style={{
-                      textDecoration: 'none',
-                      color: 'inherit',
-                      padding: '24px',
-                      borderRadius: '12px',
-                      border: '1px solid #eee',
-                      transition: 'all 0.2s ease',
-                      backgroundColor: '#fff',
-                      display: 'block',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = '#3498db';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = '#eee';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
-                    onFocus={(e) => {
-                      e.currentTarget.style.borderColor = '#3498db';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)';
-                      e.currentTarget.style.outline = '2px solid #3498db';
-                      e.currentTarget.style.outlineOffset = '2px';
-                    }}
-                    onBlur={(e) => {
-                      e.currentTarget.style.borderColor = '#eee';
-                      e.currentTarget.style.boxShadow = 'none';
-                      e.currentTarget.style.outline = 'none';
-                    }}
-                  >
-                    <h3 style={{ fontSize: '1.3em', marginBottom: '12px', color: '#2c3e50' }}>{term.title}</h3>
-                    <p style={{ color: '#666', fontSize: '0.95em', lineHeight: '1.5', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                      {term.shortDefinition}
-                    </p>
-                    <div style={{ marginTop: '16px', display: 'flex', gap: '8px' }}>
-                      <span style={{ 
-                        fontSize: '0.75em', 
-                        padding: '4px 8px', 
-                        backgroundColor: '#f0f7ff', 
-                        color: '#0070f3', 
-                        borderRadius: '4px',
-                        textTransform: 'uppercase',
-                        fontWeight: 'bold'
-                      }}>
-                        {term.category}
-                      </span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
-      )}
-      </div>
+          {sortedLetters.length === 0 ? (
+            <Card className="border-dashed">
+              <CardContent className="text-muted-foreground py-12 text-center">
+                В словаре пока нет терминов
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-12">
+              {sortedLetters.map((letter) => (
+                <section key={letter} className="space-y-6 border-t border-border pt-8">
+                  <div className="bg-background/80 sticky top-5 z-10 rounded-md py-2 backdrop-blur">
+                    <h2 className="text-3xl font-semibold text-primary">{letter}</h2>
+                  </div>
+                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {groupedTerms[letter].map((term: any) => (
+                      <Link
+                        key={term.slug}
+                        href={`/glossary/${term.slug}`}
+                        className="group block focus-visible:outline-none"
+                      >
+                        <Card className="flex h-full flex-col transition-shadow group-hover:shadow-sm">
+                          <CardHeader className="space-y-3">
+                            <CardTitle className="text-xl text-foreground transition-colors group-hover:text-primary">
+                              {term.title}
+                            </CardTitle>
+                            <CardDescription className="text-muted-foreground line-clamp-3 text-sm">
+                              {term.shortDefinition}
+                            </CardDescription>
+                          </CardHeader>
+                          <CardFooter>
+                            <Badge variant="secondary" className="uppercase">
+                              {term.category}
+                            </Badge>
+                          </CardFooter>
+                        </Card>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          )}
+        </Container>
+      </Section>
     </>
   );
 }

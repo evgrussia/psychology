@@ -145,9 +145,10 @@ export class CreateOrUpdateLeadUseCase {
   private sanitizeTimelineProperties(properties: Record<string, any>): Record<string, any> {
     const sanitized: Record<string, any> = {};
     const blockedKeyPattern = /(email|phone|name|text|message|question|answer|note|payload|content|body|diagnos)/i;
+    const allowedKeys = new Set(['question_index', 'question_count', 'abandoned_at_question']);
 
     Object.entries(properties ?? {}).forEach(([key, value]) => {
-      if (blockedKeyPattern.test(key)) {
+      if (blockedKeyPattern.test(key) && !allowedKeys.has(key)) {
         return;
       }
       sanitized[key] = value;

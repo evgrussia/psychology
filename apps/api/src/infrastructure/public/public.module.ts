@@ -13,6 +13,7 @@ import { GetCuratedCollectionUseCase } from '@application/public/use-cases/GetCu
 import { ListServicesUseCase } from '@application/public/use-cases/ListServicesUseCase';
 import { GetServiceBySlugUseCase } from '@application/public/use-cases/GetServiceBySlugUseCase';
 import { ListAvailableSlotsUseCase } from '@application/booking/use-cases/ListAvailableSlotsUseCase';
+import { GetBookingAlternativesUseCase } from '@application/booking/use-cases/GetBookingAlternativesUseCase';
 import { SubmitAnonymousQuestionUseCase } from '@application/public/use-cases/SubmitAnonymousQuestionUseCase';
 import { GetAnonymousQuestionStatusUseCase } from '@application/public/use-cases/GetAnonymousQuestionStatusUseCase';
 import { PublicUgcController } from '@presentation/controllers/public/ugc.controller';
@@ -41,6 +42,7 @@ import { ModerationModule } from '../moderation/moderation.module';
     ListServicesUseCase,
     GetServiceBySlugUseCase,
     ListAvailableSlotsUseCase,
+    GetBookingAlternativesUseCase,
     SubmitAnonymousQuestionUseCase,
     GetAnonymousQuestionStatusUseCase,
     {

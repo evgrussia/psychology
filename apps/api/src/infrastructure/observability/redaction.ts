@@ -4,6 +4,9 @@ const SENSITIVE_KEYS = [
   'token',
   'access_token',
   'refresh_token',
+  'encrypted',
+  'cipher',
+  'ciphertext',
   'id_token',
   'secret',
   'authorization',
@@ -33,6 +36,7 @@ const SENSITIVE_KEYS = [
   'text',
   'content',
   'notes',
+  'payload',
   'diary',
   'answers',
   'question',
@@ -41,6 +45,7 @@ const SENSITIVE_KEYS = [
 const EMAIL_REGEX = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
 const PHONE_REGEX = /\b\+?\d[\d\s().-]{7,}\d\b/g;
 const BEARER_REGEX = /\bBearer\s+[A-Za-z0-9\-._~+/]+=*\b/g;
+const CIPHERTEXT_REGEX = /\b[^:\s]{1,64}:[A-Za-z0-9+/=]{8,}:[A-Za-z0-9+/=]{8,}:[A-Za-z0-9+/=]{8,}\b/g;
 
 const REDACTED_VALUE = '[REDACTED]';
 
@@ -51,6 +56,7 @@ const shouldRedactKey = (key: string): boolean => {
 
 const redactString = (value: string): string => {
   return value
+    .replace(CIPHERTEXT_REGEX, '[REDACTED_CIPHERTEXT]')
     .replace(EMAIL_REGEX, '[REDACTED_EMAIL]')
     .replace(PHONE_REGEX, '[REDACTED_PHONE]')
     .replace(BEARER_REGEX, 'Bearer [REDACTED_TOKEN]');

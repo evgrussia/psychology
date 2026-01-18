@@ -54,6 +54,18 @@ const focusAreas = [
 
 export function BookingIntakeClient() {
   const router = useRouter();
+  const fieldIds = React.useMemo(
+    () => ({
+      topic: 'intake-topic',
+      goal: 'intake-goal',
+      experience: 'intake-experience',
+      intensity: 'intake-intensity',
+      focus: 'intake-focus',
+      notes: 'intake-notes',
+    }),
+    [],
+  );
+  const errorSummaryRef = React.useRef<HTMLDivElement>(null);
   const [answers, setAnswers] = React.useState<Record<string, string>>({
     topic: '',
     goal: '',
@@ -76,6 +88,12 @@ export function BookingIntakeClient() {
       service_slug: draft.serviceSlug,
     });
   }, [router]);
+
+  React.useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      errorSummaryRef.current?.focus();
+    }
+  }, [errors]);
 
   const validate = () => {
     const nextErrors: Record<string, string> = {};
@@ -139,6 +157,26 @@ export function BookingIntakeClient() {
       step={3}
       total={5}
     >
+      {Object.keys(errors).length > 0 && (
+        <div
+          ref={errorSummaryRef}
+          tabIndex={-1}
+          role="alert"
+          aria-live="assertive"
+          className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive"
+        >
+          <p className="font-semibold">Пожалуйста, проверьте ответы:</p>
+          <ul className="mt-2 list-disc pl-5">
+            {Object.entries(errors).map(([key, message]) => (
+              <li key={key}>
+                <a className="underline underline-offset-2" href={`#${fieldIds[key as keyof typeof fieldIds]}`}>
+                  {message}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {errorMessage && (
         <div role="alert" aria-live="polite" className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
           {errorMessage}
@@ -148,9 +186,14 @@ export function BookingIntakeClient() {
       <Card className="p-6">
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <Label>С чем хотите поработать?</Label>
+            <Label htmlFor={fieldIds.topic}>С чем хотите поработать?</Label>
             <Select value={answers.topic} onValueChange={(value) => setAnswers((prev) => ({ ...prev, topic: value }))}>
-              <SelectTrigger>
+              <SelectTrigger
+                id={fieldIds.topic}
+                aria-invalid={!!errors.topic}
+                aria-describedby={errors.topic ? `${fieldIds.topic}-error` : undefined}
+                aria-required="true"
+              >
                 <SelectValue placeholder="Выберите тему" />
               </SelectTrigger>
               <SelectContent>
@@ -159,13 +202,22 @@ export function BookingIntakeClient() {
                 ))}
               </SelectContent>
             </Select>
-            {errors.topic && <p className="text-xs text-destructive">{errors.topic}</p>}
+            {errors.topic && (
+              <p id={`${fieldIds.topic}-error`} className="text-xs text-destructive">
+                {errors.topic}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label>Какой результат будет полезен?</Label>
+            <Label htmlFor={fieldIds.goal}>Какой результат будет полезен?</Label>
             <Select value={answers.goal} onValueChange={(value) => setAnswers((prev) => ({ ...prev, goal: value }))}>
-              <SelectTrigger>
+              <SelectTrigger
+                id={fieldIds.goal}
+                aria-invalid={!!errors.goal}
+                aria-describedby={errors.goal ? `${fieldIds.goal}-error` : undefined}
+                aria-required="true"
+              >
                 <SelectValue placeholder="Выберите цель" />
               </SelectTrigger>
               <SelectContent>
@@ -174,13 +226,22 @@ export function BookingIntakeClient() {
                 ))}
               </SelectContent>
             </Select>
-            {errors.goal && <p className="text-xs text-destructive">{errors.goal}</p>}
+            {errors.goal && (
+              <p id={`${fieldIds.goal}-error`} className="text-xs text-destructive">
+                {errors.goal}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label>Опыт консультаций</Label>
+            <Label htmlFor={fieldIds.experience}>Опыт консультаций</Label>
             <Select value={answers.experience} onValueChange={(value) => setAnswers((prev) => ({ ...prev, experience: value }))}>
-              <SelectTrigger>
+              <SelectTrigger
+                id={fieldIds.experience}
+                aria-invalid={!!errors.experience}
+                aria-describedby={errors.experience ? `${fieldIds.experience}-error` : undefined}
+                aria-required="true"
+              >
                 <SelectValue placeholder="Выберите вариант" />
               </SelectTrigger>
               <SelectContent>
@@ -189,13 +250,22 @@ export function BookingIntakeClient() {
                 ))}
               </SelectContent>
             </Select>
-            {errors.experience && <p className="text-xs text-destructive">{errors.experience}</p>}
+            {errors.experience && (
+              <p id={`${fieldIds.experience}-error`} className="text-xs text-destructive">
+                {errors.experience}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label>Насколько интенсивно сейчас состояние?</Label>
+            <Label htmlFor={fieldIds.intensity}>Насколько интенсивно сейчас состояние?</Label>
             <Select value={answers.intensity} onValueChange={(value) => setAnswers((prev) => ({ ...prev, intensity: value }))}>
-              <SelectTrigger>
+              <SelectTrigger
+                id={fieldIds.intensity}
+                aria-invalid={!!errors.intensity}
+                aria-describedby={errors.intensity ? `${fieldIds.intensity}-error` : undefined}
+                aria-required="true"
+              >
                 <SelectValue placeholder="Выберите уровень" />
               </SelectTrigger>
               <SelectContent>
@@ -204,13 +274,22 @@ export function BookingIntakeClient() {
                 ))}
               </SelectContent>
             </Select>
-            {errors.intensity && <p className="text-xs text-destructive">{errors.intensity}</p>}
+            {errors.intensity && (
+              <p id={`${fieldIds.intensity}-error`} className="text-xs text-destructive">
+                {errors.intensity}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label>На чём хотите сфокусироваться?</Label>
+            <Label htmlFor={fieldIds.focus}>На чём хотите сфокусироваться?</Label>
             <Select value={answers.focus} onValueChange={(value) => setAnswers((prev) => ({ ...prev, focus: value }))}>
-              <SelectTrigger>
+              <SelectTrigger
+                id={fieldIds.focus}
+                aria-invalid={!!errors.focus}
+                aria-describedby={errors.focus ? `${fieldIds.focus}-error` : undefined}
+                aria-required="true"
+              >
                 <SelectValue placeholder="Выберите фокус" />
               </SelectTrigger>
               <SelectContent>
@@ -219,12 +298,17 @@ export function BookingIntakeClient() {
                 ))}
               </SelectContent>
             </Select>
-            {errors.focus && <p className="text-xs text-destructive">{errors.focus}</p>}
+            {errors.focus && (
+              <p id={`${fieldIds.focus}-error`} className="text-xs text-destructive">
+                {errors.focus}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label>Дополнительные детали (по желанию)</Label>
+            <Label htmlFor={fieldIds.notes}>Дополнительные детали (по желанию)</Label>
             <Textarea
+              id={fieldIds.notes}
               value={notes}
               onChange={(event) => setNotes(event.target.value.slice(0, NOTES_LIMIT))}
               placeholder="Коротко опишите, что важно учесть. Не пишите персональные данные."

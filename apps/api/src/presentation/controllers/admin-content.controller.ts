@@ -1,6 +1,8 @@
-import { Controller, Get, Post, Put, Body, Param, Query, UseGuards, SetMetadata, Request } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
 import { AuthGuard } from '../guards/auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
+import { Roles } from '../decorators/roles.decorator';
+import { AdminPermissions } from '../permissions/admin-permissions';
 import { CreateContentItemUseCase } from '../../application/admin/use-cases/CreateContentItemUseCase';
 import { UpdateContentItemUseCase } from '../../application/admin/use-cases/UpdateContentItemUseCase';
 import { ListContentItemsUseCase, ListContentItemsFilters } from '../../application/admin/use-cases/ListContentItemsUseCase';
@@ -13,8 +15,6 @@ import { ListContentRevisionsUseCase } from '../../application/admin/use-cases/L
 import { RollbackContentRevisionUseCase } from '../../application/admin/use-cases/RollbackContentRevisionUseCase';
 import { CreateContentItemDto, UpdateContentItemDto } from '../../application/admin/dto/content.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
-
-const Roles = (...roles: string[]) => SetMetadata('roles', roles);
 
 @ApiTags('admin/content')
 @ApiBearerAuth()
@@ -35,35 +35,35 @@ export class AdminContentController {
   ) {}
 
   @Get('topics')
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.content.list)
   @ApiOperation({ summary: 'List all topics' })
   async listTopics() {
     return this.listTopicsUseCase.execute();
   }
 
   @Get('tags')
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.content.list)
   @ApiOperation({ summary: 'List all tags' })
   async listTags() {
     return this.listTagsUseCase.execute();
   }
 
   @Get()
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.content.list)
   @ApiOperation({ summary: 'List all content items' })
   async list(@Query() filters: ListContentItemsFilters) {
     return this.listContentItemsUseCase.execute(filters);
   }
 
   @Get(':id')
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.content.get)
   @ApiOperation({ summary: 'Get content item by ID' })
   async get(@Param('id') id: string) {
     return this.getContentItemUseCase.execute(id);
   }
 
   @Post()
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.content.create)
   @ApiOperation({ summary: 'Create new content item' })
   async create(@Body() dto: CreateContentItemDto, @Request() req: any) {
     const authorUserId = req.user.id;
@@ -71,7 +71,7 @@ export class AdminContentController {
   }
 
   @Put(':id')
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.content.update)
   @ApiOperation({ summary: 'Update content item' })
   async update(@Param('id') id: string, @Body() dto: UpdateContentItemDto, @Request() req: any) {
     const actorUserId = req.user.id;
@@ -79,28 +79,28 @@ export class AdminContentController {
   }
 
   @Post(':id/publish')
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.content.publish)
   @ApiOperation({ summary: 'Publish content item with QA checklist' })
   async publish(@Param('id') id: string, @Body() request: PublishContentItemRequest) {
     return this.publishContentItemUseCase.execute(id, request);
   }
 
   @Post(':id/archive')
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.content.archive)
   @ApiOperation({ summary: 'Archive content item' })
   async archive(@Param('id') id: string) {
     return this.archiveContentItemUseCase.execute(id);
   }
 
   @Get(':id/revisions')
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.content.revisions)
   @ApiOperation({ summary: 'List content item revisions' })
   async listRevisions(@Param('id') id: string) {
     return this.listContentRevisionsUseCase.execute(id);
   }
 
   @Post(':id/revisions/:revisionId/rollback')
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.content.rollback)
   @ApiOperation({ summary: 'Rollback to a specific revision' })
   async rollback(@Param('id') id: string, @Param('revisionId') revisionId: string) {
     return this.rollbackContentRevisionUseCase.execute(id, revisionId);

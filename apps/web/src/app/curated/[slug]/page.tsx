@@ -98,9 +98,9 @@ export default async function CuratedCollectionPage({ params }: { params: { slug
             {collection.items.length === 0 && (
               <div className="text-center py-16 bg-muted/50 rounded-2xl border-2 border-dashed border-border">
                 <p className="text-muted-foreground text-lg mb-4">В этой подборке пока нет элементов.</p>
-                <Link href="/curated">
-                  <Button variant="outline">Вернуться к списку подборок</Button>
-                </Link>
+                <Button asChild variant="outline">
+                  <Link href="/curated">Вернуться к списку подборок</Link>
+                </Button>
               </div>
             )}
           </div>
@@ -108,9 +108,9 @@ export default async function CuratedCollectionPage({ params }: { params: { slug
           <div className="mt-20 p-8 md:p-12 bg-primary rounded-3xl text-primary-foreground text-center flex flex-col items-center">
             <h2 className="text-3xl font-bold mb-4">Нужна помощь специалиста?</h2>
             <p className="mb-8 opacity-90 text-lg max-w-2xl">Запишитесь на консультацию, чтобы обсудить ваши результаты и получить персональный план работы.</p>
-            <Link href="/start">
-              <Button variant="secondary" size="lg" className="px-12">Подобрать формат работы</Button>
-            </Link>
+            <Button asChild variant="secondary" size="lg" className="px-12">
+              <Link href="/start">Подобрать формат работы</Link>
+            </Button>
           </div>
         </Container>
       </Section>

@@ -131,9 +131,9 @@ export function RitualsCatalogClient() {
                   )}
                 </div>
                 <div className="p-6 pt-0 mt-auto">
-                  <Link href={`/start/rituals/${ritual.slug}`} className="block">
-                    <Button variant="outline" className="w-full">Начать</Button>
-                  </Link>
+                  <Button asChild variant="outline" className="w-full">
+                    <Link href={`/start/rituals/${ritual.slug}`}>Начать</Link>
+                  </Button>
                 </div>
               </Card>
             ))}

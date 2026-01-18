@@ -3,7 +3,7 @@ import { AesGcmEncryptionService } from './encryption.service';
 
 describe('AesGcmEncryptionService', () => {
   const configService = new ConfigService({
-    ENCRYPTION_KEY_ID: 'key_v1',
+    ENCRYPTION_KEY_ID: 'test-key',
     ENCRYPTION_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
   });
 
@@ -13,7 +13,6 @@ describe('AesGcmEncryptionService', () => {
 
     const ciphertext = service.encrypt(plaintext);
     expect(ciphertext).not.toEqual(plaintext);
-    // Use the key ID from test.env (test-key)
     expect(ciphertext.startsWith('test-key:')).toBe(true);
 
     const decrypted = service.decrypt(ciphertext);

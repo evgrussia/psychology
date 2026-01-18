@@ -11,6 +11,17 @@ const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function BookingConsentsClient() {
   const router = useRouter();
+  const fieldIds = React.useMemo(
+    () => ({
+      email: 'consents-email',
+      phone: 'consents-phone',
+      personal: 'consents-personal-data',
+      communications: 'consents-communications',
+      telegram: 'consents-telegram',
+    }),
+    [],
+  );
+  const errorSummaryRef = React.useRef<HTMLDivElement>(null);
   const [email, setEmail] = React.useState('');
   const [phone, setPhone] = React.useState('');
   const [consents, setConsents] = React.useState({
@@ -18,7 +29,8 @@ export function BookingConsentsClient() {
     communications: false,
     telegram: false,
   });
-  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
+  const [errors, setErrors] = React.useState<Record<string, string>>({});
+  const [formError, setFormError] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   React.useEffect(() => {
@@ -32,21 +44,27 @@ export function BookingConsentsClient() {
     }
   }, [router]);
 
+  React.useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      errorSummaryRef.current?.focus();
+    }
+  }, [errors]);
+
   const validate = () => {
+    const nextErrors: Record<string, string> = {};
     if (!emailPattern.test(email)) {
-      setErrorMessage('Введите корректный email.');
-      return false;
+      nextErrors.email = 'Введите корректный email.';
     }
     if (!consents.personal_data) {
-      setErrorMessage('Нужно согласие на обработку персональных данных.');
-      return false;
+      nextErrors.personal_data = 'Нужно согласие на обработку персональных данных.';
     }
-    return true;
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setErrorMessage(null);
+    setFormError(null);
     if (!validate()) return;
 
     const draft = loadBookingDraft();
@@ -76,7 +94,7 @@ export function BookingConsentsClient() {
       saveBookingDraft({ contactEmail: email });
       router.push('/booking/payment');
     } catch (err: any) {
-      setErrorMessage(err.message || 'Не удалось сохранить согласия. Попробуйте ещё раз.');
+      setFormError(err.message || 'Не удалось сохранить согласия. Попробуйте ещё раз.');
     } finally {
       setIsSubmitting(false);
     }
@@ -89,30 +107,60 @@ export function BookingConsentsClient() {
       step={4}
       total={5}
     >
-      {errorMessage && (
+      {Object.keys(errors).length > 0 && (
+        <div
+          ref={errorSummaryRef}
+          tabIndex={-1}
+          role="alert"
+          aria-live="assertive"
+          className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive"
+        >
+          <p className="font-semibold">Пожалуйста, проверьте форму:</p>
+          <ul className="mt-2 list-disc pl-5">
+            {Object.entries(errors).map(([key, message]) => (
+              <li key={key}>
+                <a
+                  className="underline underline-offset-2"
+                  href={`#${key === 'email' ? fieldIds.email : fieldIds.personal}`}
+                >
+                  {message}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {formError && (
         <div role="alert" aria-live="polite" className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
-          {errorMessage}
+          {formError}
         </div>
       )}
 
       <Card className="p-6">
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <Label htmlFor="email">Email для подтверждений</Label>
+            <Label htmlFor={fieldIds.email}>Email для подтверждений</Label>
             <Input
-              id="email"
+              id={fieldIds.email}
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               placeholder="name@example.com"
               required
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? `${fieldIds.email}-error` : undefined}
             />
+            {errors.email && (
+              <p id={`${fieldIds.email}-error`} className="text-xs text-destructive">
+                {errors.email}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone">Телефон (необязательно)</Label>
+            <Label htmlFor={fieldIds.phone}>Телефон (необязательно)</Label>
             <Input
-              id="phone"
+              id={fieldIds.phone}
               type="tel"
               value={phone}
               onChange={(event) => setPhone(event.target.value)}
@@ -123,34 +171,41 @@ export function BookingConsentsClient() {
           <div className="space-y-4">
             <div className="flex items-start gap-3">
               <Checkbox
-                id="personal_data"
+                id={fieldIds.personal}
                 checked={consents.personal_data}
                 onCheckedChange={(checked) => setConsents((prev) => ({ ...prev, personal_data: !!checked }))}
+                aria-invalid={!!errors.personal_data}
+                aria-describedby={errors.personal_data ? `${fieldIds.personal}-error` : undefined}
               />
-              <Label htmlFor="personal_data" className="text-sm leading-relaxed">
+              <Label htmlFor={fieldIds.personal} className="text-sm leading-relaxed">
                 Я даю согласие на обработку персональных данных и подтверждаю, что ознакомился с{' '}
                 <Link href="/legal/personal-data-consent" className="text-primary underline underline-offset-2">
                   текстом согласия
                 </Link>.
               </Label>
             </div>
+            {errors.personal_data && (
+              <p id={`${fieldIds.personal}-error`} className="text-xs text-destructive">
+                {errors.personal_data}
+              </p>
+            )}
             <div className="flex items-start gap-3">
               <Checkbox
-                id="communications"
+                id={fieldIds.communications}
                 checked={consents.communications}
                 onCheckedChange={(checked) => setConsents((prev) => ({ ...prev, communications: !!checked }))}
               />
-              <Label htmlFor="communications" className="text-sm leading-relaxed">
+              <Label htmlFor={fieldIds.communications} className="text-sm leading-relaxed">
                 Разрешаю отправлять напоминания и сервисные сообщения по записи.
               </Label>
             </div>
             <div className="flex items-start gap-3">
               <Checkbox
-                id="telegram"
+                id={fieldIds.telegram}
                 checked={consents.telegram}
                 onCheckedChange={(checked) => setConsents((prev) => ({ ...prev, telegram: !!checked }))}
               />
-              <Label htmlFor="telegram" className="text-sm leading-relaxed">
+              <Label htmlFor={fieldIds.telegram} className="text-sm leading-relaxed">
                 Хочу получать полезные материалы в Telegram (можно отключить в любой момент).
               </Label>
             </div>

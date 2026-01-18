@@ -5,7 +5,14 @@ import { InteractiveStatus } from '@domain/interactive/value-objects/Interactive
 import { InteractiveConfig } from '@domain/interactive/types/InteractiveConfig';
 
 export class InteractiveDefinitionMapper {
-  static toDomain(prismaDef: PrismaInteractiveDefinition): InteractiveDefinition {
+  static toDomain(
+    prismaDef: PrismaInteractiveDefinition,
+    mode: 'draft' | 'published' = 'draft',
+  ): InteractiveDefinition {
+    const configSource = mode === 'published'
+      ? (prismaDef.published_json ?? prismaDef.definition_json ?? prismaDef.draft_json)
+      : (prismaDef.draft_json ?? prismaDef.definition_json ?? prismaDef.published_json);
+
     return InteractiveDefinition.reconstitute({
       id: prismaDef.id,
       type: prismaDef.interactive_type as unknown as InteractiveType,
@@ -13,7 +20,7 @@ export class InteractiveDefinitionMapper {
       title: prismaDef.title,
       topicCode: prismaDef.topic_code,
       status: prismaDef.status as unknown as InteractiveStatus,
-      config: prismaDef.definition_json as unknown as InteractiveConfig,
+      config: configSource as unknown as InteractiveConfig,
       publishedAt: prismaDef.published_at,
     });
   }

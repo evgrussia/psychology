@@ -8,12 +8,13 @@ import {
   Put,
   Query,
   Request,
-  SetMetadata,
   UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../guards/auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
+import { Roles } from '../decorators/roles.decorator';
+import { AdminPermissions } from '../permissions/admin-permissions';
 import { ListScheduleSlotsUseCase } from '../../application/admin/use-cases/schedule/ListScheduleSlotsUseCase';
 import { ListScheduleAppointmentsUseCase } from '../../application/admin/use-cases/schedule/ListScheduleAppointmentsUseCase';
 import { CreateScheduleSlotsUseCase } from '../../application/admin/use-cases/schedule/CreateScheduleSlotsUseCase';
@@ -31,8 +32,7 @@ import {
   UpdateScheduleSlotRequestDto,
 } from '../../application/admin/dto/schedule.dto';
 import { ScheduleBlockType, SlotSource, SlotStatus } from '@domain/booking/value-objects/BookingEnums';
-
-const Roles = (...roles: string[]) => SetMetadata('roles', roles);
+import { AuditLogHelper } from '../../application/audit/helpers/audit-log.helper';
 
 @ApiTags('admin')
 @Controller('admin/schedule')
@@ -51,7 +51,7 @@ export class AdminScheduleController {
   ) {}
 
   @Get('slots')
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.schedule.listSlots)
   @ApiOperation({ summary: 'List schedule slots' })
   @ApiResponse({ status: 200, description: 'List schedule slots' })
   async listSlots(
@@ -71,7 +71,7 @@ export class AdminScheduleController {
   }
 
   @Get('appointments')
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.schedule.listAppointments)
   @ApiOperation({ summary: 'List appointments for schedule' })
   @ApiResponse({ status: 200, description: 'List appointments' })
   async listAppointments(
@@ -85,7 +85,7 @@ export class AdminScheduleController {
   }
 
   @Post('slots')
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.schedule.createSlots)
   @ApiOperation({ summary: 'Create available schedule slots' })
   @ApiResponse({ status: 201, description: 'Slots created' })
   async createSlots(@Body() dto: CreateScheduleSlotsRequestDto) {
@@ -98,7 +98,7 @@ export class AdminScheduleController {
   }
 
   @Post('exceptions')
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.schedule.createExceptions)
   @ApiOperation({ summary: 'Create schedule exceptions (blocked)' })
   @ApiResponse({ status: 201, description: 'Exceptions created' })
   async createExceptions(@Body() dto: CreateScheduleSlotsRequestDto) {
@@ -111,7 +111,7 @@ export class AdminScheduleController {
   }
 
   @Post('buffers')
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.schedule.createBuffers)
   @ApiOperation({ summary: 'Create schedule buffers (blocked)' })
   @ApiResponse({ status: 201, description: 'Buffers created' })
   async createBuffers(@Body() dto: CreateScheduleSlotsRequestDto) {
@@ -124,7 +124,7 @@ export class AdminScheduleController {
   }
 
   @Put('slots/:id')
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.schedule.updateSlot)
   @ApiOperation({ summary: 'Update schedule slot' })
   @ApiResponse({ status: 200, description: 'Slot updated' })
   async updateSlot(
@@ -136,15 +136,20 @@ export class AdminScheduleController {
   }
 
   @Delete('slots')
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.schedule.deleteSlots)
   @ApiOperation({ summary: 'Delete schedule slots' })
   @ApiResponse({ status: 200, description: 'Slots deleted' })
-  async deleteSlots(@Body() dto: DeleteScheduleSlotsRequestDto) {
-    return this.deleteScheduleSlotsUseCase.execute(dto.slot_ids);
+  async deleteSlots(@Body() dto: DeleteScheduleSlotsRequestDto, @Request() req: any) {
+    return this.deleteScheduleSlotsUseCase.execute(dto.slot_ids, {
+      actorUserId: req.user?.id ?? null,
+      actorRole: req.user?.roles?.[0] ?? null,
+      ipAddress: AuditLogHelper.extractIpAddress(req),
+      userAgent: AuditLogHelper.extractUserAgent(req),
+    });
   }
 
   @Get('settings')
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.schedule.getSettings)
   @ApiOperation({ summary: 'Get schedule settings' })
   @ApiResponse({ status: 200, description: 'Schedule settings' })
   async getSettings() {
@@ -152,7 +157,7 @@ export class AdminScheduleController {
   }
 
   @Put('settings')
-  @Roles('owner')
+  @Roles(...AdminPermissions.schedule.updateSettings)
   @ApiOperation({ summary: 'Update schedule settings' })
   @ApiResponse({ status: 200, description: 'Schedule settings updated' })
   async updateSettings(@Body() dto: UpdateScheduleSettingsRequestDto, @Request() req: any) {
@@ -163,7 +168,7 @@ export class AdminScheduleController {
   }
 
   @Post('appointments/:id/cancel')
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.schedule.cancelAppointment)
   @ApiOperation({ summary: 'Cancel appointment' })
   @ApiResponse({ status: 200, description: 'Appointment canceled' })
   async cancelAppointment(@Param('id') appointmentId: string, @Request() req: any) {
@@ -174,7 +179,7 @@ export class AdminScheduleController {
   }
 
   @Post('appointments/:id/outcome')
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.schedule.recordOutcome)
   @ApiOperation({ summary: 'Record appointment outcome' })
   @ApiResponse({ status: 200, description: 'Outcome recorded' })
   async recordOutcome(

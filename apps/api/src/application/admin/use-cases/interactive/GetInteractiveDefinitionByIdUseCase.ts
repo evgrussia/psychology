@@ -8,7 +8,7 @@ export class GetInteractiveDefinitionByIdUseCase {
   ) {}
 
   async execute(id: string) {
-    const definition = await this.definitionRepository.findById(id);
+    const definition = await this.definitionRepository.findById(id, { includeDraft: true });
     if (!definition) {
       throw new NotFoundException(`Interactive definition with ID ${id} not found`);
     }

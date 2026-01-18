@@ -15,8 +15,8 @@ export class AuditLogHelper {
   /**
    * Logs a critical admin action.
    * 
-   * @param actorUserId - ID of the user performing the action
-   * @param actorRole - Role of the user (owner, assistant, editor)
+   * @param actorUserId - ID of the user performing the action (nullable for anonymous)
+   * @param actorRole - Role of the user (owner, assistant, editor, anonymous)
    * @param action - Action name (e.g., 'admin_price_changed')
    * @param entityType - Type of entity being acted upon (e.g., 'service', 'content')
    * @param entityId - ID of the entity (optional)
@@ -26,8 +26,8 @@ export class AuditLogHelper {
    * @param userAgent - User agent of the request (optional)
    */
   async logAction(
-    actorUserId: string,
-    actorRole: string,
+    actorUserId: string | null,
+    actorRole: string | null,
     action: string,
     entityType: string,
     entityId?: string | null,

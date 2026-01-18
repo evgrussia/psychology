@@ -31,6 +31,7 @@ model User {
   leads             LeadIdentity[]
   uploaded_media    MediaAsset[]
   template_updates  MessageTemplateVersion[]
+  interactive_definition_versions InteractiveDefinitionVersion[]
   ugc_answers       QuestionAnswer[]
   review_consents   ReviewPublicationConsent[]
   ugc_reviews       Review[]
@@ -296,12 +297,32 @@ model InteractiveDefinition {
   status           InteractiveStatus @default(draft)
   published_at     DateTime?
   definition_json  Json?
+  draft_json       Json?
+  draft_updated_at DateTime?
+  published_json   Json?
+  published_version Int?
   curated_items    CuratedItem[]
   topic            Topic?            @relation(fields: [topic_code], references: [code])
   runs             InteractiveRun[]
+  versions         InteractiveDefinitionVersion[]
 
   @@unique([interactive_type, slug])
   @@map("interactive_definitions")
+}
+
+model InteractiveDefinitionVersion {
+  id                        String                @id @default(uuid()) @db.Uuid
+  interactive_definition_id String                @db.Uuid
+  version                   Int
+  config_json               Json
+  created_at                DateTime              @default(now())
+  created_by_user_id        String?               @db.Uuid
+  definition                InteractiveDefinition @relation(fields: [interactive_definition_id], references: [id])
+  created_by                User?                 @relation(fields: [created_by_user_id], references: [id])
+
+  @@unique([interactive_definition_id, version])
+  @@index([interactive_definition_id, created_at])
+  @@map("interactive_definition_versions")
 }
 
 model InteractiveRun {

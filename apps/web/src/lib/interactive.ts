@@ -141,25 +141,44 @@ export class InteractivePlatform {
     });
   }
 
-  static trackNavigatorStart(slug: string) {
+  static trackNavigatorStart(slug: string, runId?: string) {
     track('navigator_start', {
       navigator_slug: slug,
+      run_id: runId,
     });
   }
 
-  static trackNavigatorStepCompleted(slug: string, stepIndex: number, choiceId: string) {
+  static trackNavigatorStepCompleted(slug: string, stepIndex: number, choiceId: string, runId?: string) {
     track('navigator_step_completed', {
       navigator_slug: slug,
       step_index: stepIndex,
       choice_id: choiceId,
+      run_id: runId,
     });
   }
 
-  static trackNavigatorComplete(slug: string, resultProfileId: string, durationMs: number) {
+  static trackNavigatorComplete(slug: string, resultProfileId: string, durationMs: number, runId?: string) {
     track('navigator_complete', {
       navigator_slug: slug,
       result_profile: resultProfileId,
       duration_ms: durationMs,
+      run_id: runId,
+    });
+  }
+
+  static trackQuizQuestionCompleted(slug: string, questionIndex: number, runId?: string) {
+    track('quiz_question_completed', {
+      quiz_slug: slug,
+      question_index: questionIndex,
+      run_id: runId,
+    });
+  }
+
+  static trackQuizAbandoned(slug: string, abandonedAtQuestion: number, runId?: string) {
+    track('quiz_abandoned', {
+      quiz_slug: slug,
+      abandoned_at_question: abandonedAtQuestion,
+      run_id: runId,
     });
   }
 

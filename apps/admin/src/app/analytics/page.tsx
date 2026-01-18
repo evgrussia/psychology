@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { AdminAuthGuard } from '@/components/admin-auth-guard';
 
 type RangePreset = 'today' | '7d' | '30d' | 'custom';
@@ -125,6 +126,9 @@ export default function AnalyticsPage() {
             <p className="text-sm text-muted-foreground">
               Воронки booking, Telegram и интерактивов на основе агрегатов.
             </p>
+            <Link href="/analytics/interactive" className="text-xs text-primary underline">
+              Детальная аналитика интерактивов →
+            </Link>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <label className="text-sm text-muted-foreground">

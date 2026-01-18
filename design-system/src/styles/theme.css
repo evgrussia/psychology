@@ -45,9 +45,9 @@
   --popover-foreground: #1A1D2E;
 
   /* Primary - бирюзовый, вдохновлённый психологическими сервисами */
-  --primary: #17A2B8;
+  --primary: #0E7C8B;
   --primary-foreground: #FFFFFF;
-  --primary-hover: #138496;
+  --primary-hover: #0C6574;
 
   /* Secondary - тёплый коралловый акцент */
   --secondary: #FFF5F2;
@@ -60,18 +60,18 @@
 
   /* Muted - приглушённые элементы */
   --muted: #F5F7F9;
-  --muted-foreground: #64748B;
+  --muted-foreground: #5A6A7E;
 
   /* Semantic Colors */
   --success: #0FA968;
   --success-foreground: #FFFFFF;
   --warning: #F59E42;
   --warning-foreground: #1A1D2E;
-  --danger: #E74C3C;
+  --danger: #C53030;
   --danger-foreground: #FFFFFF;
-  --destructive: #E74C3C;
+  --destructive: #C53030;
   --destructive-foreground: #FFFFFF;
-  --info: #17A2B8;
+  --info: #0E7C8B;
   --info-foreground: #FFFFFF;
 
   /* UI Elements */
@@ -80,12 +80,12 @@
   --input-background: #F8FAFC;
   --input-border: #CBD5E1;
   --switch-background: #CBD5E1;
-  --ring: #17A2B8;
+  --ring: #0E7C8B;
 
   /* Focus State - WCAG 2.2 AA compliant */
-  --focus: #17A2B8;
-  --focus-ring-width: 2px;
-  --focus-ring-offset: 2px;
+  --focus: #0E7C8B;
+  --focus-ring-width: 3px;
+  --focus-ring-offset: 3px;
 
   /* Chart Colors */
   --chart-1: #17A2B8;
@@ -181,6 +181,13 @@
   --sidebar-accent-foreground: #F9FAFB;
   --sidebar-border: #2D3748;
   --sidebar-ring: #4ECDC4;
+}
+
+@media (prefers-contrast: more), (prefers-contrast: high) {
+  :root {
+    --focus-ring-width: 4px;
+    --focus-ring-offset: 4px;
+  }
 }
 
 @theme inline {

@@ -12,12 +12,11 @@ import { ValidateNavigatorDefinitionUseCase } from '../../../interactive/use-cas
 describe('UpdateInteractiveDefinitionUseCase', () => {
   let useCase: UpdateInteractiveDefinitionUseCase;
   let repository: jest.Mocked<IInteractiveDefinitionRepository>;
-  let validateNavigatorUseCase: jest.Mocked<ValidateNavigatorDefinitionUseCase>;
 
   beforeEach(async () => {
     const mockRepository = {
       findById: jest.fn(),
-      save: jest.fn(),
+      saveDraft: jest.fn(),
       findAll: jest.fn(),
       findPublished: jest.fn(),
       findByTopic: jest.fn(),
@@ -52,7 +51,6 @@ describe('UpdateInteractiveDefinitionUseCase', () => {
 
     useCase = module.get<UpdateInteractiveDefinitionUseCase>(UpdateInteractiveDefinitionUseCase);
     repository = module.get<jest.Mocked<IInteractiveDefinitionRepository>>('IInteractiveDefinitionRepository');
-    validateNavigatorUseCase = module.get<jest.Mocked<ValidateNavigatorDefinitionUseCase>>(ValidateNavigatorDefinitionUseCase);
   });
 
   it('should be defined', () => {
@@ -89,7 +87,7 @@ describe('UpdateInteractiveDefinitionUseCase', () => {
       await expect(
         useCase.execute('test-id', { config: invalidConfig })
       ).rejects.toThrow(BadRequestException);
-      expect(repository.save).not.toHaveBeenCalled();
+      expect(repository.saveDraft).not.toHaveBeenCalled();
     });
 
     it('should throw error if thresholds are empty', async () => {
@@ -106,7 +104,7 @@ describe('UpdateInteractiveDefinitionUseCase', () => {
       await expect(
         useCase.execute('test-id', { config: invalidConfig })
       ).rejects.toThrow(BadRequestException);
-      expect(repository.save).not.toHaveBeenCalled();
+      expect(repository.saveDraft).not.toHaveBeenCalled();
     });
 
     it('should throw error if results are empty', async () => {
@@ -123,7 +121,7 @@ describe('UpdateInteractiveDefinitionUseCase', () => {
       await expect(
         useCase.execute('test-id', { config: invalidConfig })
       ).rejects.toThrow(BadRequestException);
-      expect(repository.save).not.toHaveBeenCalled();
+      expect(repository.saveDraft).not.toHaveBeenCalled();
     });
 
     it('should throw error if thresholds overlap', async () => {
@@ -144,7 +142,7 @@ describe('UpdateInteractiveDefinitionUseCase', () => {
       await expect(
         useCase.execute('test-id', { config: invalidConfig })
       ).rejects.toThrow(BadRequestException);
-      expect(repository.save).not.toHaveBeenCalled();
+      expect(repository.saveDraft).not.toHaveBeenCalled();
     });
 
     it('should accept valid config without overlap', async () => {
@@ -162,11 +160,11 @@ describe('UpdateInteractiveDefinitionUseCase', () => {
         ],
       };
 
-      repository.save.mockResolvedValue();
+      repository.saveDraft.mockResolvedValue();
 
       await useCase.execute('test-id', { config: validConfig });
 
-      expect(repository.save).toHaveBeenCalled();
+      expect(repository.saveDraft).toHaveBeenCalled();
     });
 
     it('should throw NotFoundException if definition not found', async () => {
@@ -175,7 +173,7 @@ describe('UpdateInteractiveDefinitionUseCase', () => {
       await expect(
         useCase.execute('non-existent-id', { title: 'New Title' })
       ).rejects.toThrow(NotFoundException);
-      expect(repository.save).not.toHaveBeenCalled();
+      expect(repository.saveDraft).not.toHaveBeenCalled();
     });
   });
 });

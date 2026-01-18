@@ -1,7 +1,9 @@
-import { Body, Controller, Get, HttpCode, Param, Post, Query, Request, SetMetadata, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Post, Query, Request, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../guards/auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
+import { Roles } from '../decorators/roles.decorator';
+import { AdminPermissions } from '../permissions/admin-permissions';
 import { ListModerationItemsUseCase } from '../../application/admin/use-cases/moderation/ListModerationItemsUseCase';
 import { GetModerationItemUseCase } from '../../application/admin/use-cases/moderation/GetModerationItemUseCase';
 import { ApproveModerationItemUseCase } from '../../application/admin/use-cases/moderation/ApproveModerationItemUseCase';
@@ -19,8 +21,6 @@ import {
 } from '../../application/admin/dto/moderation.dto';
 import { AuditLogHelper } from '../../application/audit/helpers/audit-log.helper';
 
-const Roles = (...roles: string[]) => SetMetadata('roles', roles);
-
 @ApiTags('admin/moderation')
 @Controller('admin/moderation')
 @UseGuards(AuthGuard, RolesGuard)
@@ -37,7 +37,7 @@ export class AdminModerationController {
   ) {}
 
   @Get('items')
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.moderation.list)
   @ApiOperation({ summary: 'List moderation queue items' })
   @ApiResponse({ status: 200, description: 'Moderation items list' })
   async list(@Query() query: ListModerationItemsQueryDto) {
@@ -45,7 +45,7 @@ export class AdminModerationController {
   }
 
   @Get('items/:id')
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.moderation.get)
   @ApiOperation({ summary: 'Get moderation item details' })
   @ApiResponse({ status: 200, description: 'Moderation item details' })
   async getItem(@Param('id') id: string) {
@@ -54,7 +54,7 @@ export class AdminModerationController {
 
   @Post('items/:id/approve')
   @HttpCode(200)
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.moderation.approve)
   @ApiOperation({ summary: 'Approve moderation item' })
   @ApiResponse({ status: 200, description: 'Item approved' })
   async approve(@Param('id') id: string, @Request() req: any) {
@@ -68,7 +68,7 @@ export class AdminModerationController {
 
   @Post('items/:id/reject')
   @HttpCode(200)
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.moderation.reject)
   @ApiOperation({ summary: 'Reject moderation item' })
   @ApiResponse({ status: 200, description: 'Item rejected' })
   async reject(@Param('id') id: string, @Body() dto: RejectModerationItemDto, @Request() req: any) {
@@ -89,7 +89,7 @@ export class AdminModerationController {
 
   @Post('items/:id/escalate')
   @HttpCode(200)
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.moderation.escalate)
   @ApiOperation({ summary: 'Escalate moderation item' })
   @ApiResponse({ status: 200, description: 'Item escalated' })
   async escalate(@Param('id') id: string, @Body() dto: EscalateModerationItemDto, @Request() req: any) {
@@ -110,7 +110,7 @@ export class AdminModerationController {
 
   @Post('items/:id/answer')
   @HttpCode(200)
-  @Roles('owner')
+  @Roles(...AdminPermissions.moderation.answer)
   @ApiOperation({ summary: 'Publish answer for moderation item' })
   @ApiResponse({ status: 200, description: 'Answer published' })
   async answer(@Param('id') id: string, @Body() dto: AnswerModerationItemDto, @Request() req: any) {
@@ -123,7 +123,7 @@ export class AdminModerationController {
   }
 
   @Get('templates')
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.moderation.templates)
   @ApiOperation({ summary: 'List moderation message templates' })
   @ApiResponse({ status: 200, description: 'Moderation templates list' })
   async listTemplates() {
@@ -131,7 +131,7 @@ export class AdminModerationController {
   }
 
   @Get('metrics')
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.moderation.metrics)
   @ApiOperation({ summary: 'Get moderation metrics' })
   @ApiResponse({ status: 200, description: 'Moderation metrics' })
   async metrics(@Query() query: ModerationMetricsQueryDto) {

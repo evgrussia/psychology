@@ -29,6 +29,7 @@ describe('Navigator (e2e)', () => {
 
   beforeEach(async () => {
     await prisma.interactiveRun.deleteMany({});
+    await prisma.interactiveDefinitionVersion.deleteMany({});
     await prisma.interactiveDefinition.deleteMany({});
     await prisma.topic.deleteMany({});
   });
@@ -80,7 +81,7 @@ describe('Navigator (e2e)', () => {
 
   describe('Navigator Flow', () => {
     it('should complete a navigator run', async () => {
-      const interactiveDef = await prisma.interactiveDefinition.create({
+      await prisma.interactiveDefinition.create({
         data: {
           interactive_type: 'navigator',
           slug: 'test-nav',
@@ -127,7 +128,7 @@ describe('Navigator (e2e)', () => {
     });
 
     it('should save crisis trigger type when crisis is triggered', async () => {
-      const interactiveDef = await prisma.interactiveDefinition.create({
+      await prisma.interactiveDefinition.create({
         data: {
           interactive_type: 'navigator',
           slug: 'test-nav-crisis',
@@ -170,7 +171,7 @@ describe('Navigator (e2e)', () => {
     });
 
     it('should not save crisis trigger type when crisis is not triggered', async () => {
-      const interactiveDef = await prisma.interactiveDefinition.create({
+      await prisma.interactiveDefinition.create({
         data: {
           interactive_type: 'navigator',
           slug: 'test-nav-no-crisis',
@@ -212,7 +213,7 @@ describe('Navigator (e2e)', () => {
     });
 
     it('should not accept choice texts in complete payload (security AC-2)', async () => {
-      const interactiveDef = await prisma.interactiveDefinition.create({
+      await prisma.interactiveDefinition.create({
         data: {
           interactive_type: 'navigator',
           slug: 'test-nav-security',

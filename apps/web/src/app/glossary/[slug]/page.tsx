@@ -3,6 +3,17 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import SafeMarkdownRenderer from '@/components/SafeMarkdownRenderer';
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  Container,
+  Section,
+} from '@psychology/design-system';
 import GlossaryTermClient from './GlossaryTermClient';
 
 async function getGlossaryTerm(slug: string) {
@@ -49,122 +60,94 @@ export default async function GlossaryTermPage({ params }: { params: { slug: str
   return (
     <>
       <GlossaryTermClient slug={term.slug} title={term.title} category={term.category} />
-      <article style={{ maxWidth: '800px', margin: '0 auto', padding: '60px 20px' }}>
-        <nav style={{ marginBottom: '40px' }}>
-        <Link href="/glossary" style={{ color: '#3498db', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          ← Вернуться в словарь
-        </Link>
-      </nav>
+      <Section className="py-12 md:py-16">
+        <Container>
+          <article className="space-y-10">
+            <nav>
+              <Button variant="link" asChild className="px-0">
+                <Link href="/glossary">← Вернуться в словарь</Link>
+              </Button>
+            </nav>
 
-      <header style={{ marginBottom: '50px' }}>
-        <div style={{ 
-          fontSize: '0.9em', 
-          color: '#0070f3', 
-          backgroundColor: '#f0f7ff', 
-          padding: '4px 12px', 
-          borderRadius: '20px', 
-          display: 'inline-block',
-          marginBottom: '20px',
-          fontWeight: 'bold',
-          textTransform: 'uppercase'
-        }}>
-          {term.category}
-        </div>
-        <h1 style={{ fontSize: '3.5em', marginBottom: '20px', color: '#2c3e50' }}>{term.title}</h1>
-        <p style={{ fontSize: '1.4em', lineHeight: '1.5', color: '#555', borderLeft: '4px solid #3498db', paddingLeft: '24px', fontStyle: 'italic' }}>
-          {term.shortDefinition}
-        </p>
-      </header>
+            <header className="space-y-6">
+              <Badge variant="secondary" className="uppercase">
+                {term.category}
+              </Badge>
+              <h1 className="text-4xl font-semibold text-foreground md:text-5xl">
+                {term.title}
+              </h1>
+              <p className="border-primary text-muted-foreground border-l-4 pl-6 text-lg italic">
+                {term.shortDefinition}
+              </p>
+            </header>
 
-      {term.synonyms && term.synonyms.length > 0 && (
-        <div style={{ marginBottom: '40px', padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '12px' }}>
-          <h3 style={{ fontSize: '1em', color: '#999', textTransform: 'uppercase', marginBottom: '10px' }}>Также известно как:</h3>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-            {term.synonyms.map((synonym: string) => (
-              <span key={synonym} style={{ padding: '6px 12px', backgroundColor: '#fff', border: '1px solid #ddd', borderRadius: '6px', fontSize: '0.95em' }}>
-                {synonym}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
+            {term.synonyms && term.synonyms.length > 0 && (
+              <Card className="bg-muted/40">
+                <CardHeader>
+                  <CardTitle className="text-muted-foreground text-sm uppercase">
+                    Также известно как:
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {term.synonyms.map((synonym: string) => (
+                      <Badge key={synonym} variant="outline">
+                        {synonym}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
-      <div style={{ fontSize: '1.15em', lineHeight: '1.8', color: '#2c3e50' }}>
-        <SafeMarkdownRenderer content={term.bodyMarkdown} />
-      </div>
+            <div className="text-foreground text-base leading-relaxed">
+              <SafeMarkdownRenderer className="space-y-6" content={term.bodyMarkdown} />
+            </div>
 
-      {term.relatedContent && term.relatedContent.length > 0 && (
-        <section style={{ marginTop: '60px', paddingTop: '40px', borderTop: '1px solid #eee' }}>
-          <h2 style={{ fontSize: '1.8em', marginBottom: '30px', color: '#2c3e50' }}>Связанные материалы</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' }}>
-            {term.relatedContent.map((item: any) => (
-              <Link
-                key={item.id}
-                href={`/${item.contentType === 'article' ? 'blog' : item.contentType === 'resource' ? 'resources' : 's-chem-ya-pomogayu'}/${item.slug}`}
-                style={{
-                  textDecoration: 'none',
-                  color: 'inherit',
-                  padding: '20px',
-                  borderRadius: '12px',
-                  border: '1px solid #eee',
-                  transition: 'all 0.2s ease',
-                  backgroundColor: '#fff',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#3498db';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = '#eee';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                <div style={{ fontSize: '0.75em', color: '#999', textTransform: 'uppercase', marginBottom: '8px' }}>
-                  {item.contentType}
+            {term.relatedContent && term.relatedContent.length > 0 && (
+              <section className="space-y-6 border-t border-border pt-8">
+                <h2 className="text-2xl font-semibold">Связанные материалы</h2>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {term.relatedContent.map((item: any) => (
+                    <Link
+                      key={item.id}
+                      href={`/${item.contentType === 'article' ? 'blog' : item.contentType === 'resource' ? 'resources' : 's-chem-ya-pomogayu'}/${item.slug}`}
+                      className="group block focus-visible:outline-none"
+                    >
+                      <Card className="h-full transition-shadow group-hover:shadow-sm">
+                        <CardHeader className="space-y-2">
+                          <Badge variant="outline" className="w-fit uppercase">
+                            {item.contentType}
+                          </Badge>
+                          <CardTitle className="text-base text-foreground transition-colors group-hover:text-primary">
+                            {item.title}
+                          </CardTitle>
+                        </CardHeader>
+                      </Card>
+                    </Link>
+                  ))}
                 </div>
-                <h3 style={{ fontSize: '1.1em', color: '#2c3e50', margin: 0 }}>{item.title}</h3>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
+              </section>
+            )}
 
-      <footer style={{ marginTop: '80px', paddingTop: '40px', borderTop: '1px solid #eee' }}>
-        <div style={{ backgroundColor: '#f0f7ff', padding: '40px', borderRadius: '16px', textAlign: 'center' }}>
-          <h2 style={{ marginBottom: '15px' }}>Хотите разобраться в себе?</h2>
-          <p style={{ color: '#666', marginBottom: '30px', fontSize: '1.1em' }}>
-            Наши психологи помогут разобраться с вашим состоянием на индивидуальной консультации.
-          </p>
-          <Link 
-            href="/start" 
-            tabIndex={0}
-            style={{ 
-              display: 'inline-block', 
-              padding: '16px 32px', 
-              backgroundColor: '#0070f3', 
-              color: '#fff', 
-              textDecoration: 'none', 
-              borderRadius: '8px',
-              fontWeight: 'bold',
-              transition: 'transform 0.2s'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-            onFocus={(e) => {
-              e.currentTarget.style.transform = 'scale(1.05)';
-              e.currentTarget.style.outline = '2px solid #fff';
-              e.currentTarget.style.outlineOffset = '2px';
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.outline = 'none';
-            }}
-          >
-            Подобрать психолога
-          </Link>
-        </div>
-      </footer>
-      </article>
+            <footer className="border-t border-border pt-10">
+              <Card className="bg-accent/40">
+                <CardHeader className="space-y-2 text-center">
+                  <CardTitle className="text-2xl">Хотите разобраться в себе?</CardTitle>
+                  <p className="text-muted-foreground text-base">
+                    Наши психологи помогут разобраться с вашим состоянием на индивидуальной консультации.
+                  </p>
+                </CardHeader>
+                <CardFooter className="justify-center">
+                  <Button asChild size="lg">
+                    <Link href="/start">Подобрать психолога</Link>
+                  </Button>
+                </CardFooter>
+              </Card>
+            </footer>
+          </article>
+        </Container>
+      </Section>
     </>
   );
 }

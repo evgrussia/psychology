@@ -60,9 +60,9 @@ describe('HomeClient', () => {
     render(<HomeClient data={mockData} />);
 
     expect(screen.getByText('Эмоциональный баланс')).toBeInTheDocument();
-    expect(screen.getByText(/Тёплое пространство/)).toBeInTheDocument();
+    expect(screen.getByText(/Психологическая поддержка онлайн/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Записаться на консультацию/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Подписаться на канал/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Получить план в Telegram/i })).toBeInTheDocument();
   });
 
   it('renders all topic cards', () => {
@@ -76,7 +76,7 @@ describe('HomeClient', () => {
   it('renders featured interactives section when data is available', () => {
     render(<HomeClient data={mockData} />);
 
-    expect(screen.getByText('Первый шаг за 3 минуты')).toBeInTheDocument();
+    expect(screen.getByText('Первый шаг за несколько минут')).toBeInTheDocument();
     expect(screen.getByText('Квиз по тревоге')).toBeInTheDocument();
   });
 
@@ -88,7 +88,7 @@ describe('HomeClient', () => {
 
     render(<HomeClient data={dataWithoutInteractives} />);
 
-    expect(screen.queryByText('Первый шаг за 3 минуты')).not.toBeInTheDocument();
+    expect(screen.queryByText('Первый шаг за несколько минут')).not.toBeInTheDocument();
   });
 
   it('renders trust blocks', () => {
@@ -151,6 +151,7 @@ describe('HomeClient', () => {
 
     expect(tracking.track).toHaveBeenCalledWith('cta_click', {
       cta_id: 'hero_booking',
+      cta_label: 'Записаться на консультацию',
       cta_target: 'booking',
     });
   });
@@ -158,7 +159,7 @@ describe('HomeClient', () => {
   it('tracks Telegram CTA click', async () => {
     render(<HomeClient data={mockData} />);
 
-    const tgButton = screen.getByRole('button', { name: /Подписаться на канал/i });
+    const tgButton = screen.getByRole('button', { name: /Получить план в Telegram/i });
     fireEvent.click(tgButton);
 
     await waitFor(() => {
@@ -176,6 +177,7 @@ describe('HomeClient', () => {
       tg_target: 'channel',
       tg_flow: 'plan_7d',
       deep_link_id: 'dl_123',
+      cta_id: 'hero_tg',
     });
   });
 
@@ -191,7 +193,7 @@ describe('HomeClient', () => {
   it('renders CTA block at the bottom', () => {
     render(<HomeClient data={mockData} />);
 
-    expect(screen.getByText('Готовы сделать первый шаг?')).toBeInTheDocument();
-    expect(screen.getByText(/Выберите удобный способ начать/)).toBeInTheDocument();
+    expect(screen.getByText('Готовы сделать спокойный первый шаг?')).toBeInTheDocument();
+    expect(screen.getByText(/Выберите темп, который комфортен/)).toBeInTheDocument();
   });
 });

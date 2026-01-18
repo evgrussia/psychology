@@ -37,7 +37,7 @@ export class UpdateInteractiveDefinitionUseCase {
 
     // Validation for Navigator (only texts can be updated, structure is fixed in Release 1)
     if (definition.type === InteractiveType.NAVIGATOR && data.config) {
-      await this.validateNavigatorConfig(data.config as NavigatorConfig, definition.config as NavigatorConfig);
+      await this.validateNavigatorConfig(data.config as NavigatorConfig);
     }
 
     // Validation for Boundaries scripts
@@ -61,7 +61,7 @@ export class UpdateInteractiveDefinitionUseCase {
       publishedAt: data.status === InteractiveStatus.PUBLISHED ? new Date() : definition.publishedAt,
     });
 
-    await this.definitionRepository.save(updatedDefinition);
+    await this.definitionRepository.saveDraft(updatedDefinition);
 
     if (actor) {
       const oldSnapshot = this.buildAuditSnapshot(definition);
@@ -106,60 +106,10 @@ export class UpdateInteractiveDefinitionUseCase {
     }
   }
 
-  private async validateNavigatorConfig(newConfig: NavigatorConfig, existingConfig: NavigatorConfig): Promise<void> {
-    // Validate structure (graph integrity)
+  private async validateNavigatorConfig(newConfig: NavigatorConfig): Promise<void> {
     const validationResult = await this.validateNavigatorUseCase.execute(newConfig);
     if (!validationResult.isValid) {
       throw new BadRequestException(`Navigator validation failed: ${validationResult.errors.join(', ')}`);
-    }
-
-    // In Release 1, structure (step_ids, choice_ids, next_step_ids, result_profile_ids) cannot be changed
-    // Only texts (question_text, choice.text, result_profile titles/descriptions) can be edited
-    if (existingConfig) {
-      // Check that step structure is unchanged
-      if (newConfig.initial_step_id !== existingConfig.initial_step_id) {
-        throw new BadRequestException('Cannot change initial_step_id in Release 1. Structure editing is not allowed.');
-      }
-
-      // Check that step IDs are unchanged
-      const existingStepIds = new Set(existingConfig.steps.map(s => s.step_id));
-      const newStepIds = new Set(newConfig.steps.map(s => s.step_id));
-      if (existingStepIds.size !== newStepIds.size || 
-          [...existingStepIds].some(id => !newStepIds.has(id))) {
-        throw new BadRequestException('Cannot add or remove steps in Release 1. Structure editing is not allowed.');
-      }
-
-      // Check that choice structure is unchanged (choice_ids and next_step_ids/result_profile_ids)
-      for (const existingStep of existingConfig.steps) {
-        const newStep = newConfig.steps.find(s => s.step_id === existingStep.step_id);
-        if (!newStep) continue;
-
-        const existingChoiceIds = new Set(existingStep.choices.map(c => c.choice_id));
-        const newChoiceIds = new Set(newStep.choices.map(c => c.choice_id));
-        if (existingChoiceIds.size !== newChoiceIds.size ||
-            [...existingChoiceIds].some(id => !newChoiceIds.has(id))) {
-          throw new BadRequestException(`Cannot add or remove choices in step ${existingStep.step_id} in Release 1. Structure editing is not allowed.`);
-        }
-
-        // Check that next_step_id and result_profile_id are unchanged
-        for (const existingChoice of existingStep.choices) {
-          const newChoice = newStep.choices.find(c => c.choice_id === existingChoice.choice_id);
-          if (!newChoice) continue;
-
-          if (existingChoice.next_step_id !== newChoice.next_step_id ||
-              existingChoice.result_profile_id !== newChoice.result_profile_id) {
-            throw new BadRequestException(`Cannot change navigation structure (next_step_id/result_profile_id) in Release 1. Only texts can be edited.`);
-          }
-        }
-      }
-
-      // Check that result profile IDs are unchanged
-      const existingProfileIds = new Set(existingConfig.result_profiles.map(rp => rp.id));
-      const newProfileIds = new Set(newConfig.result_profiles.map(rp => rp.id));
-      if (existingProfileIds.size !== newProfileIds.size ||
-          [...existingProfileIds].some(id => !newProfileIds.has(id))) {
-        throw new BadRequestException('Cannot add or remove result profiles in Release 1. Structure editing is not allowed.');
-      }
     }
   }
 

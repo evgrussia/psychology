@@ -1,11 +1,14 @@
 "use client";
 
 import React from 'react';
-import { Container } from '@psychology/design-system';
+import { Button, Container } from '@psychology/design-system';
 
 export function LayoutClientWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
+      <a className="skip-link" href="#main-content">
+        Перейти к основному содержимому
+      </a>
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <Container className="flex h-16 items-center justify-between">
           <a href="/" className="flex items-center gap-2 group">
@@ -17,7 +20,7 @@ export function LayoutClientWrapper({ children }: { children: React.ReactNode })
               />
             </div>
           </a>
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium" aria-label="Основная навигация">
             <a href="/services" className="transition-colors hover:text-primary">Услуги</a>
             <a href="/start" className="transition-colors hover:text-primary">С чего начать</a>
             <a href="/about" className="transition-colors hover:text-primary">Обо мне</a>
@@ -25,21 +28,17 @@ export function LayoutClientWrapper({ children }: { children: React.ReactNode })
             <a href="/cabinet" className="transition-colors hover:text-primary">Личный кабинет</a>
           </nav>
           <div className="flex items-center gap-4">
-            <a href="/login" className="hidden sm:inline-flex">
-              <button className="inline-flex h-9 items-center justify-center rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-                Войти
-              </button>
-            </a>
-            <a href="/booking">
-              <button className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
-                Записаться
-              </button>
-            </a>
+            <Button asChild variant="outline" className="hidden sm:inline-flex">
+              <a href="/login">Войти</a>
+            </Button>
+            <Button asChild>
+              <a href="/booking">Записаться</a>
+            </Button>
           </div>
         </Container>
       </header>
       
-      <main className="flex-1">
+      <main id="main-content" className="flex-1" tabIndex={-1}>
         {children}
       </main>
 
@@ -96,7 +95,7 @@ export function LayoutClientWrapper({ children }: { children: React.ReactNode })
           </div>
           <div className="mt-12 border-t pt-8 text-center text-sm text-muted-foreground">
             <p>© 2026 Эмоциональный баланс. Все права защищены.</p>
-            <p className="mt-2 text-xs opacity-60">
+            <p className="mt-2 text-xs">
               Информация на сайте не является публичной офертой и носит информационный характер.
             </p>
           </div>

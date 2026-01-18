@@ -1,15 +1,15 @@
-import { Controller, Get, Post, Query, UseGuards, SetMetadata, Request, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Query, UseGuards, Request, BadRequestException } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../guards/auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
+import { Roles } from '../decorators/roles.decorator';
+import { AdminPermissions } from '../permissions/admin-permissions';
 import { ConnectGoogleCalendarUseCase } from '../../application/integrations/use-cases/ConnectGoogleCalendarUseCase';
 import { GetGoogleCalendarStatusUseCase } from '../../application/integrations/use-cases/GetGoogleCalendarStatusUseCase';
 import { SyncCalendarBusyTimesUseCase } from '../../application/integrations/use-cases/SyncCalendarBusyTimesUseCase';
 import { ConfigService } from '@nestjs/config';
 
 const DEFAULT_SYNC_LOOKAHEAD_DAYS = 30;
-
-const Roles = (...roles: string[]) => SetMetadata('roles', roles);
 
 @ApiTags('admin')
 @Controller('admin/integrations/google-calendar')
@@ -23,7 +23,7 @@ export class AdminGoogleCalendarController {
   ) {}
 
   @Get('status')
-  @Roles('owner')
+  @Roles(...AdminPermissions.googleCalendar.status)
   @ApiOperation({ summary: 'Get Google Calendar integration status' })
   @ApiResponse({ status: 200, description: 'Return Google Calendar integration status' })
   async getStatus() {
@@ -31,7 +31,7 @@ export class AdminGoogleCalendarController {
   }
 
   @Post('connect')
-  @Roles('owner')
+  @Roles(...AdminPermissions.googleCalendar.connectStart)
   @ApiOperation({ summary: 'Start Google Calendar OAuth connection' })
   @ApiResponse({ status: 200, description: 'Return Google OAuth authorization URL' })
   async startConnect(@Request() req: any) {
@@ -44,7 +44,7 @@ export class AdminGoogleCalendarController {
   }
 
   @Get('callback')
-  @Roles('owner')
+  @Roles(...AdminPermissions.googleCalendar.connectCallback)
   @ApiOperation({ summary: 'Complete Google Calendar OAuth connection' })
   @ApiResponse({ status: 200, description: 'Return updated integration status' })
   async handleCallback(
@@ -72,7 +72,7 @@ export class AdminGoogleCalendarController {
   }
 
   @Post('sync')
-  @Roles('owner')
+  @Roles(...AdminPermissions.googleCalendar.sync)
   @ApiOperation({ summary: 'Sync Google Calendar busy intervals' })
   @ApiResponse({ status: 200, description: 'Return sync status' })
   async syncBusyTimes(@Query('from') from?: string, @Query('to') to?: string) {

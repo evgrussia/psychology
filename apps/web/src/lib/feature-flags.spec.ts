@@ -20,6 +20,7 @@ describe('Feature Flags', () => {
     
     expect(flags).toBeDefined();
     expect(flags.homepage_v1_enabled).toBeDefined();
+    expect(flags.homepage_conversion_v2_enabled).toBeDefined();
     expect(flags.telegram_integration_enabled).toBeDefined();
   });
 

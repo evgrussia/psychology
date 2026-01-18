@@ -1,6 +1,8 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, SetMetadata } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
 import { AuthGuard } from '../guards/auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
+import { Roles } from '../decorators/roles.decorator';
+import { AdminPermissions } from '../permissions/admin-permissions';
 import { ListGlossaryTermsUseCase } from '../../application/admin/use-cases/ListGlossaryTermsUseCase';
 import { GetGlossaryTermUseCase } from '../../application/admin/use-cases/GetGlossaryTermUseCase';
 import { UpsertGlossaryTermUseCase } from '../../application/admin/use-cases/UpsertGlossaryTermUseCase';
@@ -9,8 +11,7 @@ import { DeleteGlossaryTermUseCase } from '../../application/admin/use-cases/Del
 import { UpsertGlossaryTermDto } from '../../application/admin/dto/glossary.dto';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ContentStatus, GlossaryTermCategory } from '../../domain/content/value-objects/ContentEnums';
-
-const Roles = (...roles: string[]) => SetMetadata('roles', roles);
+import { AuditLogHelper } from '../../application/audit/helpers/audit-log.helper';
 
 @ApiTags('admin/glossary')
 @ApiBearerAuth()
@@ -26,37 +27,42 @@ export class AdminGlossaryController {
   ) {}
 
   @Get()
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.glossary.list)
   @ApiOperation({ summary: 'List all glossary terms' })
   async list(@Query() filters: { status?: ContentStatus; category?: GlossaryTermCategory; search?: string }) {
     return this.listGlossaryTermsUseCase.execute(filters);
   }
 
   @Get(':id')
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.glossary.get)
   @ApiOperation({ summary: 'Get glossary term by ID' })
   async get(@Param('id') id: string) {
     return this.getGlossaryTermUseCase.execute(id);
   }
 
   @Post()
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.glossary.upsert)
   @ApiOperation({ summary: 'Create/Update glossary term' })
   async upsert(@Body() dto: UpsertGlossaryTermDto) {
     return this.upsertGlossaryTermUseCase.execute(dto);
   }
 
   @Post(':id/publish')
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.glossary.publish)
   @ApiOperation({ summary: 'Publish glossary term' })
   async publish(@Param('id') id: string) {
     return this.publishGlossaryTermUseCase.execute(id);
   }
 
   @Delete(':id')
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.glossary.delete)
   @ApiOperation({ summary: 'Delete glossary term' })
-  async delete(@Param('id') id: string) {
-    return this.deleteGlossaryTermUseCase.execute(id);
+  async delete(@Param('id') id: string, @Request() req: any) {
+    return this.deleteGlossaryTermUseCase.execute(id, {
+      actorUserId: req.user?.id ?? null,
+      actorRole: req.user?.roles?.[0] ?? null,
+      ipAddress: AuditLogHelper.extractIpAddress(req),
+      userAgent: AuditLogHelper.extractUserAgent(req),
+    });
   }
 }

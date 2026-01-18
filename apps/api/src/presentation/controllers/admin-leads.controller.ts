@@ -1,15 +1,15 @@
-import { Body, Controller, Get, HttpCode, Param, Post, Query, Request, SetMetadata, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Post, Query, Request, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../guards/auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
+import { Roles } from '../decorators/roles.decorator';
+import { AdminPermissions } from '../permissions/admin-permissions';
 import { ListLeadsUseCase } from '../../application/admin/use-cases/leads/ListLeadsUseCase';
 import { GetLeadDetailsUseCase } from '../../application/admin/use-cases/leads/GetLeadDetailsUseCase';
 import { UpdateLeadStatusUseCase } from '../../application/admin/use-cases/leads/UpdateLeadStatusUseCase';
 import { AddLeadNoteUseCase } from '../../application/admin/use-cases/leads/AddLeadNoteUseCase';
 import { AddLeadNoteDto, ListLeadsQueryDto, UpdateLeadStatusDto } from '../../application/admin/dto/leads.dto';
 import { AuditLogHelper } from '../../application/audit/helpers/audit-log.helper';
-
-const Roles = (...roles: string[]) => SetMetadata('roles', roles);
 
 @ApiTags('admin/leads')
 @Controller('admin/leads')
@@ -23,7 +23,7 @@ export class AdminLeadsController {
   ) {}
 
   @Get()
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.leads.list)
   @ApiOperation({ summary: 'List CRM leads' })
   @ApiResponse({ status: 200, description: 'Leads list' })
   async list(@Query() query: ListLeadsQueryDto) {
@@ -31,7 +31,7 @@ export class AdminLeadsController {
   }
 
   @Get(':leadId')
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.leads.get)
   @ApiOperation({ summary: 'Get lead details' })
   @ApiResponse({ status: 200, description: 'Lead details' })
   async getLead(@Param('leadId') leadId: string) {
@@ -40,7 +40,7 @@ export class AdminLeadsController {
 
   @Post(':leadId/status')
   @HttpCode(200)
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.leads.updateStatus)
   @ApiOperation({ summary: 'Update lead status' })
   @ApiResponse({ status: 200, description: 'Lead status updated' })
   async updateStatus(
@@ -65,7 +65,7 @@ export class AdminLeadsController {
   }
 
   @Post(':leadId/notes')
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.leads.addNote)
   @ApiOperation({ summary: 'Add lead note' })
   @ApiResponse({ status: 201, description: 'Lead note created' })
   async addNote(

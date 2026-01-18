@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { Alert, AlertDescription, AlertTitle, Card } from '@psychology/design-system';
 
 interface SafeMarkdownRendererProps {
   content: string;
@@ -23,67 +24,34 @@ export default function SafeMarkdownRenderer({ content, className, style }: Safe
     return (
       <div className={className} style={style}>
         {error ? (
-          <div
-            style={{
-              padding: '20px',
-              textAlign: 'center',
-              backgroundColor: '#fff3cd',
-              border: '1px solid #ffc107',
-              borderRadius: '4px',
-              color: '#856404',
-            }}
-          >
-            <p style={{ margin: '0 0 10px 0', fontWeight: 'bold' }}>⚠️ Ошибка отображения контента</p>
-            <p style={{ margin: 0, fontSize: '0.9em' }}>
-              Произошла ошибка при рендеринге markdown. Контент сохранен, но может отображаться некорректно.
-            </p>
-            <details style={{ marginTop: '15px', textAlign: 'left' }}>
-              <summary style={{ cursor: 'pointer', fontSize: '0.85em' }}>Техническая информация</summary>
-              <pre
-                style={{
-                  marginTop: '10px',
-                  padding: '10px',
-                  backgroundColor: '#f8f9fa',
-                  borderRadius: '4px',
-                  fontSize: '0.8em',
-                  overflow: 'auto',
-                }}
-              >
-                {error}
-              </pre>
+          <div className="space-y-4">
+            <Alert className="border-warning/40 bg-warning/10 text-foreground">
+              <AlertTitle className="text-warning flex items-center gap-2">
+                <span aria-hidden>⚠️</span> Ошибка отображения контента
+              </AlertTitle>
+              <AlertDescription>
+                Произошла ошибка при рендеринге markdown. Контент сохранен, но может отображаться
+                некорректно.
+              </AlertDescription>
+            </Alert>
+            <details className="text-sm">
+              <summary className="text-foreground cursor-pointer">Техническая информация</summary>
+              <Card className="bg-muted/60 text-muted-foreground mt-3 border border-border p-3 text-xs">
+                <pre className="whitespace-pre-wrap">{error}</pre>
+              </Card>
             </details>
-            <div
-              style={{
-                marginTop: '15px',
-                padding: '15px',
-                backgroundColor: '#f8f9fa',
-                borderRadius: '4px',
-                fontSize: '0.9em',
-                textAlign: 'left',
-                whiteSpace: 'pre-wrap',
-                maxHeight: '300px',
-                overflow: 'auto',
-              }}
-            >
-              {renderedContent.substring(0, 500)}
-              {renderedContent.length > 500 && '...'}
-            </div>
+            <Card className="bg-muted/60 text-muted-foreground border border-border p-4 text-sm">
+              <div className="whitespace-pre-wrap">
+                {renderedContent.substring(0, 500)}
+                {renderedContent.length > 500 && '...'}
+              </div>
+            </Card>
           </div>
         ) : (
           <ReactMarkdown
             components={{
               // Custom renderers for better error handling
-              img: ({ src, alt, ...props }) => (
-                <img
-                  src={src}
-                  alt={alt || 'Изображение'}
-                  {...props}
-                  onError={(e) => {
-                    console.error('Image load error:', src);
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              ),
+              img: ({ src, alt, ...props }) => <img src={src} alt={alt || 'Изображение'} {...props} />,
             }}
           >
             {renderedContent}
@@ -97,37 +65,23 @@ export default function SafeMarkdownRenderer({ content, className, style }: Safe
     console.error('Markdown render error:', err);
     
     return (
-      <div
-        className={className}
-        style={{
-          ...style,
-          padding: '20px',
-          textAlign: 'center',
-          backgroundColor: '#fff3cd',
-          border: '1px solid #ffc107',
-          borderRadius: '4px',
-          color: '#856404',
-        }}
-      >
-        <p style={{ margin: '0 0 10px 0', fontWeight: 'bold' }}>⚠️ Ошибка отображения контента</p>
-        <p style={{ margin: 0, fontSize: '0.9em' }}>
-          Произошла ошибка при рендеринге markdown. Пожалуйста, сообщите об этом администратору.
-        </p>
-        <details style={{ marginTop: '15px', textAlign: 'left' }}>
-          <summary style={{ cursor: 'pointer', fontSize: '0.85em' }}>Техническая информация</summary>
-          <pre
-            style={{
-              marginTop: '10px',
-              padding: '10px',
-              backgroundColor: '#f8f9fa',
-              borderRadius: '4px',
-              fontSize: '0.8em',
-              overflow: 'auto',
-            }}
-          >
-            {errorMessage}
-          </pre>
-        </details>
+      <div className={className} style={style}>
+        <div className="space-y-4">
+          <Alert className="border-warning/40 bg-warning/10 text-foreground">
+            <AlertTitle className="text-warning flex items-center gap-2">
+              <span aria-hidden>⚠️</span> Ошибка отображения контента
+            </AlertTitle>
+            <AlertDescription>
+              Произошла ошибка при рендеринге markdown. Пожалуйста, сообщите об этом администратору.
+            </AlertDescription>
+          </Alert>
+          <details className="text-sm">
+            <summary className="text-foreground cursor-pointer">Техническая информация</summary>
+            <Card className="bg-muted/60 text-muted-foreground mt-3 border border-border p-3 text-xs">
+              <pre className="whitespace-pre-wrap">{errorMessage}</pre>
+            </Card>
+          </details>
+        </div>
       </div>
     );
   }

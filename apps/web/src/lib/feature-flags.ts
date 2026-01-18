@@ -7,6 +7,7 @@
 
 export interface FeatureFlags {
   homepage_v1_enabled: boolean;
+  homepage_conversion_v2_enabled: boolean;
   telegram_integration_enabled: boolean;
   interactive_quiz_enabled: boolean;
   booking_flow_enabled: boolean;
@@ -19,6 +20,7 @@ export interface FeatureFlags {
 const defaultFlags: Record<string, FeatureFlags> = {
   development: {
     homepage_v1_enabled: true,
+    homepage_conversion_v2_enabled: true,
     telegram_integration_enabled: true,
     interactive_quiz_enabled: true,
     booking_flow_enabled: true,
@@ -28,6 +30,7 @@ const defaultFlags: Record<string, FeatureFlags> = {
   },
   stage: {
     homepage_v1_enabled: true,
+    homepage_conversion_v2_enabled: true,
     telegram_integration_enabled: true,
     interactive_quiz_enabled: true,
     booking_flow_enabled: true,
@@ -37,6 +40,7 @@ const defaultFlags: Record<string, FeatureFlags> = {
   },
   production: {
     homepage_v1_enabled: true, // Главная страница включена в production
+    homepage_conversion_v2_enabled: true,
     telegram_integration_enabled: true,
     interactive_quiz_enabled: true,
     booking_flow_enabled: true,
@@ -69,6 +73,9 @@ function loadFeatureFlags(): FeatureFlags {
       homepage_v1_enabled:
         process.env.NEXT_PUBLIC_FF_HOMEPAGE_V1 === 'true' ||
         defaults.homepage_v1_enabled,
+      homepage_conversion_v2_enabled:
+        process.env.NEXT_PUBLIC_FF_HOMEPAGE_CONVERSION_V2 === 'true' ||
+        defaults.homepage_conversion_v2_enabled,
       telegram_integration_enabled:
         process.env.NEXT_PUBLIC_FF_TELEGRAM === 'true' ||
         defaults.telegram_integration_enabled,

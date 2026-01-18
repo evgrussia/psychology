@@ -18,8 +18,11 @@ import { ListContentRevisionsUseCase } from '../../application/admin/use-cases/L
 import { RollbackContentRevisionUseCase } from '../../application/admin/use-cases/RollbackContentRevisionUseCase';
 import { UpdateInteractiveDefinitionUseCase } from '../../application/admin/use-cases/interactive/UpdateInteractiveDefinitionUseCase';
 import { GetInteractiveDefinitionByIdUseCase } from '../../application/admin/use-cases/interactive/GetInteractiveDefinitionByIdUseCase';
+import { GetPublishedInteractiveDefinitionByIdUseCase } from '../../application/admin/use-cases/interactive/GetPublishedInteractiveDefinitionByIdUseCase';
 import { ListInteractiveDefinitionsUseCase } from '../../application/admin/use-cases/interactive/ListInteractiveDefinitionsUseCase';
 import { PublishInteractiveDefinitionUseCase } from '../../application/admin/use-cases/interactive/PublishInteractiveDefinitionUseCase';
+import { ListInteractiveDefinitionVersionsUseCase } from '../../application/admin/use-cases/interactive/ListInteractiveDefinitionVersionsUseCase';
+import { GetInteractiveDefinitionVersionUseCase } from '../../application/admin/use-cases/interactive/GetInteractiveDefinitionVersionUseCase';
 import { ListGlossaryTermsUseCase } from '../../application/admin/use-cases/ListGlossaryTermsUseCase';
 import { GetGlossaryTermUseCase } from '../../application/admin/use-cases/GetGlossaryTermUseCase';
 import { UpsertGlossaryTermUseCase } from '../../application/admin/use-cases/UpsertGlossaryTermUseCase';
@@ -48,6 +51,7 @@ import { GetAdminDashboardUseCase } from '../../application/admin/use-cases/GetA
 import { GetAdminBookingFunnelUseCase } from '../../application/admin/use-cases/analytics/GetAdminBookingFunnelUseCase';
 import { GetAdminTelegramFunnelUseCase } from '../../application/admin/use-cases/analytics/GetAdminTelegramFunnelUseCase';
 import { GetAdminInteractiveFunnelUseCase } from '../../application/admin/use-cases/analytics/GetAdminInteractiveFunnelUseCase';
+import { GetAdminInteractiveDetailsUseCase } from '../../application/admin/use-cases/analytics/GetAdminInteractiveDetailsUseCase';
 import { GetAdminNoShowStatsUseCase } from '../../application/admin/use-cases/analytics/GetAdminNoShowStatsUseCase';
 import { TrackingService } from '../tracking/tracking.service';
 import { AdminAuthTrackingHandler } from '../tracking/admin-auth-tracking.handler';
@@ -100,6 +104,7 @@ import { ModerationAlertsScheduler } from '../moderation/moderation-alerts.sched
     GetAdminBookingFunnelUseCase,
     GetAdminTelegramFunnelUseCase,
     GetAdminInteractiveFunnelUseCase,
+    GetAdminInteractiveDetailsUseCase,
     GetAdminNoShowStatsUseCase,
     CreateContentItemUseCase,
     UpdateContentItemUseCase,
@@ -113,8 +118,11 @@ import { ModerationAlertsScheduler } from '../moderation/moderation-alerts.sched
     RollbackContentRevisionUseCase,
     UpdateInteractiveDefinitionUseCase,
     GetInteractiveDefinitionByIdUseCase,
+    GetPublishedInteractiveDefinitionByIdUseCase,
     ListInteractiveDefinitionsUseCase,
     PublishInteractiveDefinitionUseCase,
+    ListInteractiveDefinitionVersionsUseCase,
+    GetInteractiveDefinitionVersionUseCase,
     ListGlossaryTermsUseCase,
     GetGlossaryTermUseCase,
     UpsertGlossaryTermUseCase,
@@ -169,8 +177,11 @@ import { ModerationAlertsScheduler } from '../moderation/moderation-alerts.sched
     RollbackContentRevisionUseCase,
     UpdateInteractiveDefinitionUseCase,
     GetInteractiveDefinitionByIdUseCase,
+    GetPublishedInteractiveDefinitionByIdUseCase,
     ListInteractiveDefinitionsUseCase,
     PublishInteractiveDefinitionUseCase,
+    ListInteractiveDefinitionVersionsUseCase,
+    GetInteractiveDefinitionVersionUseCase,
     ListGlossaryTermsUseCase,
     GetGlossaryTermUseCase,
     UpsertGlossaryTermUseCase,

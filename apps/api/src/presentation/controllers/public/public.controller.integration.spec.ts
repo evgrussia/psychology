@@ -22,6 +22,7 @@ import { GetBookingStatusUseCase } from '../../../application/booking/use-cases/
 import { CreatePaymentUseCase } from '../../../application/booking/use-cases/CreatePaymentUseCase';
 import { CreateWaitlistRequestUseCase } from '../../../application/booking/use-cases/CreateWaitlistRequestUseCase';
 import { GetNoSlotsModelUseCase } from '../../../application/booking/use-cases/GetNoSlotsModelUseCase';
+import { GetBookingAlternativesUseCase } from '../../../application/booking/use-cases/GetBookingAlternativesUseCase';
 import { CreateDeepLinkUseCase } from '../../../application/telegram/use-cases/CreateDeepLinkUseCase';
 import { ServiceFormat } from '@domain/booking/value-objects/ServiceEnums';
 import { HomepageDto } from '../../../application/public/dto/homepage.dto';
@@ -156,6 +157,10 @@ describe('PublicController (Integration)', () => {
         },
         {
           provide: CreateDeepLinkUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: GetBookingAlternativesUseCase,
           useValue: { execute: jest.fn() },
         },
       ],

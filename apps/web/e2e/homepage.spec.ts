@@ -9,7 +9,7 @@ test.describe('Homepage', () => {
     await expect(page.getByRole('button', { name: /Записаться/i }).first()).toBeVisible();
 
     // Check Topics section
-    await expect(page.getByRole('heading', { name: /С чем я помогаю/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /С чего начать|С чем я помогаю/i })).toBeVisible();
     
     // Check FAQ Section
     await expect(page.getByRole('heading', { name: /Частые вопросы/i })).toBeVisible();

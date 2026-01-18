@@ -31,6 +31,18 @@ describe('Analytics Ingest (e2e)', () => {
     await prisma.lead.deleteMany();
     await prisma.session.deleteMany();
     await prisma.userRole.deleteMany();
+    
+    // Clean up other potential dependencies of User
+    await prisma.questionAnswer.deleteMany();
+    await prisma.ugcModerationAction.deleteMany();
+    await prisma.anonymousQuestion.deleteMany();
+    await prisma.leadNote.deleteMany();
+    await prisma.diaryEntry.deleteMany();
+    await prisma.interactiveRun.deleteMany();
+    await prisma.appointment.deleteMany();
+    await prisma.contentRevision.deleteMany();
+    await prisma.googleCalendarIntegration.deleteMany();
+    
     await prisma.user.deleteMany();
     await prisma.role.deleteMany();
 
@@ -173,5 +185,187 @@ describe('Analytics Ingest (e2e)', () => {
       where: { event_id: 'evt-dup' },
     });
     expect(count).toBe(1);
+  });
+
+  it('returns interactive details with question funnels and choices', async () => {
+    const occurredAt = new Date().toISOString();
+
+    const sendEvent = (payload: Record<string, unknown>) =>
+      request(app.getHttpServer())
+        .post('/api/analytics/ingest')
+        .send(payload)
+        .expect(201);
+
+    const startRes = await sendEvent({
+      schema_version: '1.0',
+      event_name: 'start_quiz',
+      event_version: 1,
+      event_id: 'evt-int-1',
+      occurred_at: occurredAt,
+      source: 'web',
+      environment: 'dev',
+      session_id: 'sess-int-1',
+      anonymous_id: 'anon-int-1',
+      properties: {
+        quiz_slug: 'anxiety',
+        run_id: 'run-1',
+      },
+    });
+
+    const leadId = startRes.body.lead_id;
+
+    await sendEvent({
+      schema_version: '1.0',
+      event_name: 'quiz_question_completed',
+      event_version: 1,
+      event_id: 'evt-int-2',
+      occurred_at: occurredAt,
+      source: 'web',
+      environment: 'dev',
+      lead_id: leadId,
+      properties: {
+        quiz_slug: 'anxiety',
+        question_index: 1,
+        run_id: 'run-1',
+      },
+    });
+
+    await sendEvent({
+      schema_version: '1.0',
+      event_name: 'quiz_question_completed',
+      event_version: 1,
+      event_id: 'evt-int-3',
+      occurred_at: occurredAt,
+      source: 'web',
+      environment: 'dev',
+      lead_id: leadId,
+      properties: {
+        quiz_slug: 'anxiety',
+        question_index: 2,
+        run_id: 'run-1',
+      },
+    });
+
+    await sendEvent({
+      schema_version: '1.0',
+      event_name: 'complete_quiz',
+      event_version: 1,
+      event_id: 'evt-int-4',
+      occurred_at: occurredAt,
+      source: 'web',
+      environment: 'dev',
+      lead_id: leadId,
+      properties: {
+        quiz_slug: 'anxiety',
+        result_level: 'moderate',
+        duration_ms: 120000,
+        run_id: 'run-1',
+      },
+    });
+
+    await sendEvent({
+      schema_version: '1.0',
+      event_name: 'start_quiz',
+      event_version: 1,
+      event_id: 'evt-int-5',
+      occurred_at: occurredAt,
+      source: 'web',
+      environment: 'dev',
+      session_id: 'sess-int-2',
+      anonymous_id: 'anon-int-2',
+      lead_id: leadId,
+      properties: {
+        quiz_slug: 'anxiety',
+        run_id: 'run-2',
+      },
+    });
+
+    await sendEvent({
+      schema_version: '1.0',
+      event_name: 'quiz_question_completed',
+      event_version: 1,
+      event_id: 'evt-int-6',
+      occurred_at: occurredAt,
+      source: 'web',
+      environment: 'dev',
+      lead_id: leadId,
+      properties: {
+        quiz_slug: 'anxiety',
+        question_index: 1,
+        run_id: 'run-2',
+      },
+    });
+
+    await sendEvent({
+      schema_version: '1.0',
+      event_name: 'quiz_abandoned',
+      event_version: 1,
+      event_id: 'evt-int-7',
+      occurred_at: occurredAt,
+      source: 'web',
+      environment: 'dev',
+      lead_id: leadId,
+      properties: {
+        quiz_slug: 'anxiety',
+        abandoned_at_question: 2,
+        run_id: 'run-2',
+      },
+    });
+
+    await sendEvent({
+      schema_version: '1.0',
+      event_name: 'navigator_step_completed',
+      event_version: 1,
+      event_id: 'evt-int-8',
+      occurred_at: occurredAt,
+      source: 'web',
+      environment: 'dev',
+      lead_id: leadId,
+      properties: {
+        navigator_slug: 'stress',
+        step_index: 1,
+        choice_id: 'choice_a',
+        run_id: 'nav-1',
+      },
+    });
+
+    await sendEvent({
+      schema_version: '1.0',
+      event_name: 'navigator_step_completed',
+      event_version: 1,
+      event_id: 'evt-int-9',
+      occurred_at: occurredAt,
+      source: 'web',
+      environment: 'dev',
+      lead_id: leadId,
+      properties: {
+        navigator_slug: 'stress',
+        step_index: 1,
+        choice_id: 'choice_b',
+        run_id: 'nav-2',
+      },
+    });
+
+    const response = await request(app.getHttpServer())
+      .get('/api/admin/analytics/interactive?range=today')
+      .set('Cookie', [adminCookie])
+      .expect(200);
+
+    const quiz = response.body.quizzes.find((item: any) => item.quiz_slug === 'anxiety');
+    expect(quiz).toBeTruthy();
+    expect(quiz.starts).toBe(2);
+    expect(quiz.completes).toBe(1);
+    expect(quiz.completion_rate).toBeCloseTo(0.5);
+
+    expect(quiz.questions).toEqual([
+      { question_index: 1, count: 2 },
+      { question_index: 2, count: 1 },
+    ]);
+    expect(quiz.abandonments).toEqual([{ abandoned_at_question: 2, count: 1 }]);
+
+    const navigator = response.body.navigators.find((item: any) => item.navigator_slug === 'stress');
+    expect(navigator).toBeTruthy();
+    expect(navigator.steps[0].step_index).toBe(1);
+    expect(navigator.steps[0].total).toBe(2);
   });
 });

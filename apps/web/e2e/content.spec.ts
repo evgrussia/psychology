@@ -99,4 +99,30 @@ test.describe('Content Management E2E', () => {
     const heading = page.locator('h1');
     await expect(heading).toContainText('Полезные ресурсы');
   });
+
+  test('should show glossary list page', async ({ page }) => {
+    await page.goto('/glossary');
+    await expect(page).toHaveTitle(/Словарь/);
+
+    const heading = page.locator('h1');
+    await expect(heading).toContainText('Словарь');
+  });
+
+  test('should open glossary term page when available', async ({ page, request }) => {
+    const glossaryResponse = await request.get(`${apiUrl}/public/glossary`);
+    if (!glossaryResponse.ok()) {
+      test.skip();
+      return;
+    }
+
+    const glossary = await glossaryResponse.json();
+    if (!Array.isArray(glossary) || glossary.length === 0) {
+      test.skip();
+      return;
+    }
+
+    const term = glossary[0];
+    await page.goto(`/glossary/${term.slug}`);
+    await expect(page.locator('h1')).toContainText(term.title);
+  });
 });

@@ -3,6 +3,8 @@ import { IAppointmentRepository } from '@domain/booking/repositories/IAppointmen
 import { IIntakeFormRepository } from '@domain/booking/repositories/IIntakeFormRepository';
 import { IEncryptionService } from '@domain/security/services/IEncryptionService';
 import { IntakeForm } from '@domain/booking/entities/IntakeForm';
+import { IUserRepository } from '@domain/identity/repositories/IUserRepository';
+import { ConsentType } from '@domain/identity/value-objects/ConsentType';
 import { SubmitIntakeRequestDto, SubmitIntakeResponseDto } from '../dto/booking.dto';
 import * as crypto from 'crypto';
 
@@ -15,6 +17,8 @@ export class SubmitIntakeUseCase {
     private readonly appointmentRepository: IAppointmentRepository,
     @Inject('IIntakeFormRepository')
     private readonly intakeFormRepository: IIntakeFormRepository,
+    @Inject('IUserRepository')
+    private readonly userRepository: IUserRepository,
     @Inject('IEncryptionService')
     private readonly encryptionService: IEncryptionService,
   ) {}
@@ -27,6 +31,15 @@ export class SubmitIntakeUseCase {
     const appointment = await this.appointmentRepository.findById(appointmentId);
     if (!appointment) {
       throw new NotFoundException('Appointment not found');
+    }
+
+    if (!appointment.clientUserId) {
+      throw new BadRequestException('Personal data consent is required');
+    }
+
+    const user = await this.userRepository.findById(appointment.clientUserId);
+    if (!user || !user.hasActiveConsent(ConsentType.PERSONAL_DATA)) {
+      throw new BadRequestException('Personal data consent is required');
     }
 
     const payloadString = JSON.stringify(dto.payload);

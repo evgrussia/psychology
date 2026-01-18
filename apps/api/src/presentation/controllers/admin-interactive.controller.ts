@@ -1,17 +1,21 @@
-import { Controller, Put, Body, Param, UseGuards, SetMetadata, Get, Query, Post, Req, NotFoundException, HttpCode } from '@nestjs/common';
+import { Controller, Put, Body, Param, UseGuards, Get, Query, Post, Req, NotFoundException, HttpCode } from '@nestjs/common';
 import { AuthGuard } from '../guards/auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
+import { Roles } from '../decorators/roles.decorator';
+import { AdminPermissions } from '../permissions/admin-permissions';
 import { UpdateInteractiveDefinitionUseCase } from '../../application/admin/use-cases/interactive/UpdateInteractiveDefinitionUseCase';
 import { GetInteractiveDefinitionByIdUseCase } from '../../application/admin/use-cases/interactive/GetInteractiveDefinitionByIdUseCase';
+import { GetPublishedInteractiveDefinitionByIdUseCase } from '../../application/admin/use-cases/interactive/GetPublishedInteractiveDefinitionByIdUseCase';
 import { ListInteractiveDefinitionsUseCase } from '../../application/admin/use-cases/interactive/ListInteractiveDefinitionsUseCase';
 import { PublishInteractiveDefinitionUseCase } from '../../application/admin/use-cases/interactive/PublishInteractiveDefinitionUseCase';
+import { ListInteractiveDefinitionVersionsUseCase } from '../../application/admin/use-cases/interactive/ListInteractiveDefinitionVersionsUseCase';
+import { GetInteractiveDefinitionVersionUseCase } from '../../application/admin/use-cases/interactive/GetInteractiveDefinitionVersionUseCase';
 import { InteractiveConfig } from '../../domain/interactive/types/InteractiveConfig';
 import { InteractiveStatus } from '../../domain/interactive/value-objects/InteractiveStatus';
 import { InteractiveType } from '../../domain/interactive/value-objects/InteractiveType';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuditLogHelper } from '../../application/audit/helpers/audit-log.helper';
-
-const Roles = (...roles: string[]) => SetMetadata('roles', roles);
+import { ValidateNavigatorDefinitionUseCase } from '../../application/interactive/use-cases/ValidateNavigatorDefinitionUseCase';
 
 @ApiTags('admin-interactive')
 @Controller('admin/interactive')
@@ -20,12 +24,16 @@ export class AdminInteractiveController {
   constructor(
     private readonly updateUseCase: UpdateInteractiveDefinitionUseCase,
     private readonly getByIdUseCase: GetInteractiveDefinitionByIdUseCase,
+    private readonly getPublishedByIdUseCase: GetPublishedInteractiveDefinitionByIdUseCase,
     private readonly listUseCase: ListInteractiveDefinitionsUseCase,
     private readonly publishUseCase: PublishInteractiveDefinitionUseCase,
+    private readonly listVersionsUseCase: ListInteractiveDefinitionVersionsUseCase,
+    private readonly getVersionUseCase: GetInteractiveDefinitionVersionUseCase,
+    private readonly validateNavigatorUseCase: ValidateNavigatorDefinitionUseCase,
   ) {}
 
   @Get('definitions')
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.interactive.list)
   @ApiOperation({ summary: 'List interactive definitions' })
   @ApiResponse({ status: 200, description: 'List of definitions' })
   async listDefinitions(
@@ -36,7 +44,7 @@ export class AdminInteractiveController {
   }
 
   @Get('definitions/:id')
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.interactive.get)
   @ApiOperation({ summary: 'Get interactive definition by ID' })
   @ApiResponse({ status: 200, description: 'Definition details' })
   @ApiResponse({ status: 404, description: 'Definition not found' })
@@ -45,7 +53,7 @@ export class AdminInteractiveController {
   }
 
   @Put('definitions/:id')
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.interactive.update)
   @ApiOperation({ summary: 'Update interactive definition' })
   @ApiResponse({ status: 200, description: 'Definition updated' })
   async updateDefinition(
@@ -69,7 +77,7 @@ export class AdminInteractiveController {
 
   @Post('definitions/:id/publish')
   @HttpCode(200)
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.interactive.publish)
   @ApiOperation({ summary: 'Publish interactive definition' })
   @ApiResponse({ status: 200, description: 'Definition published' })
   @ApiResponse({ status: 404, description: 'Definition not found' })
@@ -85,7 +93,7 @@ export class AdminInteractiveController {
   }
 
   @Get('definitions/:id/preview')
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.interactive.get)
   @ApiOperation({ summary: 'Preview interactive definition (draft or published)' })
   @ApiResponse({ status: 200, description: 'Preview definition' })
   @ApiResponse({ status: 404, description: 'Definition not found' })
@@ -93,16 +101,19 @@ export class AdminInteractiveController {
     @Param('id') id: string,
     @Query('version') version?: 'draft' | 'published',
   ) {
-    const definition = await this.getByIdUseCase.execute(id);
-    if (version === 'published' && definition.status !== InteractiveStatus.PUBLISHED) {
-      throw new NotFoundException('Published version not found');
+    if (version === 'published') {
+      const definition = await this.getPublishedByIdUseCase.execute(id);
+      if (definition.status !== InteractiveStatus.PUBLISHED) {
+        throw new NotFoundException('Published version not found');
+      }
+      return definition;
     }
-    return definition;
+    return await this.getByIdUseCase.execute(id);
   }
 
   @Post(':id/publish')
   @HttpCode(200)
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.interactive.publishDraft)
   @ApiOperation({ summary: 'Publish interactive definition (shortcut route)' })
   @ApiResponse({ status: 200, description: 'Definition published' })
   async publishDefinitionShortcut(@Param('id') id: string, @Req() request: any) {
@@ -116,23 +127,46 @@ export class AdminInteractiveController {
   }
 
   @Get(':id/preview')
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.interactive.get)
   @ApiOperation({ summary: 'Preview interactive definition (shortcut route)' })
   @ApiResponse({ status: 200, description: 'Preview definition' })
   async previewDefinitionShortcut(
     @Param('id') id: string,
     @Query('version') version?: 'draft' | 'published',
   ) {
-    const definition = await this.getByIdUseCase.execute(id);
-    if (version === 'published' && definition.status !== InteractiveStatus.PUBLISHED) {
-      throw new NotFoundException('Published version not found');
+    if (version === 'published') {
+      const definition = await this.getPublishedByIdUseCase.execute(id);
+      if (definition.status !== InteractiveStatus.PUBLISHED) {
+        throw new NotFoundException('Published version not found');
+      }
+      return definition;
     }
-    return definition;
+    return await this.getByIdUseCase.execute(id);
+  }
+
+  @Get('definitions/:id/versions')
+  @Roles(...AdminPermissions.interactive.get)
+  @ApiOperation({ summary: 'List interactive definition versions' })
+  @ApiResponse({ status: 200, description: 'List of versions' })
+  async listVersions(@Param('id') id: string) {
+    return await this.listVersionsUseCase.execute(id);
+  }
+
+  @Get('definitions/:id/versions/:version')
+  @Roles(...AdminPermissions.interactive.get)
+  @ApiOperation({ summary: 'Get interactive definition version' })
+  @ApiResponse({ status: 200, description: 'Version details' })
+  @ApiResponse({ status: 404, description: 'Version not found' })
+  async getVersion(
+    @Param('id') id: string,
+    @Param('version') version: string,
+  ) {
+    return await this.getVersionUseCase.execute(id, Number(version));
   }
 
   // Navigator-specific endpoints (FEAT-INT-03)
   @Put('navigators/:id')
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.interactive.update)
   @ApiOperation({ summary: 'Update navigator definition texts (structure cannot be changed in Release 1)' })
   @ApiResponse({ status: 200, description: 'Navigator updated' })
   @ApiResponse({ status: 404, description: 'Navigator not found' })
@@ -158,7 +192,7 @@ export class AdminInteractiveController {
 
   @Post('navigators/:id/publish')
   @HttpCode(200)
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.interactive.publish)
   @ApiOperation({ summary: 'Publish navigator definition (validates structure)' })
   @ApiResponse({ status: 200, description: 'Navigator published' })
   @ApiResponse({ status: 404, description: 'Navigator not found' })
@@ -171,5 +205,17 @@ export class AdminInteractiveController {
       ipAddress: AuditLogHelper.extractIpAddress(request),
       userAgent: AuditLogHelper.extractUserAgent(request),
     });
+  }
+
+  @Get('navigators/:id/validate')
+  @Roles(...AdminPermissions.interactive.get)
+  @ApiOperation({ summary: 'Validate navigator draft definition' })
+  @ApiResponse({ status: 200, description: 'Validation result' })
+  async validateNavigator(@Param('id') id: string) {
+    const definition = await this.getByIdUseCase.execute(id);
+    if (!definition.config) {
+      throw new NotFoundException('Navigator draft not found');
+    }
+    return await this.validateNavigatorUseCase.execute(definition.config as any);
   }
 }

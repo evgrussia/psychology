@@ -2,7 +2,7 @@ import { PreferredContactMethod, PreferredTimeWindow, WaitlistStatus } from '@do
 
 export interface WaitlistConsentPayload {
   personal_data: boolean;
-  communications: boolean;
+  communications?: boolean;
 }
 
 export interface CreateWaitlistRequestDto {

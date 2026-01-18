@@ -1,7 +1,6 @@
 import { Inject, Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { IInteractiveDefinitionRepository } from '@domain/interactive/repositories/IInteractiveDefinitionRepository';
 import { InteractiveStatus } from '@domain/interactive/value-objects/InteractiveStatus';
-import { InteractiveDefinition } from '@domain/interactive/entities/InteractiveDefinition';
 import { InteractiveType } from '@domain/interactive/value-objects/InteractiveType';
 import { QuizConfig, NavigatorConfig, BoundariesConfig, RitualConfig } from '@domain/interactive/types/InteractiveConfig';
 import { ValidateNavigatorDefinitionUseCase } from '../../../interactive/use-cases/ValidateNavigatorDefinitionUseCase';
@@ -26,35 +25,29 @@ export class PublishInteractiveDefinitionUseCase {
     }
 
     // Validate quiz config before publishing
-    if (definition.type === InteractiveType.QUIZ && definition.config) {
-      this.validateQuizConfig(definition.config as QuizConfig);
+    const configToPublish = definition.config;
+    if (!configToPublish) {
+      throw new BadRequestException('Interactive definition has no draft config to publish');
+    }
+
+    if (definition.type === InteractiveType.QUIZ) {
+      this.validateQuizConfig(configToPublish as QuizConfig);
     }
 
     // Validate navigator config before publishing
-    if (definition.type === InteractiveType.NAVIGATOR && definition.config) {
-      await this.validateNavigatorConfig(definition.config as NavigatorConfig);
+    if (definition.type === InteractiveType.NAVIGATOR) {
+      await this.validateNavigatorConfig(configToPublish as NavigatorConfig);
     }
 
-    if (definition.type === InteractiveType.BOUNDARIES && definition.config) {
-      this.validateBoundariesConfig(definition.config as BoundariesConfig);
+    if (definition.type === InteractiveType.BOUNDARIES) {
+      this.validateBoundariesConfig(configToPublish as BoundariesConfig);
     }
 
-    if (definition.type === InteractiveType.RITUAL && definition.config) {
-      this.validateRitualConfig(definition.config as RitualConfig);
+    if (definition.type === InteractiveType.RITUAL) {
+      this.validateRitualConfig(configToPublish as RitualConfig);
     }
 
-    const publishedDefinition = InteractiveDefinition.reconstitute({
-      id: definition.id,
-      type: definition.type,
-      slug: definition.slug,
-      title: definition.title,
-      topicCode: definition.topicCode,
-      status: InteractiveStatus.PUBLISHED,
-      config: definition.config,
-      publishedAt: new Date(),
-    });
-
-    await this.definitionRepository.save(publishedDefinition);
+    await this.definitionRepository.publishDraft(definition.id, configToPublish, actor?.userId ?? null);
 
     if (actor) {
       await this.auditLogHelper.logAction(

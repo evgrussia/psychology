@@ -30,12 +30,12 @@ export const NavigatorClient: React.FC<NavigatorClientProps> = ({ definition, sl
     setRunId(id);
     setStartTime(Date.now());
     setStep('progress');
-    InteractivePlatform.trackNavigatorStart(slug);
+    InteractivePlatform.trackNavigatorStart(slug, id);
   };
 
   const handleChoice = (choice: any) => {
     const stepIndex = history.length + 1;
-    InteractivePlatform.trackNavigatorStepCompleted(slug, stepIndex, choice.choice_id);
+    InteractivePlatform.trackNavigatorStepCompleted(slug, stepIndex, choice.choice_id, runId ?? undefined);
 
     if (choice.crisis_trigger) {
       setCrisisTriggered(true);
@@ -77,7 +77,7 @@ export const NavigatorClient: React.FC<NavigatorClientProps> = ({ definition, sl
       });
     }
 
-    InteractivePlatform.trackNavigatorComplete(slug, resultProfile.id, durationMs);
+    InteractivePlatform.trackNavigatorComplete(slug, resultProfile.id, durationMs, runId ?? undefined);
     setStep('result');
   };
 

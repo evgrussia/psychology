@@ -6,6 +6,7 @@ export enum AuditLogAction {
   ADMIN_CONTENT_PUBLISHED = 'admin_content_published',
   ADMIN_CONTENT_DELETED = 'admin_content_deleted',
   ADMIN_APPOINTMENT_DELETED = 'admin_appointment_deleted',
+  ADMIN_SCHEDULE_SLOT_DELETED = 'admin_schedule_slot_deleted',
   ADMIN_ROLE_CHANGED = 'admin_role_changed',
   ADMIN_LOGIN = 'admin_login',
   ADMIN_SETTINGS_CHANGED = 'admin_settings_changed',
@@ -19,6 +20,8 @@ export enum AuditLogAction {
   ADMIN_MODERATION_REJECTED = 'admin_moderation_rejected',
   ADMIN_MODERATION_ESCALATED = 'admin_moderation_escalated',
   ADMIN_MODERATION_ANSWERED = 'admin_moderation_answered',
+  SECURITY_UNAUTHORIZED = 'security_unauthorized',
+  SECURITY_ACCESS_DENIED = 'security_access_denied',
 }
 
 export class ListAuditLogDto {
@@ -83,8 +86,8 @@ export interface ListAuditLogResponseDto {
 }
 
 export interface WriteAuditLogDto {
-  actorUserId: string;
-  actorRole: string;
+  actorUserId: string | null;
+  actorRole: string | null;
   action: string;
   entityType: string;
   entityId?: string | null;

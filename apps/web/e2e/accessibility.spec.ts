@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 
 test.describe('Homepage Accessibility', () => {
   test('should have basic accessibility markers', async ({ page }) => {
@@ -6,10 +7,20 @@ test.describe('Homepage Accessibility', () => {
     
     // Check for main landmark
     await expect(page.locator('main')).toBeVisible();
+    await expect(page.locator('#main-content')).toBeVisible();
     
     // Check for lang attribute
     const htmlLang = await page.locator('html').getAttribute('lang');
     expect(htmlLang).toBe('ru');
+  });
+
+  test('should expose skip link to main content', async ({ page }) => {
+    await page.goto('/');
+
+    const skipLink = page.locator('a[href="#main-content"]');
+    await expect(skipLink).toBeVisible();
+    await skipLink.focus();
+    await expect(skipLink).toBeFocused();
   });
 
   test('should have accessible topic cards', async ({ page }) => {
@@ -70,5 +81,20 @@ test.describe('Homepage Accessibility', () => {
       // Alt может быть пустым для декоративных изображений, но атрибут должен присутствовать
       expect(alt !== null).toBe(true);
     }
+  });
+
+  test('should pass axe smoke checks on key pages', async ({ page }) => {
+    const runAxe = async () => {
+      const results = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .analyze();
+      expect(results.violations).toEqual([]);
+    };
+
+    await page.goto('/');
+    await runAxe();
+
+    await page.goto('/start');
+    await runAxe();
   });
 });

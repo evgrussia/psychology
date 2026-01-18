@@ -8,6 +8,8 @@ export const ANALYTICS_ALLOWED_EVENTS = new Set<string>([
   'save_resource',
   'start_quiz',
   'complete_quiz',
+  'quiz_question_completed',
+  'quiz_abandoned',
   'navigator_start',
   'navigator_step_completed',
   'navigator_complete',

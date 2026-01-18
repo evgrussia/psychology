@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ProgressBar, ResultCard, CrisisBanner, Button, Section, Container, Card } from '@psychology/design-system';
 import { InteractivePlatform, ResultLevel } from '@/lib/interactive';
 
@@ -48,8 +48,39 @@ export const QuizClient: React.FC<QuizClientProps> = ({ quiz }) => {
   const [startTime, setStartTime] = useState<number>(0);
   const [resultLevel, setResultLevel] = useState<ResultLevel | null>(null);
   const [isCrisisVisible, setIsCrisisVisible] = useState(true);
+  const hasCompletedRef = useRef(false);
+  const hasAbandonedRef = useRef(false);
+  const runIdRef = useRef<string | null>(null);
+  const stepRef = useRef(step);
+  const questionIdxRef = useRef(currentQuestionIdx);
 
   const { questions, thresholds, results, crisisTrigger } = quiz.config;
+
+  useEffect(() => {
+    runIdRef.current = runId;
+  }, [runId]);
+
+  useEffect(() => {
+    stepRef.current = step;
+  }, [step]);
+
+  useEffect(() => {
+    questionIdxRef.current = currentQuestionIdx;
+  }, [currentQuestionIdx]);
+
+  useEffect(() => {
+    return () => {
+      if (hasCompletedRef.current || hasAbandonedRef.current) {
+        return;
+      }
+      if (stepRef.current !== 'progress') {
+        return;
+      }
+      const abandonedAtQuestion = questionIdxRef.current + 1;
+      InteractivePlatform.trackQuizAbandoned(quiz.slug, abandonedAtQuestion, runIdRef.current || undefined);
+      hasAbandonedRef.current = true;
+    };
+  }, [quiz.slug]);
 
   const startQuiz = async () => {
     const id = await InteractivePlatform.startRun({
@@ -59,12 +90,13 @@ export const QuizClient: React.FC<QuizClientProps> = ({ quiz }) => {
     setRunId(id);
     setStartTime(Date.now());
     setStep('progress');
-    InteractivePlatform.trackStart('quiz', quiz.slug);
+    InteractivePlatform.trackStart('quiz', quiz.slug, { run_id: id });
   };
 
   const handleAnswer = (value: number) => {
     const newAnswers = [...answers, value];
     setAnswers(newAnswers);
+    InteractivePlatform.trackQuizQuestionCompleted(quiz.slug, currentQuestionIdx + 1, runId ?? undefined);
 
     if (currentQuestionIdx < questions.length - 1) {
       setCurrentQuestionIdx(currentQuestionIdx + 1);
@@ -110,12 +142,15 @@ export const QuizClient: React.FC<QuizClientProps> = ({ quiz }) => {
     InteractivePlatform.trackComplete('quiz', quiz.slug, {
       result_level: finalResultLevel,
       duration_ms: durationMs,
+      question_count: questions.length,
+      run_id: runId ?? undefined,
     });
 
     if (crisisTriggered) {
       InteractivePlatform.trackCrisisTriggered('high_score', 'quiz_result');
     }
 
+    hasCompletedRef.current = true;
     setStep('result');
   };
 

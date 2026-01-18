@@ -11,6 +11,7 @@ import { IServiceRepository } from '@domain/booking/repositories/IServiceReposit
 import { TrackingService } from '@infrastructure/tracking/tracking.service';
 import { Appointment } from '@domain/booking/entities/Appointment';
 import { ILeadRepository } from '@domain/crm/repositories/ILeadRepository';
+import { ConsentType } from '@domain/identity/value-objects/ConsentType';
 
 @Injectable()
 export class ConfirmAppointmentAfterPaymentUseCase {
@@ -97,6 +98,10 @@ export class ConfirmAppointmentAfterPaymentUseCase {
 
     const user = await this.userRepository.findById(appointment.clientUserId);
     if (!user || !user.email) {
+      return;
+    }
+
+    if (!user.hasActiveConsent(ConsentType.COMMUNICATIONS)) {
       return;
     }
 

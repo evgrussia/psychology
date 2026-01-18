@@ -24,6 +24,7 @@ describe('Interactive (e2e)', () => {
 
     // Clean up
     await prisma.interactiveRun.deleteMany({});
+    await prisma.interactiveDefinitionVersion.deleteMany({});
     await prisma.interactiveDefinition.deleteMany({});
     await prisma.topic.deleteMany({});
   });
@@ -35,6 +36,7 @@ describe('Interactive (e2e)', () => {
   beforeEach(async () => {
     // Clean up test data before each test in correct order
     await prisma.interactiveRun.deleteMany({});
+    await prisma.interactiveDefinitionVersion.deleteMany({});
     await prisma.interactiveDefinition.deleteMany({});
     // We don't delete topics here as they are shared and it causes FK issues
     // instead we use unique codes for each test if needed

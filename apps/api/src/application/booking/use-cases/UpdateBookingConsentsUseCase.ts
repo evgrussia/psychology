@@ -5,6 +5,7 @@ import { ConsentType } from '@domain/identity/value-objects/ConsentType';
 import { Email } from '@domain/identity/value-objects/Email';
 import { User } from '@domain/identity/aggregates/User';
 import { UpdateBookingConsentsRequestDto, UpdateBookingConsentsResponseDto } from '../dto/booking.dto';
+import { TrackingService } from '@infrastructure/tracking/tracking.service';
 import * as crypto from 'crypto';
 
 const DEFAULT_CONSENT_VERSION = 'v1';
@@ -17,6 +18,7 @@ export class UpdateBookingConsentsUseCase {
     private readonly appointmentRepository: IAppointmentRepository,
     @Inject('IUserRepository')
     private readonly userRepository: IUserRepository,
+    private readonly trackingService: TrackingService,
   ) {}
 
   async execute(appointmentId: string, dto: UpdateBookingConsentsRequestDto): Promise<UpdateBookingConsentsResponseDto> {
@@ -42,6 +44,12 @@ export class UpdateBookingConsentsUseCase {
       null,
     );
 
+    const previous = {
+      personal_data: user.hasActiveConsent(ConsentType.PERSONAL_DATA),
+      communications: user.hasActiveConsent(ConsentType.COMMUNICATIONS),
+      telegram: user.hasActiveConsent(ConsentType.TELEGRAM),
+    };
+
     const source = dto.source || DEFAULT_CONSENT_SOURCE;
     const version = DEFAULT_CONSENT_VERSION;
 
@@ -63,6 +71,36 @@ export class UpdateBookingConsentsUseCase {
 
     if (appointment.clientUserId !== user.id) {
       await this.appointmentRepository.attachClientUser(appointment.id, user.id);
+    }
+
+    const current = {
+      personal_data: user.hasActiveConsent(ConsentType.PERSONAL_DATA),
+      communications: user.hasActiveConsent(ConsentType.COMMUNICATIONS),
+      telegram: user.hasActiveConsent(ConsentType.TELEGRAM),
+    };
+
+    if (previous.personal_data !== current.personal_data) {
+      await this.trackingService.trackConsentUpdated({
+        consentType: 'personal_data',
+        newValue: current.personal_data,
+        userId: user.id,
+      });
+    }
+
+    if (previous.communications !== current.communications) {
+      await this.trackingService.trackConsentUpdated({
+        consentType: 'communications',
+        newValue: current.communications,
+        userId: user.id,
+      });
+    }
+
+    if (previous.telegram !== current.telegram) {
+      await this.trackingService.trackConsentUpdated({
+        consentType: 'telegram',
+        newValue: current.telegram,
+        userId: user.id,
+      });
     }
 
     return {

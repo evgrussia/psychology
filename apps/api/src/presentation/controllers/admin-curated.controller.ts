@@ -1,17 +1,16 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Put, 
-  Param, 
-  Body, 
-  UseGuards, 
-  Delete 
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Body,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from '../guards/auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { Roles } from '../decorators/roles.decorator';
+import { AdminPermissions } from '../permissions/admin-permissions';
 import { ListCuratedCollectionsUseCase } from '@application/admin/use-cases/ListCuratedCollectionsUseCase';
 import { GetCuratedCollectionUseCase } from '@application/admin/use-cases/GetCuratedCollectionUseCase';
 import { UpsertCuratedCollectionUseCase } from '@application/admin/use-cases/UpsertCuratedCollectionUseCase';
@@ -22,7 +21,7 @@ import { AdminCuratedCollectionDto, UpsertCuratedCollectionDto, ReorderCuratedIt
 @ApiTags('admin-curated')
 @ApiBearerAuth()
 @UseGuards(AuthGuard, RolesGuard)
-@Roles('owner', 'editor')
+@Roles(...AdminPermissions.curated.list)
 @Controller('admin/curated')
 export class AdminCuratedController {
   constructor(

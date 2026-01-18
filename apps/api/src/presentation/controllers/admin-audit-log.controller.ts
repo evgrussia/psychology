@@ -1,11 +1,11 @@
-import { Controller, Get, Query, UseGuards, SetMetadata, Req } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { AuthGuard } from '../guards/auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { ListAuditLogUseCase } from '../../application/audit/use-cases/ListAuditLogUseCase';
-import { ListAuditLogDto, ListAuditLogResponseDto } from '../../application/audit/dto/audit-log.dto';
-
-const Roles = (...roles: string[]) => SetMetadata('roles', roles);
+import { ListAuditLogDto, ListAuditLogResponseDto, AuditLogAction } from '../../application/audit/dto/audit-log.dto';
+import { Roles } from '../decorators/roles.decorator';
+import { AdminPermissions } from '../permissions/admin-permissions';
 
 @ApiTags('admin')
 @Controller('admin/audit-log')
@@ -16,12 +16,12 @@ export class AdminAuditLogController {
   ) {}
 
   @Get()
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.auditLog.list)
   @ApiOperation({ summary: 'List audit log entries' })
   @ApiResponse({ status: 200, description: 'Returns paginated audit log entries' })
   @ApiResponse({ status: 403, description: 'Forbidden - insufficient permissions' })
   @ApiQuery({ name: 'actorUserId', required: false, type: String })
-  @ApiQuery({ name: 'action', required: false, enum: ['admin_price_changed', 'admin_data_exported', 'admin_content_published', 'admin_content_deleted', 'admin_appointment_deleted', 'admin_role_changed', 'admin_login', 'admin_settings_changed', 'admin_google_calendar_connect_started', 'admin_google_calendar_connected', 'admin_interactive_updated', 'admin_interactive_published', 'admin_lead_status_changed', 'admin_lead_note_added', 'admin_moderation_approved', 'admin_moderation_rejected', 'admin_moderation_escalated', 'admin_moderation_answered'] })
+  @ApiQuery({ name: 'action', required: false, enum: AuditLogAction })
   @ApiQuery({ name: 'entityType', required: false, type: String })
   @ApiQuery({ name: 'entityId', required: false, type: String })
   @ApiQuery({ name: 'fromDate', required: false, type: String, description: 'ISO 8601 date-time string' })

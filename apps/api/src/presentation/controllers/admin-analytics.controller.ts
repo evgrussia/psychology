@@ -1,13 +1,14 @@
-import { Controller, Get, Query, SetMetadata, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../guards/auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
+import { Roles } from '../decorators/roles.decorator';
+import { AdminPermissions } from '../permissions/admin-permissions';
 import { GetAdminBookingFunnelUseCase } from '../../application/admin/use-cases/analytics/GetAdminBookingFunnelUseCase';
 import { GetAdminTelegramFunnelUseCase } from '../../application/admin/use-cases/analytics/GetAdminTelegramFunnelUseCase';
 import { GetAdminInteractiveFunnelUseCase } from '../../application/admin/use-cases/analytics/GetAdminInteractiveFunnelUseCase';
+import { GetAdminInteractiveDetailsUseCase } from '../../application/admin/use-cases/analytics/GetAdminInteractiveDetailsUseCase';
 import { GetAdminNoShowStatsUseCase } from '../../application/admin/use-cases/analytics/GetAdminNoShowStatsUseCase';
-
-const Roles = (...roles: string[]) => SetMetadata('roles', roles);
 
 @ApiTags('admin-analytics')
 @Controller('admin/analytics')
@@ -17,11 +18,12 @@ export class AdminAnalyticsController {
     private readonly getAdminBookingFunnelUseCase: GetAdminBookingFunnelUseCase,
     private readonly getAdminTelegramFunnelUseCase: GetAdminTelegramFunnelUseCase,
     private readonly getAdminInteractiveFunnelUseCase: GetAdminInteractiveFunnelUseCase,
+    private readonly getAdminInteractiveDetailsUseCase: GetAdminInteractiveDetailsUseCase,
     private readonly getAdminNoShowStatsUseCase: GetAdminNoShowStatsUseCase,
   ) {}
 
   @Get('funnels/booking')
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.analytics.bookingFunnel)
   @ApiOperation({ summary: 'Get booking funnel analytics' })
   @ApiResponse({ status: 200, description: 'Booking funnel data' })
   async getBookingFunnel(
@@ -38,7 +40,7 @@ export class AdminAnalyticsController {
   }
 
   @Get('funnels/telegram')
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.analytics.telegramFunnel)
   @ApiOperation({ summary: 'Get telegram funnel analytics' })
   @ApiResponse({ status: 200, description: 'Telegram funnel data' })
   async getTelegramFunnel(
@@ -55,7 +57,7 @@ export class AdminAnalyticsController {
   }
 
   @Get('funnels/interactive')
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.analytics.interactiveFunnel)
   @ApiOperation({ summary: 'Get interactive funnel analytics' })
   @ApiResponse({ status: 200, description: 'Interactive funnel data' })
   async getInteractiveFunnel(
@@ -70,8 +72,24 @@ export class AdminAnalyticsController {
     );
   }
 
+  @Get('interactive')
+  @Roles(...AdminPermissions.analytics.interactiveFunnel)
+  @ApiOperation({ summary: 'Get interactive detailed analytics' })
+  @ApiResponse({ status: 200, description: 'Interactive detailed analytics data' })
+  async getInteractiveDetails(
+    @Query('range') range?: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('topic') topic?: string,
+  ) {
+    return this.getAdminInteractiveDetailsUseCase.execute(
+      { range, from, to },
+      { topic },
+    );
+  }
+
   @Get('no-show')
-  @Roles('owner', 'assistant')
+  @Roles(...AdminPermissions.analytics.noShow)
   @ApiOperation({ summary: 'Get no-show analytics' })
   @ApiResponse({ status: 200, description: 'No-show data' })
   async getNoShowStats(

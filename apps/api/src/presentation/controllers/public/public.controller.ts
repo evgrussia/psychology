@@ -13,6 +13,7 @@ import { GetCuratedCollectionUseCase } from '../../../application/public/use-cas
 import { ListServicesUseCase } from '../../../application/public/use-cases/ListServicesUseCase';
 import { GetServiceBySlugUseCase } from '../../../application/public/use-cases/GetServiceBySlugUseCase';
 import { ListAvailableSlotsUseCase } from '../../../application/booking/use-cases/ListAvailableSlotsUseCase';
+import { GetBookingAlternativesUseCase } from '../../../application/booking/use-cases/GetBookingAlternativesUseCase';
 import { StartBookingUseCase } from '../../../application/booking/use-cases/StartBookingUseCase';
 import { SubmitIntakeUseCase } from '../../../application/booking/use-cases/SubmitIntakeUseCase';
 import { UpdateBookingConsentsUseCase } from '../../../application/booking/use-cases/UpdateBookingConsentsUseCase';
@@ -27,6 +28,7 @@ import { PublicCuratedCollectionDto } from '../../../application/public/dto/cura
 import { PublicGlossaryListItemDto, PublicGlossaryTermResponseDto } from '../../../application/public/dto/glossary.dto';
 import { ServiceDetailsDto, ServiceListItemDto } from '../../../application/public/dto/services.dto';
 import { ListAvailableSlotsResponseDto } from '../../../application/booking/dto/availability.dto';
+import { BookingAlternativesResponseDto } from '../../../application/booking/dto/alternatives.dto';
 import {
   BookingStatusResponseDto,
   StartBookingRequestDto,
@@ -39,6 +41,7 @@ import {
 import { CreateWaitlistRequestDto, CreateWaitlistResponseDto } from '../../../application/booking/dto/waitlist.dto';
 import { NoSlotsModelDto } from '../../../application/booking/dto/no-slots.dto';
 import { ContentType, GlossaryTermCategory } from '../../../domain/content/value-objects/ContentEnums';
+import { ServiceFormat } from '../../../domain/booking/value-objects/ServiceEnums';
 import { CreateDeepLinkRequestDto, CreateDeepLinkResponseDto } from '../../../application/telegram/dto/deep-links.dto';
 
 @ApiTags('public')
@@ -66,6 +69,7 @@ export class PublicController {
     private readonly createWaitlistRequestUseCase: CreateWaitlistRequestUseCase,
     private readonly getNoSlotsModelUseCase: GetNoSlotsModelUseCase,
     private readonly createDeepLinkUseCase: CreateDeepLinkUseCase,
+    private readonly getBookingAlternativesUseCase: GetBookingAlternativesUseCase,
   ) {}
 
   @Get('glossary')
@@ -190,6 +194,29 @@ export class PublicController {
       from,
       to,
       timezone,
+    });
+  }
+
+  @Get('booking/alternatives')
+  @ApiOperation({ summary: 'Get booking alternatives when no slots are available' })
+  @ApiResponse({ status: 200, description: 'Booking alternatives' })
+  async getBookingAlternatives(
+    @Query('service_slug') serviceSlug?: string,
+    @Query('tz') timezone?: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('format') format?: ServiceFormat,
+  ): Promise<BookingAlternativesResponseDto> {
+    if (!serviceSlug || !timezone) {
+      throw new BadRequestException('Missing required query parameters');
+    }
+
+    return this.getBookingAlternativesUseCase.execute({
+      serviceSlug,
+      timezone,
+      from,
+      to,
+      selectedFormat: format,
     });
   }
 

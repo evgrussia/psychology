@@ -47,8 +47,9 @@ const depositBucket = (amount?: number | null): string | null => {
 
 export function BookingServiceClient({ services }: { services: ServiceListItem[] }) {
   const router = useRouter();
+  const errorSummaryRef = React.useRef<HTMLDivElement>(null);
   const [formatByService, setFormatByService] = React.useState<Record<string, 'online' | 'offline'>>({});
-  const [error, setError] = React.useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>({});
 
   React.useEffect(() => {
     const alreadyTracked = localStorage.getItem('booking_start_tracked');
@@ -60,14 +61,20 @@ export function BookingServiceClient({ services }: { services: ServiceListItem[]
     }
   }, []);
 
+  React.useEffect(() => {
+    if (Object.keys(fieldErrors).length > 0) {
+      errorSummaryRef.current?.focus();
+    }
+  }, [fieldErrors]);
+
   const handleSelectService = (service: ServiceListItem) => {
-    setError(null);
+    setFieldErrors({});
     const selectedFormat = service.format === 'hybrid'
       ? formatByService[service.id]
       : service.format;
 
     if (service.format === 'hybrid' && !selectedFormat) {
-      setError('Пожалуйста, выберите формат консультации.');
+      setFieldErrors({ [service.id]: 'Пожалуйста, выберите формат консультации.' });
       return;
     }
 
@@ -100,9 +107,24 @@ export function BookingServiceClient({ services }: { services: ServiceListItem[]
       step={1}
       total={5}
     >
-      {error && (
-        <div role="alert" aria-live="polite" className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
-          {error}
+      {Object.keys(fieldErrors).length > 0 && (
+        <div
+          ref={errorSummaryRef}
+          tabIndex={-1}
+          role="alert"
+          aria-live="assertive"
+          className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive"
+        >
+          <p className="font-semibold">Пожалуйста, проверьте выбор формата:</p>
+          <ul className="mt-2 list-disc pl-5">
+            {Object.entries(fieldErrors).map(([serviceId, message]) => (
+              <li key={serviceId}>
+                <a className="underline underline-offset-2" href={`#service-format-${serviceId}`}>
+                  {message}
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
@@ -125,14 +147,16 @@ export function BookingServiceClient({ services }: { services: ServiceListItem[]
                 </div>
               )}
               {service.format === 'hybrid' && (
-                <div className="mt-6 space-y-3">
-                  <Label>Формат консультации</Label>
+                <fieldset className="mt-6 space-y-3" id={`service-format-${service.id}`} tabIndex={-1}>
+                  <legend className="text-sm font-medium text-foreground">Формат консультации</legend>
                   <RadioGroup
                     value={formatByService[service.id]}
                     onValueChange={(value: 'online' | 'offline') => {
                       setFormatByService((prev) => ({ ...prev, [service.id]: value }));
                     }}
                     className="flex flex-col gap-2"
+                    aria-invalid={!!fieldErrors[service.id]}
+                    aria-describedby={fieldErrors[service.id] ? `service-format-${service.id}-error` : undefined}
                   >
                     <div className="flex items-center gap-2">
                       <RadioGroupItem id={`${service.id}-online`} value="online" />
@@ -143,7 +167,12 @@ export function BookingServiceClient({ services }: { services: ServiceListItem[]
                       <Label htmlFor={`${service.id}-offline`}>Офлайн</Label>
                     </div>
                   </RadioGroup>
-                </div>
+                  {fieldErrors[service.id] && (
+                    <p id={`service-format-${service.id}-error`} className="text-xs text-destructive">
+                      {fieldErrors[service.id]}
+                    </p>
+                  )}
+                </fieldset>
               )}
             </div>
             <div className="mt-6">

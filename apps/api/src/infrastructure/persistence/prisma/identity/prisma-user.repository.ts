@@ -37,6 +37,20 @@ export class PrismaUserRepository implements IUserRepository {
     return UserMapper.toDomain(prismaUser);
   }
 
+  async findByPhone(phone: string): Promise<User | null> {
+    const prismaUser = await this.prisma.user.findUnique({
+      where: { phone },
+      include: {
+        roles: { include: { role: true } },
+        consents: true,
+      },
+    });
+
+    if (!prismaUser) return null;
+
+    return UserMapper.toDomain(prismaUser);
+  }
+
   async findByTelegramUserId(telegramUserId: string): Promise<User | null> {
     const prismaUser = await this.prisma.user.findUnique({
       where: { telegram_user_id: telegramUserId },

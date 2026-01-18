@@ -6,7 +6,6 @@ import {
   Param,
   Body,
   UseGuards,
-  SetMetadata,
   UseInterceptors,
   UploadedFile,
   Request,
@@ -17,12 +16,12 @@ import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody } from '@nestj
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '../guards/auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
+import { Roles } from '../decorators/roles.decorator';
+import { AdminPermissions } from '../permissions/admin-permissions';
 import { UploadMediaAssetUseCase } from '../../application/media/use-cases/UploadMediaAssetUseCase';
 import { DeleteMediaAssetUseCase } from '../../application/media/use-cases/DeleteMediaAssetUseCase';
 import { ListMediaAssetsUseCase } from '../../application/media/use-cases/ListMediaAssetsUseCase';
 import { MediaAssetResponseDto, UploadMediaDto } from '../../application/media/dto/media-asset.dto';
-
-const Roles = (...roles: string[]) => SetMetadata('roles', roles);
 
 @ApiTags('admin-media')
 @Controller('admin/media')
@@ -36,7 +35,7 @@ export class AdminMediaController {
   ) {}
 
   @Post()
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.media.upload)
   @UseInterceptors(FileInterceptor('file'))
   @ApiOperation({ summary: 'Upload media asset' })
   @ApiConsumes('multipart/form-data')
@@ -70,7 +69,7 @@ export class AdminMediaController {
   }
 
   @Get()
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.media.list)
   @ApiOperation({ summary: 'List all media assets' })
   @ApiResponse({ status: 200, description: 'Return list of media assets' })
   async listMedia(): Promise<MediaAssetResponseDto[]> {
@@ -78,7 +77,7 @@ export class AdminMediaController {
   }
 
   @Delete(':id')
-  @Roles('owner', 'editor')
+  @Roles(...AdminPermissions.media.delete)
   @ApiOperation({ summary: 'Delete media asset' })
   @ApiResponse({ status: 204, description: 'Media deleted successfully' })
   @ApiResponse({ status: 400, description: 'Cannot delete (in use)' })

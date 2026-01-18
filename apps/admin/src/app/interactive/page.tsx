@@ -12,6 +12,9 @@ export default function InteractivePage() {
         <Link href="/interactive/quizzes" className="rounded-md border px-3 py-1">
           Квизы
         </Link>
+        <Link href="/interactive/navigator" className="rounded-md border px-3 py-1">
+          Навигатор
+        </Link>
         <Link href="/interactive/boundaries" className="rounded-md border px-3 py-1">
           Скрипты границ
         </Link>
