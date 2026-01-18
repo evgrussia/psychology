@@ -660,6 +660,23 @@ model AnalyticsEvent {
   @@map("analytics_events")
 }
 
+model ExperimentAssignment {
+  id            String   @id @default(uuid()) @db.Uuid
+  experiment_id String
+  variant       String
+  anonymous_id  String?
+  user_id       String?
+  assigned_at   DateTime
+  expires_at    DateTime
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  @@index([experiment_id, anonymous_id])
+  @@index([experiment_id, user_id])
+  @@index([expires_at])
+  @@map("experiment_assignments")
+}
+
 model LeadNote {
   id              String   @id @default(uuid()) @db.Uuid
   lead_id         String   @db.Uuid

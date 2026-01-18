@@ -53,6 +53,7 @@ import { GetAdminTelegramFunnelUseCase } from '../../application/admin/use-cases
 import { GetAdminInteractiveFunnelUseCase } from '../../application/admin/use-cases/analytics/GetAdminInteractiveFunnelUseCase';
 import { GetAdminInteractiveDetailsUseCase } from '../../application/admin/use-cases/analytics/GetAdminInteractiveDetailsUseCase';
 import { GetAdminNoShowStatsUseCase } from '../../application/admin/use-cases/analytics/GetAdminNoShowStatsUseCase';
+import { GetAdminExperimentResultsUseCase } from '../../application/admin/use-cases/analytics/GetAdminExperimentResultsUseCase';
 import { TrackingService } from '../tracking/tracking.service';
 import { AdminAuthTrackingHandler } from '../tracking/admin-auth-tracking.handler';
 import { BookingModule } from '../booking/booking.module';
@@ -106,6 +107,7 @@ import { ModerationAlertsScheduler } from '../moderation/moderation-alerts.sched
     GetAdminInteractiveFunnelUseCase,
     GetAdminInteractiveDetailsUseCase,
     GetAdminNoShowStatsUseCase,
+    GetAdminExperimentResultsUseCase,
     CreateContentItemUseCase,
     UpdateContentItemUseCase,
     ListContentItemsUseCase,

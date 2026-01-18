@@ -151,6 +151,13 @@ Tracking plan нужен, чтобы:
 - `page_view` (Web): `page_path`, `page_title`, `referrer`, UTM.
 - `cta_click` (Web): `cta_id`, `cta_label`, `cta_target` (например `booking|telegram`), `page_path`.
 
+### 6.0.1 Эксперименты (A/B)
+
+#### `experiment_exposed`
+- **Когда**: первый показ варианта эксперимента пользователю (в рамках сессии/периода).
+- **Обязательные**: `experiment_id`, `variant` (`A|B|C`), `surface`, `page_path`
+- **Запрещено**: любые PII/свободный текст
+
 ### 6.1 Навигация и входы (Web)
 
 #### `view_problem_card`
@@ -180,6 +187,18 @@ Tracking plan нужен, чтобы:
 - **Когда**: пользователь нажал “сохранить” (в Telegram или внутри сайта, если появится избранное).
 - **Обязательные**: `resource_id` или `resource_slug`, `format` (`resource|audio|checklist|exercise`), `topic` (если применимо)
 - **Опционально**: `save_target` (`telegram|favorites|copy_link`)
+
+### 6.3.1 Retention-оферы (Web)
+
+#### `retention_offer_viewed`
+- **Когда**: показана секция retention‑предложений.
+- **Обязательные**: `offer_types` (array: `package_discount|gift_certificate|social_mission`), `offers_count`, `surface` (`home|services|booking_confirmation|other`)
+- **Запрещено**: цены, контакты, свободный текст
+
+#### `retention_offer_click`
+- **Когда**: клик по одному из предложений.
+- **Обязательные**: `offer_type` (`package_discount|gift_certificate|social_mission`), `cta_id`, `surface`
+- **Запрещено**: цены, контакты, свободный текст
 
 ### 6.4 Интерактивы (Web)
 

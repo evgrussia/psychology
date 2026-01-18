@@ -37,7 +37,7 @@ const EMAIL_PATTERN = /[^\s@]+@[^\s@]+\.[^\s@]+/i;
 const PHONE_PATTERN = /(?:\+?\d[\d\s\-().]{8,}\d)/;
 
 // Генерация стабильного anonymous_id
-function getAnonymousId(): string {
+export function getAnonymousId(): string {
   if (typeof window === 'undefined') return 'server';
   
   let anonymousId = localStorage.getItem('anonymous_id');

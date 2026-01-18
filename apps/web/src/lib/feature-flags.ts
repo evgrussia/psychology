@@ -14,6 +14,10 @@ export interface FeatureFlags {
   diary_feature_enabled: boolean;
   trust_pages_v1_enabled: boolean;
   topic_landings_enabled: boolean;
+  retention_mechanics_enabled: boolean;
+  retention_packages_enabled: boolean;
+  retention_gift_certificates_enabled: boolean;
+  retention_social_mission_enabled: boolean;
 }
 
 // Дефолтные значения feature flags для разных окружений
@@ -27,6 +31,10 @@ const defaultFlags: Record<string, FeatureFlags> = {
     diary_feature_enabled: true,
     trust_pages_v1_enabled: true,
     topic_landings_enabled: true,
+    retention_mechanics_enabled: false,
+    retention_packages_enabled: false,
+    retention_gift_certificates_enabled: false,
+    retention_social_mission_enabled: false,
   },
   stage: {
     homepage_v1_enabled: true,
@@ -37,6 +45,10 @@ const defaultFlags: Record<string, FeatureFlags> = {
     diary_feature_enabled: false, // Еще не готово на stage
     trust_pages_v1_enabled: true, // Trust pages включены на stage
     topic_landings_enabled: true, // Topic landings включены на stage
+    retention_mechanics_enabled: false,
+    retention_packages_enabled: false,
+    retention_gift_certificates_enabled: false,
+    retention_social_mission_enabled: false,
   },
   production: {
     homepage_v1_enabled: true, // Главная страница включена в production
@@ -47,6 +59,10 @@ const defaultFlags: Record<string, FeatureFlags> = {
     diary_feature_enabled: false, // Дневники еще не в production
     trust_pages_v1_enabled: true, // Trust pages включены в production
     topic_landings_enabled: true, // Topic landings включены в production
+    retention_mechanics_enabled: false,
+    retention_packages_enabled: false,
+    retention_gift_certificates_enabled: false,
+    retention_social_mission_enabled: false,
   },
 };
 
@@ -94,6 +110,18 @@ function loadFeatureFlags(): FeatureFlags {
       topic_landings_enabled:
         process.env.NEXT_PUBLIC_FF_TOPIC_LANDINGS === 'true' ||
         defaults.topic_landings_enabled,
+      retention_mechanics_enabled:
+        process.env.NEXT_PUBLIC_FF_RETENTION === 'true' ||
+        defaults.retention_mechanics_enabled,
+      retention_packages_enabled:
+        process.env.NEXT_PUBLIC_FF_RETENTION_PACKAGES === 'true' ||
+        defaults.retention_packages_enabled,
+      retention_gift_certificates_enabled:
+        process.env.NEXT_PUBLIC_FF_RETENTION_GIFT_CERTIFICATES === 'true' ||
+        defaults.retention_gift_certificates_enabled,
+      retention_social_mission_enabled:
+        process.env.NEXT_PUBLIC_FF_RETENTION_SOCIAL_MISSION === 'true' ||
+        defaults.retention_social_mission_enabled,
     };
   }
 

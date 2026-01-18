@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PublicController } from '@presentation/controllers/public/public.controller';
+import { PublicAiController } from '@presentation/controllers/public/ai.controller';
 import { GetHomepageModelUseCase } from '@application/public/use-cases/GetHomepageModelUseCase';
 import { GetPageBySlugUseCase } from '@application/public/use-cases/GetPageBySlugUseCase';
 import { GetContentBySlugUseCase } from '@application/public/use-cases/GetContentBySlugUseCase';
@@ -24,10 +25,14 @@ import { BookingModule } from '../booking/booking.module';
 import { IntegrationsModule } from '../integrations/integrations.module';
 import { TelegramModule } from '../telegram/telegram.module';
 import { ModerationModule } from '../moderation/moderation.module';
+import { ExperimentsModule } from '../experiments/experiments.module';
+import { ExperimentsController } from '@presentation/controllers/experiments.controller';
+import { GetAiNextStepUseCase } from '@application/ai/use-cases/GetAiNextStepUseCase';
+import { GetAiConciergeUseCase } from '@application/ai/use-cases/GetAiConciergeUseCase';
 
 @Module({
-  imports: [DatabaseModule, ContentModule, BookingModule, IntegrationsModule, TelegramModule, ModerationModule],
-  controllers: [PublicController, PublicUgcController],
+  imports: [DatabaseModule, ContentModule, BookingModule, IntegrationsModule, TelegramModule, ModerationModule, ExperimentsModule],
+  controllers: [PublicController, PublicUgcController, ExperimentsController, PublicAiController],
   providers: [
     GetHomepageModelUseCase,
     GetPageBySlugUseCase,
@@ -45,6 +50,8 @@ import { ModerationModule } from '../moderation/moderation.module';
     GetBookingAlternativesUseCase,
     SubmitAnonymousQuestionUseCase,
     GetAnonymousQuestionStatusUseCase,
+    GetAiNextStepUseCase,
+    GetAiConciergeUseCase,
     {
       provide: 'IInteractiveDefinitionRepository',
       useClass: PrismaInteractiveDefinitionRepository,

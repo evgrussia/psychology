@@ -21,6 +21,7 @@ export const AdminPermissions = {
     telegramFunnel: ['owner', 'assistant'],
     interactiveFunnel: ['owner', 'assistant'],
     noShow: ['owner', 'assistant'],
+    experiments: ['owner', 'assistant'],
   },
   schedule: {
     listSlots: ['owner', 'assistant'],

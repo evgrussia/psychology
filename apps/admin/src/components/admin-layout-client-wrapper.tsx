@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
@@ -32,7 +32,7 @@ import {
 } from 'lucide-react';
 import { AdminAuthProvider, useAdminAuth } from './admin-auth-context';
 import { AdminAuthGuard } from './admin-auth-guard';
-import { DesktopOnlyGuard } from './desktop-only-guard';
+import { MobileAdminShell } from './mobile-admin-shell';
 
 const navItems = [
   { title: 'Дашборд', icon: LayoutDashboard, href: '/', roles: ['owner', 'assistant'] },
@@ -124,18 +124,60 @@ function AdminShell({ children }: { children: React.ReactNode }) {
 export function AdminLayoutClientWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isLogin = pathname === '/login';
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const update = () => setIsMobile(window.innerWidth < 768);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+
+  const mobileAllowed =
+    isLogin ||
+    pathname === '/' ||
+    pathname.startsWith('/moderation') ||
+    pathname.startsWith('/notifications');
 
   return (
     <AdminAuthProvider>
-      <DesktopOnlyGuard>
-        {isLogin ? (
+      {isMobile === null ? (
+        <div className="min-h-screen bg-background" />
+      ) : isMobile ? (
+        isLogin ? (
           <div className="min-h-screen bg-background">{children}</div>
         ) : (
           <AdminAuthGuard allowedRoles={['owner', 'assistant', 'editor']}>
-            <AdminShell>{children}</AdminShell>
+            {mobileAllowed ? (
+              <MobileAdminShell>{children}</MobileAdminShell>
+            ) : (
+              <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-6 text-center">
+                <h1 className="text-xl font-semibold">Мобильная админка ограничена</h1>
+                <p className="text-sm text-muted-foreground">
+                  На телефоне доступны только дашборд, модерация и уведомления.
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-2 text-sm">
+                  <Link href="/" className="rounded-md border px-3 py-1">
+                    Дашборд
+                  </Link>
+                  <Link href="/moderation" className="rounded-md border px-3 py-1">
+                    Модерация
+                  </Link>
+                  <Link href="/notifications" className="rounded-md border px-3 py-1">
+                    Уведомления
+                  </Link>
+                </div>
+              </div>
+            )}
           </AdminAuthGuard>
-        )}
-      </DesktopOnlyGuard>
+        )
+      ) : isLogin ? (
+        <div className="min-h-screen bg-background">{children}</div>
+      ) : (
+        <AdminAuthGuard allowedRoles={['owner', 'assistant', 'editor']}>
+          <AdminShell>{children}</AdminShell>
+        </AdminAuthGuard>
+      )}
     </AdminAuthProvider>
   );
 }

@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { expect, it, describe, vi, beforeEach } from 'vitest';
+import { expect, it, describe, vi, beforeEach, beforeAll } from 'vitest';
 import HomeClient from './HomeClient';
 import * as tracking from '../lib/tracking';
 import * as telegram from '../lib/telegram';
@@ -8,6 +8,7 @@ import * as telegram from '../lib/telegram';
 vi.mock('../lib/tracking', () => ({
   track: vi.fn(),
   captureUTMParameters: vi.fn(),
+  getAnonymousId: vi.fn().mockReturnValue('anon_test'),
 }));
 
 vi.mock('../lib/telegram', () => ({
@@ -17,10 +18,23 @@ vi.mock('../lib/telegram', () => ({
   }),
 }));
 
+vi.mock('../lib/experiments', () => ({
+  useExperimentAssignment: vi.fn(() => null),
+  getExperimentTrackingProperties: vi.fn(() => ({})),
+}));
+
 // Mock window.location
-Object.defineProperty(window, 'location', {
-  value: { href: '/' },
-  writable: true,
+const locationMock = {
+  href: '/',
+  assign: vi.fn(),
+  replace: vi.fn(),
+};
+
+beforeAll(() => {
+  // @ts-expect-error jsdom allows replacing location in tests
+  delete window.location;
+  // @ts-expect-error jsdom allows replacing location in tests
+  window.location = locationMock;
 });
 
 describe('HomeClient', () => {
@@ -53,6 +67,7 @@ describe('HomeClient', () => {
   };
 
   beforeEach(() => {
+    locationMock.href = '/';
     vi.clearAllMocks();
   });
 

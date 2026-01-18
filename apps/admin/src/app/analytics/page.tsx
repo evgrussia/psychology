@@ -129,6 +129,11 @@ export default function AnalyticsPage() {
             <Link href="/analytics/interactive" className="text-xs text-primary underline">
               Детальная аналитика интерактивов →
             </Link>
+            <div>
+              <Link href="/analytics/experiments" className="text-xs text-primary underline">
+                Эксперименты (A/B) →
+              </Link>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <label className="text-sm text-muted-foreground">

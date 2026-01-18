@@ -168,6 +168,36 @@ export default function Page() {
 
         {data && (
           <div className="space-y-6">
+            <section className="rounded-lg border p-4 md:hidden">
+              <div className="text-sm font-semibold">Быстрые уведомления</div>
+              <div className="mt-3 space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span>Новые вопросы</span>
+                  <span className="font-medium">{data.moderation.pendingCount}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Флаги</span>
+                  <span className="font-medium">{data.moderation.flaggedCount}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Ближайшие встречи</span>
+                  <span className="font-medium">{data.meetings.upcoming.length}</span>
+                </div>
+              </div>
+              {data.moderation.alert && (
+                <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/5 p-2 text-xs text-destructive">
+                  {data.moderation.alert.message}
+                </div>
+              )}
+              <div className="mt-4 flex flex-wrap gap-2 text-xs">
+                <Link href="/moderation" className="rounded-md border px-3 py-1">
+                  Очередь модерации
+                </Link>
+                <Link href="/notifications" className="rounded-md border px-3 py-1">
+                  Все уведомления
+                </Link>
+              </div>
+            </section>
             <section className="grid gap-4 lg:grid-cols-3">
               <div className="rounded-lg border p-4">
                 <h2 className="text-sm font-semibold text-muted-foreground">Воронка записи</h2>

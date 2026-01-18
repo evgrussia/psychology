@@ -15,6 +15,8 @@ import {
 import { track, captureUTMParameters } from '../lib/tracking';
 import { createTelegramDeepLink } from '../lib/telegram';
 import { useFeatureFlag } from '../lib/feature-flags';
+import { getExperimentTrackingProperties, useExperimentAssignment } from '../lib/experiments';
+import { RetentionOffersSection } from '@/components/RetentionOffersSection';
 
 interface HomeClientProps {
   data: {
@@ -25,10 +27,13 @@ interface HomeClientProps {
 }
 
 export default function HomeClient({ data }: HomeClientProps) {
-  const conversionV2Enabled = useFeatureFlag('homepage_conversion_v2_enabled');
+  const experimentAssignment = useExperimentAssignment('EXP-HP-CTA-01');
+  const experimentProps = getExperimentTrackingProperties(experimentAssignment);
+  const conversionV2Enabled =
+    experimentAssignment?.variant ? experimentAssignment.variant === 'B' : useFeatureFlag('homepage_conversion_v2_enabled');
 
   const handleBookingClick = (ctaId: string, ctaLabel: string) => {
-    track('cta_click', { cta_id: ctaId, cta_label: ctaLabel, cta_target: 'booking' });
+    track('cta_click', { cta_id: ctaId, cta_label: ctaLabel, cta_target: 'booking', ...experimentProps });
     window.location.href = '/booking';
   };
 
@@ -46,6 +51,7 @@ export default function HomeClient({ data }: HomeClientProps) {
         tg_flow: 'plan_7d',
         deep_link_id: deepLinkId,
         cta_id: ctaId,
+        ...experimentProps,
       });
       window.location.href = url;
     } catch (error) {
@@ -70,7 +76,7 @@ export default function HomeClient({ data }: HomeClientProps) {
     captureUTMParameters();
     
     // Track page view
-    track('page_view', { page_path: '/', page_title: 'Главная' });
+    track('page_view', { page_path: '/', page_title: 'Главная', ...experimentProps });
     
     // Track trust blocks viewed (simplified: on mount)
     data.trust_blocks.forEach(block => {
@@ -236,6 +242,8 @@ export default function HomeClient({ data }: HomeClientProps) {
       </Container>
     </Section>
   );
+  
+  const retentionOffersSection = <RetentionOffersSection surface="home" />;
 
   return (
     <>
@@ -275,12 +283,14 @@ export default function HomeClient({ data }: HomeClientProps) {
           {featuredInteractivesSection}
           {trustSection}
           {topicsSection}
+          {retentionOffersSection}
           {howItWorksSection}
         </>
       ) : (
         <>
           {howItWorksSection}
           {topicsSection}
+          {retentionOffersSection}
           {featuredInteractivesSection}
           {trustSection}
         </>

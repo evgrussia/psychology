@@ -30,6 +30,22 @@ export default function StartHubPage() {
       time: '3 мин',
     },
     {
+      id: 'ai-next-step',
+      title: 'Навигатор следующего шага',
+      description: 'Соберём безопасный план действий без хранения текста.',
+      href: '/ai/next-step',
+      topic: 'any',
+      time: '3 мин',
+    },
+    {
+      id: 'ai-concierge',
+      title: 'Консьерж записи',
+      description: 'Помогаем выбрать формат и перейти к записи.',
+      href: '/ai/concierge',
+      topic: 'support',
+      time: '2 мин',
+    },
+    {
       id: 'thermometer',
       title: 'Термометр ресурса',
       description: 'Быстрая проверка вашего энергобюджета на сегодня.',

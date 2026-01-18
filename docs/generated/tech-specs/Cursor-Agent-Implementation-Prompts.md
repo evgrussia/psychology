@@ -1039,14 +1039,14 @@ DoD:
 ### FEAT-MOB-01 — Mobile‑admin (ограниченная)
 
 ```text
-Ты — Cursor Agent.
-Задача: реализовать FEAT-MOB-01 по техспеке: docs/generated/tech-specs/FEAT-MOB-01.md
+    Ты — Cursor Agent.
+    Задача: реализовать FEAT-MOB-01 по техспеке: docs/generated/tech-specs/FEAT-MOB-01.md
 
-Предусловия:
-- Основная админка (FEAT-ADM-*) стабильна.
+    Предусловия:
+    - Основная админка (FEAT-ADM-*) стабильна.
 
-DoD:
-- Мобильная админка покрывает заявленный минимум, не ломает RBAC и аудит.
+    DoD:
+    - Мобильная админка покрывает заявленный минимум, не ломает RBAC и аудит.
 ```
 
 ### FEAT-RET-99 — Агрессивные retention‑механики

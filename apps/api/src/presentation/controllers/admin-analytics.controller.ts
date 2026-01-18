@@ -9,6 +9,7 @@ import { GetAdminTelegramFunnelUseCase } from '../../application/admin/use-cases
 import { GetAdminInteractiveFunnelUseCase } from '../../application/admin/use-cases/analytics/GetAdminInteractiveFunnelUseCase';
 import { GetAdminInteractiveDetailsUseCase } from '../../application/admin/use-cases/analytics/GetAdminInteractiveDetailsUseCase';
 import { GetAdminNoShowStatsUseCase } from '../../application/admin/use-cases/analytics/GetAdminNoShowStatsUseCase';
+import { GetAdminExperimentResultsUseCase } from '../../application/admin/use-cases/analytics/GetAdminExperimentResultsUseCase';
 
 @ApiTags('admin-analytics')
 @Controller('admin/analytics')
@@ -20,6 +21,7 @@ export class AdminAnalyticsController {
     private readonly getAdminInteractiveFunnelUseCase: GetAdminInteractiveFunnelUseCase,
     private readonly getAdminInteractiveDetailsUseCase: GetAdminInteractiveDetailsUseCase,
     private readonly getAdminNoShowStatsUseCase: GetAdminNoShowStatsUseCase,
+    private readonly getAdminExperimentResultsUseCase: GetAdminExperimentResultsUseCase,
   ) {}
 
   @Get('funnels/booking')
@@ -103,5 +105,18 @@ export class AdminAnalyticsController {
       { range, from, to },
       { topic, serviceSlug },
     );
+  }
+
+  @Get('experiments')
+  @Roles(...AdminPermissions.analytics.experiments)
+  @ApiOperation({ summary: 'Get experiments analytics' })
+  @ApiResponse({ status: 200, description: 'Experiments analytics data' })
+  async getExperimentResults(
+    @Query('range') range?: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('experiment_id') experimentId?: string,
+  ) {
+    return this.getAdminExperimentResultsUseCase.execute({ range, from, to }, experimentId);
   }
 }

@@ -182,72 +182,123 @@ export default function ModerationPage() {
             Загружаем очередь модерации...
           </div>
         ) : (
-          <div className="overflow-hidden rounded-lg border">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-3 text-left">Вопрос</th>
-                  <th className="px-4 py-3 text-left">Статус</th>
-                  <th className="px-4 py-3 text-left">Триггеры</th>
-                  <th className="px-4 py-3 text-left">SLA</th>
-                  <th className="px-4 py-3 text-left">Модератор</th>
-                  <th className="px-4 py-3 text-left">Действие</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item) => {
-                  const submittedAt = new Date(item.submittedAt);
-                  const ageHours = Math.floor((Date.now() - submittedAt.getTime()) / 36e5);
-                  return (
-                    <tr key={item.id} className="border-t">
-                      <td className="px-4 py-3">
+          <>
+            <div className="space-y-3 md:hidden">
+              {items.map((item) => {
+                const submittedAt = new Date(item.submittedAt);
+                const ageHours = Math.floor((Date.now() - submittedAt.getTime()) / 36e5);
+                return (
+                  <div key={item.id} className="rounded-lg border p-4 text-sm">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
                         <div className="font-medium">Анонимный вопрос</div>
                         <div className="text-xs text-muted-foreground">{item.id}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {submittedAt.toLocaleString()}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex items-center rounded-full border px-2 py-1 text-xs font-medium ${statusBadgeStyles[item.status]}`}
-                        >
-                          {statusLabels[item.status]}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">
+                      </div>
+                      <span
+                        className={`inline-flex items-center rounded-full border px-2 py-1 text-xs font-medium ${statusBadgeStyles[item.status]}`}
+                      >
+                        {statusLabels[item.status]}
+                      </span>
+                    </div>
+                    <div className="mt-3 space-y-1 text-xs text-muted-foreground">
+                      <div>Дата: {submittedAt.toLocaleString()}</div>
+                      <div>
+                        Триггеры:{' '}
                         {item.triggerFlags.length > 0
                           ? item.triggerFlags.map((flag) => triggerLabels[flag] ?? flag).join(', ')
                           : '—'}
-                      </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">
-                        {ageHours} ч
-                      </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">
+                      </div>
+                      <div>SLA: {ageHours} ч</div>
+                      <div>
+                        Модератор:{' '}
                         {item.lastAction?.moderator?.displayName ||
                           item.lastAction?.moderator?.email ||
                           '—'}
-                      </td>
-                      <td className="px-4 py-3">
-                        <Link
-                          href={`/moderation/questions/${item.id}`}
-                          className="text-sm font-medium text-primary"
-                        >
-                          Открыть
-                        </Link>
+                      </div>
+                    </div>
+                    <Link
+                      href={`/moderation/questions/${item.id}`}
+                      className="mt-3 inline-flex text-sm font-medium text-primary"
+                    >
+                      Открыть
+                    </Link>
+                  </div>
+                );
+              })}
+              {items.length === 0 && (
+                <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+                  В очереди нет вопросов.
+                </div>
+              )}
+            </div>
+
+            <div className="hidden overflow-hidden rounded-lg border md:block">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
+                  <tr>
+                    <th className="px-4 py-3 text-left">Вопрос</th>
+                    <th className="px-4 py-3 text-left">Статус</th>
+                    <th className="px-4 py-3 text-left">Триггеры</th>
+                    <th className="px-4 py-3 text-left">SLA</th>
+                    <th className="px-4 py-3 text-left">Модератор</th>
+                    <th className="px-4 py-3 text-left">Действие</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((item) => {
+                    const submittedAt = new Date(item.submittedAt);
+                    const ageHours = Math.floor((Date.now() - submittedAt.getTime()) / 36e5);
+                    return (
+                      <tr key={item.id} className="border-t">
+                        <td className="px-4 py-3">
+                          <div className="font-medium">Анонимный вопрос</div>
+                          <div className="text-xs text-muted-foreground">{item.id}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {submittedAt.toLocaleString()}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`inline-flex items-center rounded-full border px-2 py-1 text-xs font-medium ${statusBadgeStyles[item.status]}`}
+                          >
+                            {statusLabels[item.status]}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-xs text-muted-foreground">
+                          {item.triggerFlags.length > 0
+                            ? item.triggerFlags.map((flag) => triggerLabels[flag] ?? flag).join(', ')
+                            : '—'}
+                        </td>
+                        <td className="px-4 py-3 text-xs text-muted-foreground">
+                          {ageHours} ч
+                        </td>
+                        <td className="px-4 py-3 text-xs text-muted-foreground">
+                          {item.lastAction?.moderator?.displayName ||
+                            item.lastAction?.moderator?.email ||
+                            '—'}
+                        </td>
+                        <td className="px-4 py-3">
+                          <Link
+                            href={`/moderation/questions/${item.id}`}
+                            className="text-sm font-medium text-primary"
+                          >
+                            Открыть
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {items.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="px-4 py-6 text-center text-sm text-muted-foreground">
+                        В очереди нет вопросов.
                       </td>
                     </tr>
-                  );
-                })}
-                {items.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="px-4 py-6 text-center text-sm text-muted-foreground">
-                      В очереди нет вопросов.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </AdminAuthGuard>
