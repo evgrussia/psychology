@@ -2,7 +2,7 @@ export const AdminPermissions = {
   auditLog: {
     list: ['owner', 'assistant'],
   },
-  dashboard: ['owner'],
+  dashboard: ['owner', 'assistant'],
   settings: {
     read: ['owner'],
     update: ['owner'],

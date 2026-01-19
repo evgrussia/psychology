@@ -38,6 +38,7 @@ describe('Admin Schedule (e2e)', () => {
     await prisma.messageTemplate.deleteMany();
     await prisma.session.deleteMany();
     await prisma.userRole.deleteMany();
+    await prisma.contentItem.deleteMany();
     await prisma.user.deleteMany();
     await prisma.role.deleteMany();
 

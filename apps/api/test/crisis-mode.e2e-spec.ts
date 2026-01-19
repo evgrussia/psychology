@@ -38,6 +38,7 @@ describe('Crisis Mode (e2e)', () => {
   beforeEach(async () => {
     await prisma.interactiveRun.deleteMany({});
     await prisma.interactiveDefinitionVersion.deleteMany({});
+    await prisma.curatedItem.deleteMany({});
     await prisma.interactiveDefinition.deleteMany({});
     // Don't delete topics as they might be used by other tests running in parallel
     // instead use unique codes for each test

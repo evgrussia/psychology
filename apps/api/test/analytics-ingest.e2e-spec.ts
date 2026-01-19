@@ -27,6 +27,7 @@ describe('Analytics Ingest (e2e)', () => {
 
     await prisma.analyticsEvent.deleteMany();
     await prisma.leadTimelineEvent.deleteMany();
+    await prisma.leadNote.deleteMany();
     await prisma.leadIdentity.deleteMany();
     await prisma.lead.deleteMany();
     await prisma.session.deleteMany();

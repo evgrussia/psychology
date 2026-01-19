@@ -21,6 +21,7 @@ test.describe('Resource thermometer flow', () => {
 
     await expect(page.locator('text=/ресурс|опора/i').first()).toBeVisible();
 
+    await page.waitForTimeout(1000); // Give time for all events to be processed
     const trackingEvents = await page.evaluate(() => (window as any).__trackedEvents || []);
     const startEvent = trackingEvents.find((e: any) => e.event === 'resource_thermometer_start');
     const completeEvent = trackingEvents.find((e: any) => e.event === 'resource_thermometer_complete');

@@ -36,14 +36,14 @@ test.describe('Rituals flow', () => {
     await page.goto('/start/rituals');
 
     await expect(page.getByText('Дыхание 4-7-8')).toBeVisible();
-    await page.getByRole('link', { name: /начать/i }).click();
+    await page.getByRole('link', { name: 'Начать', exact: true }).click();
 
     await expect(page).toHaveURL(/\/start\/rituals\/breathing-ritual/);
     await page.getByRole('button', { name: /начать ритуал/i }).click();
 
-    await page.getByRole('button', { name: /далее/i }).click();
-    await page.getByRole('button', { name: /далее/i }).click();
-    await page.getByRole('button', { name: /завершить/i }).click();
+    await page.getByRole('button', { name: 'Перейти к следующему шагу' }).click();
+    await page.getByRole('button', { name: 'Перейти к следующему шагу' }).click();
+    await page.getByRole('button', { name: 'Завершить ритуал' }).click();
 
     await expect(page.getByText(/Ритуал завершен/i)).toBeVisible();
 

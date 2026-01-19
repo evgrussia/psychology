@@ -40,6 +40,7 @@ test.describe('Events flow', () => {
     await page.getByLabel(/контакт/i).fill('test@example.com');
     await page.getByRole('button', { name: /отправить/i }).click();
 
+    await page.waitForTimeout(1000);
     const afterRegisterEvents = await page.evaluate(() => (window as any).__trackedEvents || []);
     expect(afterRegisterEvents.find((e: any) => e.event === 'event_registered')).toBeDefined();
   });

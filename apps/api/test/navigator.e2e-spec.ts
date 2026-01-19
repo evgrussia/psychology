@@ -30,7 +30,9 @@ describe('Navigator (e2e)', () => {
   beforeEach(async () => {
     await prisma.interactiveRun.deleteMany({});
     await prisma.interactiveDefinitionVersion.deleteMany({});
+    await prisma.curatedItem.deleteMany({});
     await prisma.interactiveDefinition.deleteMany({});
+    await prisma.contentItemTopic.deleteMany({});
     await prisma.topic.deleteMany({});
   });
 

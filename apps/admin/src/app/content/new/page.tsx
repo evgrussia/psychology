@@ -248,7 +248,7 @@ export default function NewContentPage() {
                   ...formData.practicalBlock,
                   primary_cta: {
                     ...formData.practicalBlock.primary_cta,
-                    target: e.target.value,
+                    target: e.target.value as PracticalTarget,
                   },
                 },
               })}
@@ -301,7 +301,7 @@ export default function NewContentPage() {
                   ...formData.practicalBlock,
                   secondary_cta: {
                     ...formData.practicalBlock.secondary_cta,
-                    target: e.target.value || undefined,
+                    target: (e.target.value || undefined) as PracticalTarget | undefined,
                   },
                 },
               })}

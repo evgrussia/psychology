@@ -41,11 +41,13 @@ test.describe('Consultation prep flow', () => {
     await page.getByRole('button', { name: /правила|план|вопрос/i }).first().click();
     await page.getByRole('button', { name: /готово/i }).click();
 
-    await expect(page.getByText(/черновик|подготов/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: /черновик/i })).toBeVisible();
 
     await page.getByRole('button', { name: /telegram/i }).click();
 
+    await page.waitForTimeout(2000); // Increased wait time
     const trackingEvents = await page.evaluate(() => (window as any).__trackedEvents || []);
+    expect(trackingEvents.length).toBeGreaterThan(0);
     expect(trackingEvents.find((e: any) => e.event === 'consultation_prep_start')).toBeDefined();
     expect(trackingEvents.find((e: any) => e.event === 'consultation_prep_complete')).toBeDefined();
 

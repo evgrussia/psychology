@@ -90,8 +90,9 @@ export function EventRegistrationClient({ event }: { event: any }) {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Контакт</label>
+                <label htmlFor="contact-input" className="text-sm font-medium">Контакт</label>
                 <input
+                  id="contact-input"
                   value={contactValue}
                   onChange={(e) => setContactValue(e.target.value)}
                   className="w-full rounded-md border border-border bg-background px-3 py-2"

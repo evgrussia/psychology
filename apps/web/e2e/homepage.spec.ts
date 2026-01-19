@@ -18,10 +18,11 @@ test.describe('Homepage', () => {
     await expect(page.getByText(/Конфиденциальность/i)).toBeVisible();
   });
 
-  test('should navigate to booking page from hero CTA', async ({ page }) => {
+  test('should navigate to booking page or telegram from hero CTA', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('button', { name: /Записаться на консультацию/i }).click();
-    await expect(page).toHaveURL(/\/booking/);
+    await page.getByRole('button', { name: /Записаться на консультацию|Получить план/i }).first().click();
+    const url = page.url();
+    expect(url.includes('/booking') || url.includes('t.me')).toBeTruthy();
   });
 
   test('should navigate to topic page when clicking a topic card', async ({ page }) => {

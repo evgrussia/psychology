@@ -63,23 +63,24 @@ test.describe('Boundaries Scripts E2E Tests', () => {
     // Step 1: Select scenario
     const scenarioHeading = page.locator('text=/Выберите ситуацию/i').first();
     await expect(scenarioHeading).toBeVisible({ timeout: 20000 });
-    await page.locator('button').filter({ hasText: /Работа|Семья/i }).first().click();
+    await page.getByRole('button', { name: /Работа/i }).click();
 
     // Step 2: Select tone
     const toneHeading = page.locator('text=/Выберите стиль общения/i').first();
     await expect(toneHeading).toBeVisible({ timeout: 20000 });
-    await page.locator('button').filter({ hasText: /Мягко|Твёрдо/i }).first().click();
+    await page.getByRole('button', { name: /Мягко/i }).click();
 
     // Step 3: Select goal
     const goalHeading = page.locator('text=/Чего хотите добиться/i').first();
     await expect(goalHeading).toBeVisible({ timeout: 20000 });
-    await page.locator('button').filter({ hasText: /Отказать|Попросить/i }).first().click();
+    await page.getByRole('button', { name: /Отказать/i }).click();
 
     // Step 4: View variants
     const variantsHeading = page.locator('text=/Варианты фраз/i').first();
     await expect(variantsHeading).toBeVisible({ timeout: 20000 });
-    await expect(page.locator('text=/Извините, но я не могу/i')).toBeVisible();
-    await expect(page.locator('text=/К сожалению, сейчас/i')).toBeVisible();
+    // Use real seed data strings since Server Components bypass page.route
+    await expect(page.locator('text=/Сейчас у меня не получится|Извините, но я не могу/i').first()).toBeVisible();
+    await expect(page.locator('text=/Я понимаю важность|К сожалению, сейчас/i').first()).toBeVisible();
 
     // Step 5: Copy variant
     const copyButton = page.locator('button:has-text("Скопировать")').first();
