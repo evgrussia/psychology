@@ -68,9 +68,6 @@ services:
       HTTP_RETRY_ATTEMPTS: ${HTTP_RETRY_ATTEMPTS:-3}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}
       ENCRYPTION_KEY_ID: ${ENCRYPTION_KEY_ID:-local-dev-key}
-      GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:-placeholder-id}
-      GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET:-placeholder-secret}
-      GOOGLE_OAUTH_REDIRECT_URI: ${GOOGLE_OAUTH_REDIRECT_URI:-http://localhost:8080/api/admin/integrations/google-calendar/callback}
     volumes:
       - media_data:/app/media
       - ./apps/api/prisma:/app/prisma

@@ -109,12 +109,4 @@ export const AdminPermissions = {
     update: ['owner'],
     delete: ['owner'],
   },
-  googleCalendar: {
-    connectStart: ['owner'],
-    connectCallback: ['owner'],
-    sync: ['owner'],
-    status: ['owner'],
-    disconnect: ['owner'],
-    updateSyncMode: ['owner'],
-  },
 };

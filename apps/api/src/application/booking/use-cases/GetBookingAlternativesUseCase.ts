@@ -1,9 +1,7 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { IServiceRepository } from '@domain/booking/repositories/IServiceRepository';
 import { IAvailabilitySlotRepository } from '@domain/booking/repositories/IAvailabilitySlotRepository';
-import { GoogleCalendarIntegrationStatus } from '@domain/integrations/value-objects/GoogleCalendarIntegrationStatus';
-import { IGoogleCalendarIntegrationRepository } from '@domain/integrations/repositories/IGoogleCalendarIntegrationRepository';
-import { SyncCalendarBusyTimesUseCase } from '@application/integrations/use-cases/SyncCalendarBusyTimesUseCase';
+import { IAppointmentRepository } from '@domain/booking/repositories/IAppointmentRepository';
 import { TimeSlot } from '@domain/booking/value-objects/TimeSlot';
 import { ServiceFormat, ServiceStatus } from '@domain/booking/value-objects/ServiceEnums';
 import { PreferredTimeWindow } from '@domain/booking/value-objects/BookingEnums';
@@ -21,8 +19,6 @@ const ALT_RANGE_DAYS = 60;
 const MAX_NEXT_SLOTS = 6;
 const MAX_NEXT_DAYS = 3;
 const MAX_FORMAT_ALTERNATIVES = 3;
-const CACHE_TTL_MS = 10 * 60 * 1000;
-
 export interface GetBookingAlternativesParams {
   serviceSlug: string;
   timezone: string;
@@ -38,9 +34,8 @@ export class GetBookingAlternativesUseCase {
     private readonly serviceRepository: IServiceRepository,
     @Inject('IAvailabilitySlotRepository')
     private readonly slotRepository: IAvailabilitySlotRepository,
-    @Inject('IGoogleCalendarIntegrationRepository')
-    private readonly integrationRepository: IGoogleCalendarIntegrationRepository,
-    private readonly syncCalendarBusyTimesUseCase: SyncCalendarBusyTimesUseCase,
+    @Inject('IAppointmentRepository')
+    private readonly appointmentRepository: IAppointmentRepository,
   ) {}
 
   async execute(params: GetBookingAlternativesParams): Promise<BookingAlternativesResponseDto> {
@@ -56,21 +51,8 @@ export class GetBookingAlternativesUseCase {
       throw new NotFoundException(`Service with slug "${serviceSlug}" not found`);
     }
 
-    const integration = await this.integrationRepository.findLatest();
-    if (!integration || integration.status !== GoogleCalendarIntegrationStatus.connected) {
-      return this.buildUnavailableResponse(service, timezone, fromDate, toDate);
-    }
-
     const altRangeFrom = toDate;
     const altRangeTo = new Date(toDate.getTime() + ALT_RANGE_DAYS * 24 * 60 * 60 * 1000);
-
-    const isCacheValid = this.isSyncCacheValid(integration, fromDate, altRangeTo);
-    if (!isCacheValid) {
-      const result = await this.syncCalendarBusyTimesUseCase.execute({ from: fromDate, to: altRangeTo });
-      if (result.status !== 'success') {
-        return this.buildUnavailableResponse(service, timezone, fromDate, toDate);
-      }
-    }
 
     const baseSlots = await this.loadAvailableSlots(service.id, fromDate, toDate);
     const alternativeSlots = await this.loadAvailableSlots(service.id, altRangeFrom, altRangeTo);
@@ -132,12 +114,15 @@ export class GetBookingAlternativesUseCase {
 
   private async loadAvailableSlots(serviceId: string, from: Date, to: Date) {
     const availableSlots = await this.slotRepository.findAvailableSlots(serviceId, from, to);
-    const busySlots = await this.slotRepository.findBusySlots(from, to);
+    const reservedSlots = await this.slotRepository.findReservedSlots(from, to);
     const blockedSlots = await this.slotRepository.findBlockedSlots(from, to);
+    const busyAppointments = await this.appointmentRepository.findBusyInRange(from, to);
 
-    const busyTimeSlots = [...busySlots, ...blockedSlots].map(
-      (slot) => new TimeSlot(slot.startAtUtc, slot.endAtUtc),
-    );
+    const busyTimeSlots = [
+      ...reservedSlots.map((slot) => new TimeSlot(slot.startAtUtc, slot.endAtUtc)),
+      ...blockedSlots.map((slot) => new TimeSlot(slot.startAtUtc, slot.endAtUtc)),
+      ...busyAppointments.map((appointment) => new TimeSlot(appointment.startAtUtc, appointment.endAtUtc)),
+    ];
 
     return availableSlots.filter((slot) => {
       const candidate = new TimeSlot(slot.startAtUtc, slot.endAtUtc);
@@ -241,41 +226,6 @@ export class GetBookingAlternativesUseCase {
     return results.filter((item) => item.earliest_slot !== null);
   }
 
-  private buildUnavailableResponse(
-    service: { id: string; slug: string; title: string; format: ServiceFormat; topicCode?: string | null },
-    timezone: string,
-    fromDate: Date,
-    toDate: Date,
-  ): BookingAlternativesResponseDto {
-    const altRangeFrom = toDate;
-    const altRangeTo = new Date(toDate.getTime() + ALT_RANGE_DAYS * 24 * 60 * 60 * 1000);
-
-    return {
-      status: 'calendar_unavailable',
-      timezone,
-      service: {
-        id: service.id,
-        slug: service.slug,
-        title: service.title,
-        format: service.format,
-        topic_code: service.topicCode ?? null,
-      },
-      base_range: {
-        from: fromDate.toISOString(),
-        to: toDate.toISOString(),
-      },
-      alternative_range: {
-        from: altRangeFrom.toISOString(),
-        to: altRangeTo.toISOString(),
-      },
-      has_slots_in_range: false,
-      next_slots: [],
-      next_days: [],
-      time_windows: [],
-      format_alternatives: [],
-    };
-  }
-
   private toSlotDto(slot: { id: string; startAtUtc: Date; endAtUtc: Date }): AlternativeSlotDto {
     return {
       id: slot.id,
@@ -342,27 +292,6 @@ export class GetBookingAlternativesUseCase {
     } catch {
       return false;
     }
-  }
-
-  private isSyncCacheValid(
-    integration: {
-      lastSyncAt?: Date | null;
-      lastSyncRangeStartAt?: Date | null;
-      lastSyncRangeEndAt?: Date | null;
-      lastSyncError?: string | null;
-    },
-    from: Date,
-    to: Date,
-  ): boolean {
-    if (!integration.lastSyncAt || !integration.lastSyncRangeStartAt || !integration.lastSyncRangeEndAt) {
-      return false;
-    }
-    if (integration.lastSyncError) {
-      return false;
-    }
-    const withinRange = from >= integration.lastSyncRangeStartAt && to <= integration.lastSyncRangeEndAt;
-    const notExpired = Date.now() - integration.lastSyncAt.getTime() <= CACHE_TTL_MS;
-    return withinRange && notExpired;
   }
 
 }

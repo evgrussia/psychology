@@ -18,7 +18,6 @@ export class PrismaSystemSettingsRepository implements ISystemSettingsRepository
   async upsert(data: {
     maintenanceMode: boolean;
     registrationEnabled: boolean;
-    googleCalendarSyncMode: string;
   }): Promise<SystemSettings> {
     const existing = await this.prisma.systemSettings.findFirst({
       orderBy: { created_at: 'desc' },
@@ -30,14 +29,12 @@ export class PrismaSystemSettingsRepository implements ISystemSettingsRepository
           data: {
             maintenance_mode: data.maintenanceMode,
             registration_enabled: data.registrationEnabled,
-            google_calendar_sync_mode: data.googleCalendarSyncMode,
           },
         })
       : await this.prisma.systemSettings.create({
           data: {
             maintenance_mode: data.maintenanceMode,
             registration_enabled: data.registrationEnabled,
-            google_calendar_sync_mode: data.googleCalendarSyncMode,
           },
         });
 

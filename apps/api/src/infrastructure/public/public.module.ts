@@ -23,7 +23,6 @@ import { PrismaInteractiveDefinitionRepository } from '../persistence/prisma/int
 import { DatabaseModule } from '../database/database.module';
 import { ContentModule } from '../content/content.module';
 import { BookingModule } from '../booking/booking.module';
-import { IntegrationsModule } from '../integrations/integrations.module';
 import { TelegramModule } from '../telegram/telegram.module';
 import { ModerationModule } from '../moderation/moderation.module';
 import { ExperimentsModule } from '../experiments/experiments.module';
@@ -35,7 +34,7 @@ import { GetPublicEventUseCase } from '@application/public/use-cases/events/GetP
 import { RegisterForPublicEventUseCase } from '@application/public/use-cases/events/RegisterForPublicEventUseCase';
 
 @Module({
-  imports: [DatabaseModule, ContentModule, BookingModule, IntegrationsModule, TelegramModule, ModerationModule, ExperimentsModule],
+  imports: [DatabaseModule, ContentModule, BookingModule, TelegramModule, ModerationModule, ExperimentsModule],
   controllers: [PublicController, PublicUgcController, PublicEventsController, ExperimentsController, PublicAiController],
   providers: [
     GetHomepageModelUseCase,

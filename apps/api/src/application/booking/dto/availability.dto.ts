@@ -5,7 +5,7 @@ export interface AvailableSlotDto {
 }
 
 export interface ListAvailableSlotsResponseDto {
-  status: 'available' | 'calendar_unavailable';
+  status: 'available';
   timezone: string;
   service_id: string;
   service_slug: string;
@@ -15,5 +15,4 @@ export interface ListAvailableSlotsResponseDto {
     to: string;
   };
   slots: AvailableSlotDto[];
-  message?: string | null;
 }

@@ -7,7 +7,6 @@ export class SystemSettingsMapper {
       id: record.id,
       maintenanceMode: record.maintenance_mode,
       registrationEnabled: record.registration_enabled,
-      googleCalendarSyncMode: record.google_calendar_sync_mode,
       createdAt: record.created_at,
       updatedAt: record.updated_at,
     });

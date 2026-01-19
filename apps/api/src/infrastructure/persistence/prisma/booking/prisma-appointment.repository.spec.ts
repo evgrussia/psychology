@@ -39,7 +39,6 @@ describe('PrismaAppointmentRepository', () => {
       format: ServiceFormat.online,
       status: AppointmentStatus.pending_payment,
       slotId: 'slot-1',
-      externalCalendarEventId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     });

@@ -2,7 +2,7 @@ import { BadRequestException, ConflictException, Inject, Injectable, NotFoundExc
 import { IAvailabilitySlotRepository } from '@domain/booking/repositories/IAvailabilitySlotRepository';
 import { UpdateScheduleSlotRequestDto } from '../../dto/schedule.dto';
 import { AvailabilitySlot } from '@domain/booking/entities/AvailabilitySlot';
-import { SlotSource, SlotStatus } from '@domain/booking/value-objects/BookingEnums';
+import { SlotStatus } from '@domain/booking/value-objects/BookingEnums';
 
 @Injectable()
 export class UpdateScheduleSlotUseCase {
@@ -18,9 +18,6 @@ export class UpdateScheduleSlotUseCase {
     }
     if (slot.status === SlotStatus.reserved) {
       throw new ConflictException('Slot is reserved');
-    }
-    if (slot.source === SlotSource.google_calendar) {
-      throw new BadRequestException('Cannot edit calendar slot');
     }
 
     const startAtUtc = this.parseDate(dto.start_at_utc, 'start_at_utc');

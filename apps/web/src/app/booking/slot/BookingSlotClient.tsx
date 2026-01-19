@@ -8,7 +8,7 @@ import { BookingStepLayout } from '../BookingStepLayout';
 import { loadBookingDraft, saveBookingDraft } from '../bookingStorage';
 
 interface SlotResponse {
-  status: 'available' | 'calendar_unavailable';
+  status: 'available';
   timezone: string;
   service_id: string;
   service_slug: string;
@@ -22,7 +22,6 @@ interface SlotResponse {
     start_at_utc: string;
     end_at_utc: string;
   }[];
-  message?: string | null;
 }
 
 const defaultRangeDays = 14;
@@ -58,7 +57,6 @@ export function BookingSlotClient() {
   const errorSummaryRef = React.useRef<HTMLDivElement>(null);
   const [timezone, setTimezone] = React.useState<string>('');
   const [slots, setSlots] = React.useState<SlotResponse['slots']>([]);
-  const [status, setStatus] = React.useState<SlotResponse['status']>('available');
   const [loading, setLoading] = React.useState(true);
   const [formError, setFormError] = React.useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>({});
@@ -104,7 +102,6 @@ export function BookingSlotClient() {
           throw new Error('Не удалось загрузить слоты.');
         }
         const data: SlotResponse = await res.json();
-        setStatus(data.status);
         setSlots(data.slots);
 
         if (data.slots.length === 0) {
@@ -278,20 +275,6 @@ export function BookingSlotClient() {
         <div role="alert" aria-live="polite" className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
           {formError}
         </div>
-      )}
-
-      {status === 'calendar_unavailable' && !loading && (
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold text-foreground">Календарь временно недоступен</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Мы не можем загрузить актуальные слоты. Оставьте запрос в лист ожидания или попробуйте позже.
-          </p>
-          <div className="mt-4">
-            <Button variant="outline" onClick={() => router.push('/booking/no-slots')}>
-              Перейти к листу ожидания
-            </Button>
-          </div>
-        </Card>
       )}
 
       {hasNoSlots && (

@@ -3,8 +3,7 @@ import { PrismaService } from '@infrastructure/database/prisma.service';
 import { GetBookingAlternativesUseCase } from './GetBookingAlternativesUseCase';
 import { PrismaAvailabilitySlotRepository } from '@infrastructure/persistence/prisma/booking/prisma-availability-slot.repository';
 import { PrismaServiceRepository } from '@infrastructure/persistence/prisma/booking/prisma-service.repository';
-import { PrismaGoogleCalendarIntegrationRepository } from '@infrastructure/persistence/prisma/integrations/prisma-google-calendar-integration.repository';
-import { SyncCalendarBusyTimesUseCase } from '@application/integrations/use-cases/SyncCalendarBusyTimesUseCase';
+import { PrismaAppointmentRepository } from '@infrastructure/persistence/prisma/booking/prisma-appointment.repository';
 import { ServiceFormat } from '@domain/booking/value-objects/ServiceEnums';
 import { execSync } from 'child_process';
 import * as dotenv from 'dotenv';
@@ -17,16 +16,6 @@ describe('GetBookingAlternativesUseCase (Integration)', () => {
   let prisma: PrismaService;
   let useCase: GetBookingAlternativesUseCase;
   let schemaName: string;
-
-  const syncUseCase = {
-    execute: jest.fn().mockResolvedValue({
-      status: 'success',
-      syncedFrom: new Date(),
-      syncedTo: new Date(),
-      busyCount: 0,
-      lastSyncAt: new Date(),
-    }),
-  };
 
   beforeAll(async () => {
     dotenv.config({ path: path.join(__dirname, '../../../../test.env') });
@@ -52,12 +41,8 @@ describe('GetBookingAlternativesUseCase (Integration)', () => {
           useClass: PrismaServiceRepository,
         },
         {
-          provide: 'IGoogleCalendarIntegrationRepository',
-          useClass: PrismaGoogleCalendarIntegrationRepository,
-        },
-        {
-          provide: SyncCalendarBusyTimesUseCase,
-          useValue: syncUseCase,
+          provide: 'IAppointmentRepository',
+          useClass: PrismaAppointmentRepository,
         },
       ],
     }).compile();
@@ -74,35 +59,13 @@ describe('GetBookingAlternativesUseCase (Integration)', () => {
     process.env.DATABASE_URL = url.toString();
   }
 
-  beforeEach(async () => {
-    const now = new Date();
-    const syncRangeFrom = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const syncRangeTo = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
-
-    await (prisma as any).googleCalendarIntegration.create({
-      data: {
-        status: 'connected',
-        calendar_id: 'primary',
-        timezone: 'Europe/Moscow',
-        encrypted_access_token: 'enc:token',
-        encrypted_refresh_token: 'enc:refresh',
-        token_expires_at: new Date(Date.now() + 60 * 60 * 1000),
-        scopes: [],
-        last_sync_at: new Date(),
-        last_sync_range_start_at: syncRangeFrom,
-        last_sync_range_end_at: syncRangeTo,
-      },
-    });
-  });
-
   afterEach(async () => {
     if (prisma) {
       await prisma.availabilitySlot.deleteMany({});
+      await prisma.appointment.deleteMany({});
       await prisma.service.deleteMany({});
       await prisma.topic.deleteMany({});
-      await (prisma as any).googleCalendarIntegration.deleteMany({});
     }
-    syncUseCase.execute.mockClear();
   });
 
   afterAll(async () => {
@@ -219,26 +182,4 @@ describe('GetBookingAlternativesUseCase (Integration)', () => {
     expect(result.format_alternatives[0].earliest_slot).not.toBeNull();
   });
 
-  it('returns calendar_unavailable when integration missing', async () => {
-    await (prisma as any).googleCalendarIntegration.deleteMany({});
-    const service = await prisma.service.create({
-      data: {
-        slug: 'service-online',
-        title: 'Онлайн консультация',
-        description_markdown: 'Описание',
-        format: 'online',
-        duration_minutes: 50,
-        price_amount: 3000,
-        status: 'published',
-      },
-    });
-
-    const result = await useCase.execute({
-      serviceSlug: service.slug,
-      timezone: 'Europe/Moscow',
-    });
-
-    expect(result.status).toBe('calendar_unavailable');
-    expect(result.next_slots).toHaveLength(0);
-  });
 });

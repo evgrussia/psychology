@@ -12,8 +12,6 @@ export enum AuditLogAction {
   ADMIN_SETTINGS_CHANGED = 'admin_settings_changed',
   ADMIN_APPOINTMENT_OUTCOME_RECORDED = 'admin_appointment_outcome_recorded',
   ADMIN_TEMPLATE_ACTIVATED = 'admin_template_activated',
-  ADMIN_GOOGLE_CALENDAR_CONNECT_STARTED = 'admin_google_calendar_connect_started',
-  ADMIN_GOOGLE_CALENDAR_CONNECTED = 'admin_google_calendar_connected',
   ADMIN_INTERACTIVE_UPDATED = 'admin_interactive_updated',
   ADMIN_INTERACTIVE_PUBLISHED = 'admin_interactive_published',
   ADMIN_LEAD_STATUS_CHANGED = 'admin_lead_status_changed',

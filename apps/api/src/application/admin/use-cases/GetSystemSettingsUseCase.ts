@@ -14,7 +14,6 @@ export class GetSystemSettingsUseCase {
     return {
       maintenanceMode: settings?.maintenanceMode ?? false,
       registrationEnabled: settings?.registrationEnabled ?? true,
-      googleCalendarSyncMode: settings?.googleCalendarSyncMode ?? 'auto',
     };
   }
 }

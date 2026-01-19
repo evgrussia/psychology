@@ -51,6 +51,18 @@ export class PrismaAppointmentRepository implements IAppointmentRepository {
     return records.map(AppointmentMapper.toDomain);
   }
 
+  async findBusyInRange(from: Date, to: Date): Promise<Appointment[]> {
+    const records = await this.prisma.appointment.findMany({
+      where: {
+        start_at_utc: { lt: to },
+        end_at_utc: { gt: from },
+        status: { in: [AppointmentStatus.pending_payment, AppointmentStatus.paid, AppointmentStatus.confirmed] },
+      },
+      orderBy: { start_at_utc: 'asc' },
+    });
+    return records.map(AppointmentMapper.toDomain);
+  }
+
   async create(appointment: Appointment): Promise<void> {
     await this.prisma.appointment.create({
       data: {
@@ -69,7 +81,6 @@ export class PrismaAppointmentRepository implements IAppointmentRepository {
         outcome_recorded_at: appointment.outcomeRecordedAt ?? null,
         outcome_recorded_by_role: appointment.outcomeRecordedByRole ?? null,
         slot_id: appointment.slotId ?? null,
-        external_calendar_event_id: appointment.externalCalendarEventId ?? null,
         created_at: appointment.createdAt,
         updated_at: appointment.updatedAt,
       },
@@ -127,7 +138,6 @@ export class PrismaAppointmentRepository implements IAppointmentRepository {
               outcome_recorded_at: appointment.outcomeRecordedAt ?? null,
               outcome_recorded_by_role: appointment.outcomeRecordedByRole ?? null,
               slot_id: appointment.slotId ?? null,
-              external_calendar_event_id: appointment.externalCalendarEventId ?? null,
               created_at: appointment.createdAt,
               updated_at: appointment.updatedAt,
             },
@@ -167,48 +177,6 @@ export class PrismaAppointmentRepository implements IAppointmentRepository {
       where: { id: appointmentId },
       data: {
         client_user_id: clientUserId,
-      },
-    });
-  }
-
-  async findConfirmedWithoutCalendarEvent(from: Date, to: Date): Promise<Appointment[]> {
-    const records = await this.prisma.appointment.findMany({
-      where: {
-        status: AppointmentStatus.confirmed,
-        external_calendar_event_id: null,
-        start_at_utc: { gte: from, lt: to },
-      },
-      orderBy: { start_at_utc: 'asc' },
-    });
-    return records.map(AppointmentMapper.toDomain);
-  }
-
-  async setExternalCalendarEventIdIfMatch(
-    appointmentId: string,
-    expectedValue: string | null,
-    newValue: string,
-  ): Promise<boolean> {
-    const result = await this.prisma.appointment.updateMany({
-      where: {
-        id: appointmentId,
-        external_calendar_event_id: expectedValue,
-      },
-      data: {
-        external_calendar_event_id: newValue,
-      },
-    });
-
-    return result.count > 0;
-  }
-
-  async clearExternalCalendarEventId(appointmentId: string, expectedValue: string): Promise<void> {
-    await this.prisma.appointment.updateMany({
-      where: {
-        id: appointmentId,
-        external_calendar_event_id: expectedValue,
-      },
-      data: {
-        external_calendar_event_id: null,
       },
     });
   }
@@ -257,7 +225,6 @@ export class PrismaAppointmentRepository implements IAppointmentRepository {
         outcome_recorded_at: appointment.outcomeRecordedAt ?? null,
         outcome_recorded_by_role: appointment.outcomeRecordedByRole ?? null,
         slot_id: appointment.slotId ?? null,
-        external_calendar_event_id: appointment.externalCalendarEventId ?? null,
         updated_at: appointment.updatedAt,
       },
     });

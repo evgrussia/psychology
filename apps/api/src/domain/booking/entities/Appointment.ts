@@ -17,7 +17,6 @@ export interface AppointmentProps {
   outcomeRecordedAt?: Date | null;
   outcomeRecordedByRole?: string | null;
   slotId?: string | null;
-  externalCalendarEventId?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -40,7 +39,6 @@ export class Appointment {
   get outcomeRecordedAt(): Date | null | undefined { return this.props.outcomeRecordedAt; }
   get outcomeRecordedByRole(): string | null | undefined { return this.props.outcomeRecordedByRole; }
   get slotId(): string | null | undefined { return this.props.slotId; }
-  get externalCalendarEventId(): string | null | undefined { return this.props.externalCalendarEventId; }
   get createdAt(): Date { return this.props.createdAt; }
   get updatedAt(): Date { return this.props.updatedAt; }
 

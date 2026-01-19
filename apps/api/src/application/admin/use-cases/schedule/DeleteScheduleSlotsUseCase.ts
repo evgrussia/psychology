@@ -1,6 +1,6 @@
 import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { IAvailabilitySlotRepository } from '@domain/booking/repositories/IAvailabilitySlotRepository';
-import { SlotSource, SlotStatus } from '@domain/booking/value-objects/BookingEnums';
+import { SlotStatus } from '@domain/booking/value-objects/BookingEnums';
 import { AuditLogHelper } from '@application/audit/helpers/audit-log.helper';
 import { AuditLogAction } from '@application/audit/dto/audit-log.dto';
 
@@ -25,9 +25,6 @@ export class DeleteScheduleSlotsUseCase {
       const slot = await this.slotRepository.findById(slotId);
       if (slot && slot.status === SlotStatus.reserved) {
         throw new ConflictException('Cannot delete reserved slot');
-      }
-      if (slot && slot.source === SlotSource.google_calendar) {
-        throw new ConflictException('Cannot delete calendar slot');
       }
     }
 

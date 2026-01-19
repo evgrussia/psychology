@@ -64,27 +64,6 @@ class EnvironmentVariables {
   @IsString()
   ENCRYPTION_KEY_ID: string;
 
-  @IsString()
-  GOOGLE_OAUTH_CLIENT_ID: string;
-
-  @IsString()
-  GOOGLE_OAUTH_CLIENT_SECRET: string;
-
-  @IsString()
-  GOOGLE_OAUTH_REDIRECT_URI: string;
-
-  @IsOptional()
-  @IsString()
-  GOOGLE_OAUTH_SCOPES?: string;
-
-  @IsOptional()
-  @IsNumber()
-  GOOGLE_CALENDAR_SYNC_INTERVAL_MINUTES?: number;
-
-  @IsOptional()
-  @IsNumber()
-  GOOGLE_CALENDAR_SYNC_LOOKAHEAD_DAYS?: number;
-
   @IsOptional()
   @IsString()
   TELEGRAM_BOT_USERNAME?: string;

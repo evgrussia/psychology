@@ -6,7 +6,6 @@ import { ISystemSettingsRepository } from '@domain/settings/repositories/ISystem
 export interface UpdateSystemSettingsDto {
   maintenanceMode?: boolean;
   registrationEnabled?: boolean;
-  googleCalendarSyncMode?: string;
 }
 
 @Injectable()
@@ -23,13 +22,11 @@ export class UpdateSystemSettingsUseCase {
     const currentSettings = {
       maintenanceMode: current?.maintenanceMode ?? false,
       registrationEnabled: current?.registrationEnabled ?? true,
-      googleCalendarSyncMode: current?.googleCalendarSyncMode ?? 'auto',
     };
 
     const updated = await this.settingsRepository.upsert({
       maintenanceMode: dto.maintenanceMode ?? currentSettings.maintenanceMode,
       registrationEnabled: dto.registrationEnabled ?? currentSettings.registrationEnabled,
-      googleCalendarSyncMode: dto.googleCalendarSyncMode ?? currentSettings.googleCalendarSyncMode,
     });
 
     try {
@@ -43,7 +40,6 @@ export class UpdateSystemSettingsUseCase {
         {
           maintenanceMode: updated.maintenanceMode,
           registrationEnabled: updated.registrationEnabled,
-          googleCalendarSyncMode: updated.googleCalendarSyncMode,
         },
       );
     } catch (error) {
@@ -53,7 +49,6 @@ export class UpdateSystemSettingsUseCase {
     return {
       maintenanceMode: updated.maintenanceMode,
       registrationEnabled: updated.registrationEnabled,
-      googleCalendarSyncMode: updated.googleCalendarSyncMode,
     };
   }
 }

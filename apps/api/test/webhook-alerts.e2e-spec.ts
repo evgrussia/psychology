@@ -3,7 +3,6 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { YooKassaWebhookVerifier } from '../src/infrastructure/webhooks/yookassa-webhook-verifier';
-import { GoogleCalendarSyncScheduler } from '../src/infrastructure/integrations/google-calendar-sync.scheduler';
 
 describe('Webhook alerts (e2e)', () => {
   let app: INestApplication;
@@ -21,8 +20,6 @@ describe('Webhook alerts (e2e)', () => {
       .useValue({
         verify: () => ({ ok: false, reason: 'signature_missing' }),
       })
-      .overrideProvider(GoogleCalendarSyncScheduler)
-      .useValue({ onModuleInit: jest.fn(), onModuleDestroy: jest.fn() })
       .compile();
 
     app = moduleFixture.createNestApplication();

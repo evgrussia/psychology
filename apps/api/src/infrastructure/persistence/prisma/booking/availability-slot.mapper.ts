@@ -68,8 +68,6 @@ export class AvailabilitySlotMapper {
     switch (source) {
       case PrismaSlotSource.product:
         return SlotSource.product;
-      case PrismaSlotSource.google_calendar:
-        return SlotSource.google_calendar;
       default:
         throw new Error(`Unknown SlotSource: ${source}`);
     }
@@ -79,8 +77,6 @@ export class AvailabilitySlotMapper {
     switch (source) {
       case SlotSource.product:
         return PrismaSlotSource.product;
-      case SlotSource.google_calendar:
-        return PrismaSlotSource.google_calendar;
       default:
         throw new Error(`Unknown SlotSource: ${source}`);
     }

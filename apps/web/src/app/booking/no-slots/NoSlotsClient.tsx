@@ -43,7 +43,7 @@ interface FormatAlternative {
 }
 
 interface BookingAlternativesResponse {
-  status: 'available' | 'calendar_unavailable';
+  status: 'available';
   timezone: string;
   service: {
     id: string;
@@ -429,15 +429,6 @@ export function NoSlotsClient() {
         <div role="alert" aria-live="polite" className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
           {alternativesError}
         </div>
-      )}
-
-      {alternatives?.status === 'calendar_unavailable' && (
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold text-foreground">Календарь временно недоступен</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Сейчас мы не можем показать альтернативные окна. Вы можете оставить заявку в лист ожидания или написать в Telegram.
-          </p>
-        </Card>
       )}
 
       {alternatives?.status === 'available' && alternatives.next_slots.length > 0 && (

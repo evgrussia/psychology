@@ -21,7 +21,6 @@ export class AppointmentMapper {
       outcomeRecordedAt: record.outcome_recorded_at,
       outcomeRecordedByRole: record.outcome_recorded_by_role,
       slotId: record.slot_id,
-      externalCalendarEventId: record.external_calendar_event_id,
       createdAt: record.created_at,
       updatedAt: record.updated_at,
     });

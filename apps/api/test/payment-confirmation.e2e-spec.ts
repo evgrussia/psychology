@@ -3,41 +3,15 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/infrastructure/database/prisma.service';
-import { GoogleCalendarSyncScheduler } from '../src/infrastructure/integrations/google-calendar-sync.scheduler';
-import { IGoogleCalendarService } from '../src/domain/integrations/services/IGoogleCalendarService';
 
 describe('Payment confirmation flow (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
-  let googleCalendarService: jest.Mocked<IGoogleCalendarService>;
-
-  const encryptionService = {
-    encrypt: (value: string) => `enc:${value}`,
-    decrypt: (value: string) => value.replace(/^enc:/, ''),
-  };
 
   beforeAll(async () => {
-    googleCalendarService = {
-      getPrimaryCalendar: jest.fn(),
-      listBusyIntervals: jest.fn(),
-      createEvent: jest.fn().mockResolvedValue({ id: 'gcal-event-1' }),
-    };
-
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideProvider('IGoogleCalendarService')
-      .useValue(googleCalendarService)
-      .overrideProvider('IGoogleCalendarOAuthService')
-      .useValue({
-        buildAuthorizationUrl: jest.fn(),
-        exchangeCodeForTokens: jest.fn(),
-        refreshAccessToken: jest.fn(),
-      })
-      .overrideProvider('IEncryptionService')
-      .useValue(encryptionService)
-      .overrideProvider(GoogleCalendarSyncScheduler)
-      .useValue({ onModuleInit: jest.fn(), onModuleDestroy: jest.fn() })
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -50,7 +24,6 @@ describe('Payment confirmation flow (e2e)', () => {
     await prisma.payment.deleteMany({});
     await prisma.appointment.deleteMany({});
     await prisma.service.deleteMany({});
-    await prisma.googleCalendarIntegration.deleteMany({});
     await prisma.paymentWebhookEvent.deleteMany({});
     await prisma.analyticsEvent.deleteMany({});
   });
@@ -64,13 +37,12 @@ describe('Payment confirmation flow (e2e)', () => {
       await prisma.payment.deleteMany({});
       await prisma.appointment.deleteMany({});
       await prisma.service.deleteMany({});
-      await prisma.googleCalendarIntegration.deleteMany({});
       await prisma.paymentWebhookEvent.deleteMany({});
       await prisma.analyticsEvent.deleteMany({});
     }
   });
 
-  it('should confirm appointment after succeeded webhook and create calendar event', async () => {
+  it('should confirm appointment after succeeded webhook', async () => {
     const service = await prisma.service.create({
       data: {
         slug: `pay-e2e-${Date.now()}`,
@@ -105,18 +77,6 @@ describe('Payment confirmation flow (e2e)', () => {
       },
     });
 
-    await prisma.googleCalendarIntegration.create({
-      data: {
-        status: 'connected',
-        calendar_id: 'primary',
-        timezone: 'Europe/Moscow',
-        encrypted_access_token: encryptionService.encrypt('access-token'),
-        encrypted_refresh_token: encryptionService.encrypt('refresh-token'),
-        token_expires_at: new Date(Date.now() + 60 * 60 * 1000),
-        scopes: [],
-      },
-    });
-
     const eventId = `evt-pay-e2e-${Date.now()}`;
     const response = await request(app.getHttpServer())
       .post('/api/webhooks/yookassa')
@@ -142,8 +102,6 @@ describe('Payment confirmation flow (e2e)', () => {
       where: { id: appointment.id },
     });
     expect(updatedAppointment?.status).toBe('confirmed');
-    expect(updatedAppointment?.external_calendar_event_id).toBe('gcal-event-1');
-    expect(googleCalendarService.createEvent).toHaveBeenCalled();
 
     const analyticsEvents = await prisma.analyticsEvent.findMany({
       where: { event_name: { in: ['booking_paid', 'booking_confirmed'] } },

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AdminAuthGuard } from '@/components/admin-auth-guard';
 import MarkdownEditor from '@/components/MarkdownEditor';
 
-type SettingsTab = 'profile' | 'integrations' | 'users' | 'system';
+type SettingsTab = 'profile' | 'users' | 'system';
 
 interface ProfileResponse {
   id: string;
@@ -20,17 +20,6 @@ interface ProfileResponse {
 interface SystemSettingsResponse {
   maintenanceMode: boolean;
   registrationEnabled: boolean;
-  googleCalendarSyncMode: string;
-}
-
-interface GoogleCalendarStatus {
-  status: string;
-  calendarId: string | null;
-  timezone: string | null;
-  scopes: string[];
-  tokenExpiresAt: string | null;
-  connectedAt: string | null;
-  syncMode: string;
 }
 
 interface AdminUser {
@@ -48,11 +37,6 @@ const roleOptions = [
   { value: 'assistant', label: 'Assistant' },
   { value: 'editor', label: 'Editor' },
 ];
-
-const syncModeLabels: Record<string, string> = {
-  auto: 'Авто',
-  manual: 'Вручную',
-};
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
@@ -79,11 +63,6 @@ export default function SettingsPage() {
   const [systemSaving, setSystemSaving] = useState(false);
   const [systemError, setSystemError] = useState<string | null>(null);
 
-  const [calendarStatus, setCalendarStatus] = useState<GoogleCalendarStatus | null>(null);
-  const [calendarLoading, setCalendarLoading] = useState(true);
-  const [calendarError, setCalendarError] = useState<string | null>(null);
-  const [calendarActionBusy, setCalendarActionBusy] = useState(false);
-
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [usersLoading, setUsersLoading] = useState(true);
   const [usersError, setUsersError] = useState<string | null>(null);
@@ -95,7 +74,6 @@ export default function SettingsPage() {
   const tabLabels = useMemo(
     () => ({
       profile: 'Профиль',
-      integrations: 'Интеграции',
       users: 'Пользователи',
       system: 'Система',
     }),
@@ -149,23 +127,6 @@ export default function SettingsPage() {
       }
     };
 
-    const loadCalendarStatus = async () => {
-      setCalendarLoading(true);
-      setCalendarError(null);
-      try {
-        const res = await fetch('/api/admin/integrations/google-calendar/status', { credentials: 'include' });
-        if (!res.ok) {
-          throw new Error('Не удалось загрузить статус Google Calendar');
-        }
-        const data: GoogleCalendarStatus = await res.json();
-        setCalendarStatus(data);
-      } catch (error) {
-        setCalendarError(error instanceof Error ? error.message : 'Ошибка загрузки интеграции');
-      } finally {
-        setCalendarLoading(false);
-      }
-    };
-
     const loadUsers = async () => {
       setUsersLoading(true);
       setUsersError(null);
@@ -185,7 +146,6 @@ export default function SettingsPage() {
 
     void loadProfile();
     void loadSystemSettings();
-    void loadCalendarStatus();
     void loadUsers();
   }, []);
 
@@ -249,94 +209,6 @@ export default function SettingsPage() {
       setSystemError(error instanceof Error ? error.message : 'Ошибка сохранения настроек');
     } finally {
       setSystemSaving(false);
-    }
-  };
-
-  const handleCalendarConnect = async () => {
-    setCalendarActionBusy(true);
-    setCalendarError(null);
-    try {
-      const res = await fetch('/api/admin/integrations/google-calendar/connect', {
-        method: 'POST',
-        credentials: 'include',
-      });
-      if (!res.ok) {
-        throw new Error('Не удалось начать подключение');
-      }
-      const data = await res.json();
-      if (data.authorizationUrl) {
-        window.location.href = data.authorizationUrl;
-      }
-    } catch (error) {
-      setCalendarError(error instanceof Error ? error.message : 'Ошибка подключения');
-    } finally {
-      setCalendarActionBusy(false);
-    }
-  };
-
-  const handleCalendarDisconnect = async () => {
-    setCalendarActionBusy(true);
-    setCalendarError(null);
-    try {
-      const res = await fetch('/api/admin/integrations/google-calendar/disconnect', {
-        method: 'POST',
-        credentials: 'include',
-      });
-      if (!res.ok) {
-        throw new Error('Не удалось отключить интеграцию');
-      }
-      const refreshed = await fetch('/api/admin/integrations/google-calendar/status', { credentials: 'include' });
-      const data: GoogleCalendarStatus = await refreshed.json();
-      setCalendarStatus(data);
-    } catch (error) {
-      setCalendarError(error instanceof Error ? error.message : 'Ошибка отключения');
-    } finally {
-      setCalendarActionBusy(false);
-    }
-  };
-
-  const handleCalendarSync = async () => {
-    setCalendarActionBusy(true);
-    setCalendarError(null);
-    try {
-      const res = await fetch('/api/admin/integrations/google-calendar/sync', {
-        method: 'POST',
-        credentials: 'include',
-      });
-      if (!res.ok) {
-        throw new Error('Не удалось запустить синхронизацию');
-      }
-      await res.json();
-      const refreshed = await fetch('/api/admin/integrations/google-calendar/status', { credentials: 'include' });
-      const data: GoogleCalendarStatus = await refreshed.json();
-      setCalendarStatus(data);
-    } catch (error) {
-      setCalendarError(error instanceof Error ? error.message : 'Ошибка синхронизации');
-    } finally {
-      setCalendarActionBusy(false);
-    }
-  };
-
-  const handleSyncModeChange = async (value: string) => {
-    setCalendarActionBusy(true);
-    setCalendarError(null);
-    try {
-      const res = await fetch('/api/admin/integrations/google-calendar/sync-mode', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ sync_mode: value }),
-      });
-      if (!res.ok) {
-        throw new Error('Не удалось обновить режим синхронизации');
-      }
-      const refreshed = await fetch('/api/admin/integrations/google-calendar/status', { credentials: 'include' });
-      const data: GoogleCalendarStatus = await refreshed.json();
-      setCalendarStatus(data);
-    } catch (error) {
-      setCalendarError(error instanceof Error ? error.message : 'Ошибка обновления режима');
-    } finally {
-      setCalendarActionBusy(false);
     }
   };
 
@@ -447,7 +319,7 @@ export default function SettingsPage() {
       <div className="admin-page">
         <div className="admin-page-header">
           <h1>Настройки</h1>
-          <p>Профиль, интеграции, пользователи и системные параметры.</p>
+          <p>Профиль, пользователи и системные параметры.</p>
         </div>
 
         <div className="admin-tabs">
@@ -527,49 +399,6 @@ export default function SettingsPage() {
                 <button type="button" className="admin-primary" onClick={handleProfileSave} disabled={profileSaving}>
                   {profileSaving ? 'Сохранение...' : 'Сохранить профиль'}
                 </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === 'integrations' && (
-          <div className="admin-section">
-            <h2>Google Calendar</h2>
-            {calendarLoading && <p>Загрузка...</p>}
-            {calendarError && <p className="error-text">{calendarError}</p>}
-            {calendarStatus && (
-              <div className="admin-form">
-                <div className="admin-muted">Статус: {calendarStatus.status}</div>
-                <div className="admin-muted">Календарь: {calendarStatus.calendarId ?? '—'}</div>
-                <div className="admin-muted">Таймзона: {calendarStatus.timezone ?? '—'}</div>
-                <div className="admin-muted">Подключено: {calendarStatus.connectedAt ? new Date(calendarStatus.connectedAt).toLocaleString() : '—'}</div>
-                <div className="admin-muted">Истечение токена: {calendarStatus.tokenExpiresAt ? new Date(calendarStatus.tokenExpiresAt).toLocaleString() : '—'}</div>
-                <div className="admin-muted">Scopes: {calendarStatus.scopes.length ? calendarStatus.scopes.join(', ') : '—'}</div>
-                <label>
-                  Режим синхронизации
-                  <select
-                    value={calendarStatus.syncMode}
-                    onChange={(event) => void handleSyncModeChange(event.target.value)}
-                    disabled={calendarActionBusy}
-                  >
-                    {Object.entries(syncModeLabels).map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <div className="admin-actions">
-                  <button type="button" className="admin-primary" onClick={handleCalendarConnect} disabled={calendarActionBusy}>
-                    Подключить
-                  </button>
-                  <button type="button" className="admin-secondary" onClick={handleCalendarSync} disabled={calendarActionBusy}>
-                    Синхронизировать
-                  </button>
-                  <button type="button" className="admin-danger" onClick={handleCalendarDisconnect} disabled={calendarActionBusy}>
-                    Отключить
-                  </button>
-                </div>
               </div>
             )}
           </div>

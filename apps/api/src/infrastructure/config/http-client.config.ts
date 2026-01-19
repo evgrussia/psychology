@@ -4,8 +4,7 @@ import { ConfigService } from '@nestjs/config';
 /**
  * HTTP Client Configuration
  * 
- * Provides default timeout and retry settings for HTTP clients
- * used in integrations (Google Calendar, YooKassa, etc.)
+ * Provides default timeout and retry settings for HTTP clients.
  */
 @Injectable()
 export class HttpClientConfig {

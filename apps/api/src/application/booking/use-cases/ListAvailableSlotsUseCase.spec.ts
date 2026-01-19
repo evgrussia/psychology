@@ -3,8 +3,7 @@ import { PrismaService } from '@infrastructure/database/prisma.service';
 import { ListAvailableSlotsUseCase } from './ListAvailableSlotsUseCase';
 import { PrismaAvailabilitySlotRepository } from '@infrastructure/persistence/prisma/booking/prisma-availability-slot.repository';
 import { PrismaServiceRepository } from '@infrastructure/persistence/prisma/booking/prisma-service.repository';
-import { PrismaGoogleCalendarIntegrationRepository } from '@infrastructure/persistence/prisma/integrations/prisma-google-calendar-integration.repository';
-import { SyncCalendarBusyTimesUseCase } from '@application/integrations/use-cases/SyncCalendarBusyTimesUseCase';
+import { PrismaAppointmentRepository } from '@infrastructure/persistence/prisma/booking/prisma-appointment.repository';
 import { execSync } from 'child_process';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
@@ -17,18 +16,8 @@ describe('ListAvailableSlotsUseCase (Integration)', () => {
   let useCase: ListAvailableSlotsUseCase;
   let serviceSlug: string;
   let schemaName: string;
-  let syncRangeFrom: Date;
-  let syncRangeTo: Date;
-
-  const syncUseCase = {
-    execute: jest.fn().mockResolvedValue({
-      status: 'success',
-      syncedFrom: new Date(),
-      syncedTo: new Date(),
-      busyCount: 0,
-      lastSyncAt: new Date(),
-    }),
-  };
+  let rangeFrom: Date;
+  let rangeTo: Date;
 
   beforeAll(async () => {
     dotenv.config({ path: path.join(__dirname, '../../../../test.env') });
@@ -54,12 +43,8 @@ describe('ListAvailableSlotsUseCase (Integration)', () => {
           useClass: PrismaServiceRepository,
         },
         {
-          provide: 'IGoogleCalendarIntegrationRepository',
-          useClass: PrismaGoogleCalendarIntegrationRepository,
-        },
-        {
-          provide: SyncCalendarBusyTimesUseCase,
-          useValue: syncUseCase,
+          provide: 'IAppointmentRepository',
+          useClass: PrismaAppointmentRepository,
         },
       ],
     }).compile();
@@ -91,32 +76,16 @@ describe('ListAvailableSlotsUseCase (Integration)', () => {
     serviceSlug = service.slug;
 
     const now = new Date();
-    syncRangeFrom = new Date(now.getTime() + 60 * 60 * 1000);
-    syncRangeTo = new Date(now.getTime() + 3 * 60 * 60 * 1000);
-
-    await (prisma as any).googleCalendarIntegration.create({
-      data: {
-        status: 'connected',
-        calendar_id: 'primary',
-        timezone: 'Europe/Moscow',
-        encrypted_access_token: 'enc:token',
-        encrypted_refresh_token: 'enc:refresh',
-        token_expires_at: new Date(Date.now() + 60 * 60 * 1000),
-        scopes: [],
-        last_sync_at: new Date(),
-        last_sync_range_start_at: syncRangeFrom,
-        last_sync_range_end_at: syncRangeTo,
-      },
-    });
+    rangeFrom = new Date(now.getTime() + 60 * 60 * 1000);
+    rangeTo = new Date(now.getTime() + 3 * 60 * 60 * 1000);
   });
 
   afterEach(async () => {
     if (prisma) {
       await prisma.availabilitySlot.deleteMany({});
+      await prisma.appointment.deleteMany({});
       await prisma.service.deleteMany({});
-      await (prisma as any).googleCalendarIntegration.deleteMany({});
     }
-    syncUseCase.execute.mockClear();
   });
 
   afterAll(async () => {
@@ -135,8 +104,8 @@ describe('ListAvailableSlotsUseCase (Integration)', () => {
     await prisma.availabilitySlot.create({
       data: {
         service_id: service.id,
-        start_at_utc: new Date(syncRangeFrom.getTime() + 15 * 60 * 1000),
-        end_at_utc: new Date(syncRangeFrom.getTime() + 75 * 60 * 1000),
+        start_at_utc: new Date(rangeFrom.getTime() + 15 * 60 * 1000),
+        end_at_utc: new Date(rangeFrom.getTime() + 75 * 60 * 1000),
         status: 'available',
         source: 'product',
       },
@@ -145,30 +114,29 @@ describe('ListAvailableSlotsUseCase (Integration)', () => {
     await prisma.availabilitySlot.create({
       data: {
         service_id: null,
-        start_at_utc: new Date(syncRangeFrom.getTime() + 30 * 60 * 1000),
-        end_at_utc: new Date(syncRangeFrom.getTime() + 90 * 60 * 1000),
-        status: 'blocked',
-        source: 'google_calendar',
+        start_at_utc: new Date(rangeFrom.getTime() + 30 * 60 * 1000),
+        end_at_utc: new Date(rangeFrom.getTime() + 90 * 60 * 1000),
+        status: 'reserved',
+        source: 'product',
       },
     });
 
     const result = await useCase.execute({
       serviceSlug,
-      from: syncRangeFrom.toISOString(),
-      to: syncRangeTo.toISOString(),
+      from: rangeFrom.toISOString(),
+      to: rangeTo.toISOString(),
       timezone: 'Europe/Moscow',
     });
 
     expect(result.slots).toHaveLength(0);
-    expect(syncUseCase.execute).not.toHaveBeenCalled();
   });
 
   it('should exclude slots that overlap admin exceptions', async () => {
     const service = await prisma.service.findUnique({ where: { slug: serviceSlug } });
     if (!service) throw new Error('Service not found');
 
-    const slotStart = new Date(syncRangeFrom.getTime() + 10 * 60 * 1000);
-    const slotEnd = new Date(syncRangeFrom.getTime() + 70 * 60 * 1000);
+    const slotStart = new Date(rangeFrom.getTime() + 10 * 60 * 1000);
+    const slotEnd = new Date(rangeFrom.getTime() + 70 * 60 * 1000);
 
     await prisma.availabilitySlot.create({
       data: {
@@ -183,8 +151,8 @@ describe('ListAvailableSlotsUseCase (Integration)', () => {
     await prisma.availabilitySlot.create({
       data: {
         service_id: null,
-        start_at_utc: new Date(syncRangeFrom.getTime() + 30 * 60 * 1000),
-        end_at_utc: new Date(syncRangeFrom.getTime() + 90 * 60 * 1000),
+        start_at_utc: new Date(rangeFrom.getTime() + 30 * 60 * 1000),
+        end_at_utc: new Date(rangeFrom.getTime() + 90 * 60 * 1000),
         status: 'blocked',
         source: 'product',
         block_type: 'exception',
@@ -193,8 +161,8 @@ describe('ListAvailableSlotsUseCase (Integration)', () => {
 
     const result = await useCase.execute({
       serviceSlug,
-      from: syncRangeFrom.toISOString(),
-      to: syncRangeTo.toISOString(),
+      from: rangeFrom.toISOString(),
+      to: rangeTo.toISOString(),
       timezone: 'Europe/Moscow',
     });
 

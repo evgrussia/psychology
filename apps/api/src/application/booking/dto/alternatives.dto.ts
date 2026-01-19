@@ -35,7 +35,7 @@ export interface FormatAlternativeDto {
 }
 
 export interface BookingAlternativesResponseDto {
-  status: 'available' | 'calendar_unavailable';
+  status: 'available';
   timezone: string;
   service: {
     id: string;

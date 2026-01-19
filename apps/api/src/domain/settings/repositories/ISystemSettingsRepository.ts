@@ -5,6 +5,5 @@ export interface ISystemSettingsRepository {
   upsert(data: {
     maintenanceMode: boolean;
     registrationEnabled: boolean;
-    googleCalendarSyncMode: string;
   }): Promise<SystemSettings>;
 }

@@ -6,7 +6,6 @@ export enum SlotStatus {
 
 export enum SlotSource {
   product = 'product',
-  google_calendar = 'google_calendar',
 }
 
 export enum ScheduleBlockType {

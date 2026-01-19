@@ -95,7 +95,6 @@ export class StartBookingUseCase {
       format,
       status: AppointmentStatus.pending_payment,
       slotId: slot.id,
-      externalCalendarEventId: null,
       createdAt: now,
       updatedAt: now,
     });

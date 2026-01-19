@@ -44,15 +44,10 @@ import { ContentModule } from '../content/content.module';
 import { InteractiveModule } from '../interactive/interactive.module';
 import { AdminGlossaryController } from '../../presentation/controllers/admin-glossary.controller';
 import { AdminCuratedController } from '../../presentation/controllers/admin-curated.controller';
-import { AdminGoogleCalendarController } from '../../presentation/controllers/admin-google-calendar.controller';
 import { AdminSettingsController } from '../../presentation/controllers/admin-settings.controller';
 import { AdminScheduleController } from '../../presentation/controllers/admin-schedule.controller';
 import { AdminLeadsController } from '../../presentation/controllers/admin-leads.controller';
 import { AdminModerationController } from '../../presentation/controllers/admin-moderation.controller';
-import { ConnectGoogleCalendarUseCase } from '../../application/integrations/use-cases/ConnectGoogleCalendarUseCase';
-import { GetGoogleCalendarStatusUseCase } from '../../application/integrations/use-cases/GetGoogleCalendarStatusUseCase';
-import { DisconnectGoogleCalendarUseCase } from '../../application/integrations/use-cases/DisconnectGoogleCalendarUseCase';
-import { IntegrationsModule } from '../integrations/integrations.module';
 import { SettingsModule } from '../settings/settings.module';
 import { GetAdminDashboardUseCase } from '../../application/admin/use-cases/GetAdminDashboardUseCase';
 import { GetAdminBookingFunnelUseCase } from '../../application/admin/use-cases/analytics/GetAdminBookingFunnelUseCase';
@@ -121,7 +116,6 @@ import { DeleteAdminUserUseCase } from '../../application/admin/use-cases/settin
     DatabaseModule,
     ContentModule,
     InteractiveModule,
-    IntegrationsModule,
     SettingsModule,
     BookingModule,
     CrmModule,
@@ -139,7 +133,6 @@ import { DeleteAdminUserUseCase } from '../../application/admin/use-cases/settin
     AdminTemplatesController,
     AdminGlossaryController,
     AdminCuratedController,
-    AdminGoogleCalendarController,
     AdminSettingsController,
     AdminScheduleController,
     AdminLeadsController,
@@ -185,9 +178,6 @@ import { DeleteAdminUserUseCase } from '../../application/admin/use-cases/settin
     UpsertCuratedCollectionUseCase,
     PublishCuratedCollectionUseCase,
     ReorderCuratedItemsUseCase,
-    ConnectGoogleCalendarUseCase,
-    GetGoogleCalendarStatusUseCase,
-    DisconnectGoogleCalendarUseCase,
     ListScheduleSlotsUseCase,
     ListScheduleAppointmentsUseCase,
     CreateScheduleSlotsUseCase,
@@ -267,8 +257,6 @@ import { DeleteAdminUserUseCase } from '../../application/admin/use-cases/settin
     UpsertCuratedCollectionUseCase,
     PublishCuratedCollectionUseCase,
     ReorderCuratedItemsUseCase,
-    ConnectGoogleCalendarUseCase,
-    GetGoogleCalendarStatusUseCase,
   ],
 })
 export class AdminModule {}

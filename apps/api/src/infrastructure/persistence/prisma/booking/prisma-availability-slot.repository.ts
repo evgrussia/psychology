@@ -34,11 +34,10 @@ export class PrismaAvailabilitySlotRepository implements IAvailabilitySlotReposi
     return records.map((record) => AvailabilitySlotMapper.toDomain(record));
   }
 
-  async findBusySlots(from: Date, to: Date): Promise<AvailabilitySlot[]> {
+  async findReservedSlots(from: Date, to: Date): Promise<AvailabilitySlot[]> {
     const records = await this.prisma.availabilitySlot.findMany({
       where: {
-        status: SlotStatus.blocked,
-        source: SlotSource.google_calendar,
+        status: SlotStatus.reserved,
         start_at_utc: { lt: to },
         end_at_utc: { gt: from },
       },
@@ -126,38 +125,6 @@ export class PrismaAvailabilitySlotRepository implements IAvailabilitySlotReposi
       where: { id: { in: ids } },
     });
     return result.count;
-  }
-
-  async replaceBusySlots(from: Date, to: Date, busySlots: AvailabilitySlot[]): Promise<void> {
-    const data = busySlots.map((slot) => ({
-      id: slot.id,
-      service_id: slot.serviceId,
-      start_at_utc: slot.startAtUtc,
-      end_at_utc: slot.endAtUtc,
-      status: SlotStatus.blocked,
-      source: SlotSource.google_calendar,
-      block_type: null,
-      note: null,
-      external_event_id: slot.externalEventId,
-      created_at: slot.createdAt,
-    }));
-
-    await this.prisma.$transaction(async (tx) => {
-      await tx.availabilitySlot.deleteMany({
-        where: {
-          source: SlotSource.google_calendar,
-          start_at_utc: { lt: to },
-          end_at_utc: { gt: from },
-        },
-      });
-
-      if (data.length > 0) {
-        await tx.availabilitySlot.createMany({
-          data,
-          skipDuplicates: true,
-        });
-      }
-    });
   }
 
   async reserveSlot(slotId: string): Promise<boolean> {

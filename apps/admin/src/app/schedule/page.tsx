@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 type SlotStatus = 'available' | 'reserved' | 'blocked';
-type SlotSource = 'product' | 'google_calendar';
+type SlotSource = 'product';
 type BlockType = 'exception' | 'buffer' | null;
 type AppointmentOutcome = 'attended' | 'no_show' | 'canceled_by_client' | 'canceled_by_provider' | 'rescheduled';
 type AppointmentOutcomeReason = 'late_cancel' | 'tech_issue' | 'illness' | 'other' | 'unknown';
@@ -45,14 +45,6 @@ interface ServiceOption {
   title: string;
 }
 
-interface GoogleCalendarStatus {
-  status: string;
-  calendar_id?: string | null;
-  timezone?: string | null;
-  last_sync_at?: string | null;
-  last_sync_error?: string | null;
-}
-
 type ViewMode = 'day' | 'week' | 'month';
 
 const viewLabels: Record<ViewMode, string> = {
@@ -86,9 +78,7 @@ export default function SchedulePage() {
   const [services, setServices] = useState<ServiceOption[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
-  const [gcStatus, setGcStatus] = useState<GoogleCalendarStatus | null>(null);
   const [selectedSlotIds, setSelectedSlotIds] = useState<string[]>([]);
-  const [syncLoading, setSyncLoading] = useState(false);
   const [outcomeModalOpen, setOutcomeModalOpen] = useState(false);
   const [outcomeAppointment, setOutcomeAppointment] = useState<ScheduleAppointment | null>(null);
   const [outcomeValue, setOutcomeValue] = useState<AppointmentOutcome>('attended');
@@ -124,7 +114,7 @@ export default function SchedulePage() {
     const load = async () => {
       setLoading(true);
       try {
-        const [slotsRes, appointmentsRes, settingsRes, servicesRes, gcRes] = await Promise.all([
+        const [slotsRes, appointmentsRes, settingsRes, servicesRes] = await Promise.all([
           fetch(`/api/admin/schedule/slots?from=${range.from.toISOString()}&to=${range.to.toISOString()}`, {
             credentials: 'include',
           }),
@@ -133,22 +123,19 @@ export default function SchedulePage() {
           }),
           fetch('/api/admin/schedule/settings', { credentials: 'include' }),
           fetch('/api/public/services'),
-          fetch('/api/admin/integrations/google-calendar/status', { credentials: 'include' }),
         ]);
 
-        const [slotsData, appointmentsData, settingsData, servicesData, gcData] = await Promise.all([
+        const [slotsData, appointmentsData, settingsData, servicesData] = await Promise.all([
           slotsRes.json(),
           appointmentsRes.json(),
           settingsRes.json(),
           servicesRes.json(),
-          gcRes.json(),
         ]);
 
         setSlots(slotsData);
         setAppointments(appointmentsData);
         setSettings(settingsData);
         setServices(servicesData || []);
-        setGcStatus(gcData);
       } catch (error) {
         console.error(error);
       } finally {
@@ -240,20 +227,6 @@ export default function SchedulePage() {
     setAnchorDate(newDate);
   };
 
-  const handleSync = async () => {
-    setSyncLoading(true);
-    try {
-      await fetch('/api/admin/integrations/google-calendar/sync', {
-        method: 'POST',
-        credentials: 'include',
-      });
-      const res = await fetch('/api/admin/integrations/google-calendar/status', { credentials: 'include' });
-      setGcStatus(await res.json());
-    } finally {
-      setSyncLoading(false);
-    }
-  };
-
   const openOutcomeModal = (appointment: ScheduleAppointment) => {
     setOutcomeAppointment(appointment);
     setOutcomeValue((appointment.outcome ?? 'attended') as AppointmentOutcome);
@@ -343,28 +316,6 @@ export default function SchedulePage() {
             <option value="exception">Исключения</option>
             <option value="buffer">Буферы</option>
           </select>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 rounded-lg border bg-white p-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium">Google Calendar</h2>
-          <button
-            className="rounded-md border px-3 py-1 text-sm"
-            onClick={handleSync}
-            disabled={syncLoading}
-          >
-            {syncLoading ? 'Синхронизация...' : 'Синхронизировать'}
-          </button>
-        </div>
-        <div className="text-sm text-muted-foreground">
-          Статус: <span className="font-medium text-foreground">{gcStatus?.status || 'unknown'}</span>
-          {gcStatus?.last_sync_at && (
-            <span> · последняя синхронизация {new Date(gcStatus.last_sync_at).toLocaleString('ru-RU')}</span>
-          )}
-          {gcStatus?.last_sync_error && (
-            <span className="text-red-600"> · ошибка: {gcStatus.last_sync_error}</span>
-          )}
         </div>
       </div>
 
@@ -530,7 +481,7 @@ export default function SchedulePage() {
       <div className="rounded-lg border bg-white p-4">
         <h2 className="text-lg font-medium">Настройки расписания</h2>
         <p className="text-sm text-muted-foreground">
-          Часовой пояс используется для отображения и синхронизации. Буфер применяется при ручном создании буферов.
+          Часовой пояс используется для отображения расписания. Буфер применяется при ручном создании буферов.
         </p>
         <ScheduleSettingsForm settings={settings} onSave={setScheduleSettings} />
       </div>
