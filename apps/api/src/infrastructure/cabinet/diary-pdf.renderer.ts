@@ -4,7 +4,7 @@ import { DiaryType } from '@domain/cabinet/value-objects/DiaryEnums';
 
 // pdfmake exports the PdfPrinter class from the compiled build.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const PdfPrinterModule = require('pdfmake/js/printer');
+const PdfPrinterModule = require('pdfmake/js/Printer');
 const PdfPrinter = PdfPrinterModule.default ?? PdfPrinterModule;
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const pdfFonts = require('pdfmake/build/vfs_fonts');
