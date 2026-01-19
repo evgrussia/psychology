@@ -10,25 +10,7 @@ import {
   Section,
   Separator,
 } from '@psychology/design-system';
-
-async function getBlogPosts() {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
-  
-  try {
-    const res = await fetch(`${apiUrl}/public/content/article`, {
-      next: { revalidate: 300 }, // Revalidate every 5 minutes
-      signal: AbortSignal.timeout(5000),
-    });
-    
-    if (!res.ok) {
-      throw new Error(`API responded with status ${res.status}`);
-    }
-    return res.json();
-  } catch (error) {
-    console.error('Error fetching blog posts:', error);
-    return { items: [], total: 0 };
-  }
-}
+import { ContentPlatform } from '@/lib/content';
 
 export const metadata: Metadata = {
   title: 'Блог | Эмоциональный баланс',
@@ -36,7 +18,7 @@ export const metadata: Metadata = {
 };
 
 export default async function BlogPage() {
-  const data = await getBlogPosts();
+  const data = await ContentPlatform.listContent('article');
   const posts = data.items || [];
 
   return (

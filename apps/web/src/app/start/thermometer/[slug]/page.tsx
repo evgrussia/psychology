@@ -1,22 +1,7 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
 import { ThermometerClient } from './ThermometerClient';
-
-async function getThermometer(slug: string) {
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
-
-  try {
-    const res = await fetch(`${API_BASE_URL}/public/interactive/thermometers/${slug}`, {
-      next: { revalidate: 0 },
-      signal: AbortSignal.timeout(5000),
-    });
-    if (!res.ok) return null;
-    return res.json();
-  } catch (error) {
-    console.error('Error fetching thermometer:', error);
-    return null;
-  }
-}
+import { InteractivePlatform } from '@/lib/interactive';
 
 const FALLBACK_THERMOMETERS: Record<string, any> = {
   'resource-thermometer': {
@@ -74,7 +59,7 @@ const FALLBACK_THERMOMETERS: Record<string, any> = {
 };
 
 export default async function ThermometerPage({ params }: { params: { slug: string } }) {
-  const data = await getThermometer(params.slug);
+  const data = await InteractivePlatform.getThermometer(params.slug);
   const thermometer = data ?? FALLBACK_THERMOMETERS[params.slug];
 
   if (!thermometer) {

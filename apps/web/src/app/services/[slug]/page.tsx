@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import ServiceDetailClient from './ServiceDetailClient';
+import { ContentPlatform } from '@/lib/content';
 
 interface ServiceDetails {
   id: string;
@@ -18,24 +19,8 @@ interface ServiceDetails {
   reschedule_max_count?: number | null;
 }
 
-async function getService(slug: string): Promise<ServiceDetails | null> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
-  try {
-    const res = await fetch(`${apiUrl}/public/services/${slug}`, {
-      next: { revalidate: 0 },
-      signal: AbortSignal.timeout(5000),
-    });
-    if (res.status === 404) return null;
-    if (!res.ok) throw new Error(`API responded with status ${res.status}`);
-    return res.json();
-  } catch (error) {
-    console.error(`Error fetching service ${slug}:`, error);
-    return null;
-  }
-}
-
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const data = await getService(params.slug);
+  const data = await ContentPlatform.getService(params.slug);
   if (!data) {
     return { title: 'Услуга не найдена | Эмоциональный баланс' };
   }
@@ -46,7 +31,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default async function ServicePage({ params }: { params: { slug: string } }) {
-  const service = await getService(params.slug);
+  const service = await ContentPlatform.getService(params.slug);
   if (!service) {
     notFound();
   }

@@ -3,39 +3,12 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { TopicCard, Section, Container } from '@psychology/design-system';
 import { isFeatureEnabled } from '../../lib/feature-flags';
+import { ContentPlatform } from '@/lib/content';
 
 export const metadata: Metadata = {
   title: 'С чем я помогаю | Эмоциональный баланс',
   description: 'Каталог тем и психологических проблем, с которыми я работаю: тревога, выгорание, отношения, границы, самооценка.',
 };
-
-interface Topic {
-  code: string;
-  title: string;
-  isActive: boolean;
-}
-
-async function getTopics(): Promise<Topic[]> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
-  try {
-    const res = await fetch(`${apiUrl}/public/topics`, {
-      next: { revalidate: 3600 },
-      signal: AbortSignal.timeout(5000)
-    });
-    if (!res.ok) throw new Error(`API responded with status ${res.status}`);
-    return res.json();
-  } catch (error) {
-    console.error('Error fetching topics:', error);
-    // Fallback for release 1
-    return [
-      { code: 'anxiety', title: 'Тревога', isActive: true },
-      { code: 'burnout', title: 'Выгорание', isActive: true },
-      { code: 'relationships', title: 'Отношения', isActive: true },
-      { code: 'boundaries', title: 'Границы', isActive: true },
-      { code: 'self-esteem', title: 'Самооценка', isActive: true },
-    ];
-  }
-}
 
 export default async function TopicsHubPage() {
   // Проверка feature flag
@@ -43,7 +16,7 @@ export default async function TopicsHubPage() {
     notFound();
   }
 
-  const topics = await getTopics();
+  const topics = await ContentPlatform.listTopics();
 
   return (
     <>

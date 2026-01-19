@@ -11,7 +11,7 @@ const nextConfig = {
    * without hardcoding `http://127.0.0.1:3001`.
    */
   async rewrites() {
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
+    const apiBase = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
 
     return [
       {

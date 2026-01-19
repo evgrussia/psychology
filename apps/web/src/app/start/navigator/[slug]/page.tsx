@@ -1,20 +1,7 @@
 import React from 'react';
 import { NavigatorClient } from './NavigatorClient';
-import { notFound } from 'next/navigation';
-
-async function getNavigatorDefinition(slug: string) {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
-  try {
-    const res = await fetch(`${API_URL}/public/interactive/navigators/${slug}`, {
-      next: { revalidate: 3600 }, // Cache for 1 hour
-    });
-    if (!res.ok) return null;
-    return res.json();
-  } catch (error) {
-    console.error('Error fetching navigator:', error);
-    return null;
-  }
-}
+import { notFound, redirect } from 'next/navigation';
+import { InteractivePlatform } from '@/lib/interactive';
 
 // Fallback data for development or if API is down
 const FALLBACK_NAVIGATORS: Record<string, any> = {
@@ -122,12 +109,10 @@ const FALLBACK_NAVIGATORS: Record<string, any> = {
 };
 
 export default async function NavigatorPage({ params }: { params: { slug: string } }) {
-  const data = await getNavigatorDefinition(params.slug);
+  const data = await InteractivePlatform.getNavigator(params.slug);
   const navigator = data?.definition || FALLBACK_NAVIGATORS[params.slug];
   
   if (!navigator) {
-    // Fallback: редирект на /start вместо 404
-    const { redirect } = await import('next/navigation');
     redirect('/start');
   }
 

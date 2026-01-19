@@ -1,3 +1,5 @@
+import { getApiUrl } from './api';
+
 type TelegramFlow =
   | 'plan_7d'
   | 'save_resource'
@@ -67,7 +69,7 @@ export async function createTelegramDeepLink(params: Omit<BuildTelegramDeepLinkP
   deepLinkId: string;
   url: string;
 }> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
+  const apiUrl = getApiUrl();
   const anonymousId = typeof window !== 'undefined' ? localStorage.getItem('anonymous_id') : null;
 
   const response = await fetch(`${apiUrl}/public/deep-links`, {

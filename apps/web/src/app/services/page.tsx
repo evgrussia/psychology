@@ -3,6 +3,7 @@ import { Metadata } from 'next';
 import { Card, Container, Section, Button } from '@psychology/design-system';
 import SafeMarkdownRenderer from '@/components/SafeMarkdownRenderer';
 import { ServiceBookingButton } from './ServiceBookingButton';
+import { ContentPlatform } from '@/lib/content';
 
 export const metadata: Metadata = {
   title: 'Услуги | Эмоциональный баланс',
@@ -21,23 +22,6 @@ interface ServiceListItem {
   description_markdown: string;
 }
 
-async function getServices(): Promise<ServiceListItem[]> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
-  try {
-    const res = await fetch(`${apiUrl}/public/services`, {
-      next: { revalidate: 0 },
-      signal: AbortSignal.timeout(5000),
-    });
-    if (!res.ok) {
-      return [];
-    }
-    return res.json();
-  } catch (error) {
-    console.error('Error fetching services list:', error);
-    return [];
-  }
-}
-
 const formatLabels: Record<ServiceListItem['format'], string> = {
   online: 'Онлайн',
   offline: 'Офлайн',
@@ -45,7 +29,7 @@ const formatLabels: Record<ServiceListItem['format'], string> = {
 };
 
 export default async function ServicesPage() {
-  const services = await getServices();
+  const services = await ContentPlatform.listServices();
 
   return (
     <>

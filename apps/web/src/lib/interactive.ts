@@ -1,4 +1,5 @@
 import { track } from './tracking';
+import { getApiUrl } from './api';
 
 export enum ResultLevel {
   LOW = 'low',
@@ -70,14 +71,15 @@ export interface CompleteInteractiveRunParams {
   crisisTriggerType?: string;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
+const getBaseUrl = () => getApiUrl();
 
 export class InteractivePlatform {
   static async startRun(params: StartInteractiveRunParams): Promise<string> {
     const anonymousId = typeof window !== 'undefined' ? localStorage.getItem('anonymous_id') : undefined;
+    const baseUrl = getBaseUrl();
     
     try {
-      const response = await fetch(`${API_BASE_URL}/public/interactive/runs`, {
+      const response = await fetch(`${baseUrl}/public/interactive/runs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -100,13 +102,14 @@ export class InteractivePlatform {
   }
 
   static async completeRun(params: CompleteInteractiveRunParams): Promise<void> {
+    const baseUrl = getBaseUrl();
     try {
       if (params.runId.startsWith('local_')) {
         console.warn('[InteractivePlatform] Skipping backend completion for local run');
         return;
       }
 
-      const response = await fetch(`${API_BASE_URL}/public/interactive/runs/${params.runId}/complete`, {
+      const response = await fetch(`${baseUrl}/public/interactive/runs/${params.runId}/complete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(params),
@@ -219,7 +222,8 @@ export class InteractivePlatform {
   }
 
   static async listRituals(topic?: string): Promise<any> {
-    const url = new URL(`${API_BASE_URL}/public/interactive/rituals`);
+    const baseUrl = getBaseUrl();
+    const url = new URL(`${baseUrl}/public/interactive/rituals`);
     if (topic) url.searchParams.append('topic', topic);
     
     try {
@@ -233,12 +237,8 @@ export class InteractivePlatform {
   }
 
   static async getRitual(slug: string): Promise<any> {
+    const baseUrl = getBaseUrl();
     try {
-      // Support both server-side and client-side calls
-      const baseUrl = typeof window !== 'undefined' 
-        ? (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api')
-        : (process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api');
-      
       const response = await fetch(`${baseUrl}/public/interactive/rituals/${slug}`, {
         cache: 'no-store', // Always fetch fresh data
       });
@@ -251,8 +251,9 @@ export class InteractivePlatform {
   }
 
   static async getQuiz(slug: string): Promise<any> {
+    const baseUrl = getBaseUrl();
     try {
-      const response = await fetch(`${API_BASE_URL}/public/interactive/quizzes/${slug}`, {
+      const response = await fetch(`${baseUrl}/public/interactive/quizzes/${slug}`, {
         cache: 'no-store'
       });
       if (!response.ok) {
@@ -263,6 +264,88 @@ export class InteractivePlatform {
     } catch (error) {
       console.error('[InteractivePlatform] Error getting quiz:', error);
       return null;
+    }
+  }
+
+  static async getThermometer(slug: string): Promise<any> {
+    const baseUrl = getBaseUrl();
+    try {
+      const response = await fetch(`${baseUrl}/public/interactive/thermometers/${slug}`, {
+        cache: 'no-store'
+      });
+      if (!response.ok) throw new Error('Failed to fetch thermometer');
+      return await response.json();
+    } catch (error) {
+      console.error('[InteractivePlatform] Error getting thermometer:', error);
+      return null;
+    }
+  }
+
+  static async getPrep(slug: string): Promise<any> {
+    const baseUrl = getBaseUrl();
+    try {
+      const response = await fetch(`${baseUrl}/public/interactive/prep/${slug}`, {
+        cache: 'no-store'
+      });
+      if (!response.ok) throw new Error('Failed to fetch prep');
+      return await response.json();
+    } catch (error) {
+      console.error('[InteractivePlatform] Error getting prep:', error);
+      return null;
+    }
+  }
+
+  static async getBoundaryScripts(slug: string): Promise<any> {
+    const baseUrl = getBaseUrl();
+    try {
+      const response = await fetch(`${baseUrl}/public/interactive/boundaries-scripts/${slug}`, {
+        cache: 'no-store'
+      });
+      if (!response.ok) throw new Error('Failed to fetch boundary scripts');
+      return await response.json();
+    } catch (error) {
+      console.error('[InteractivePlatform] Error getting boundary scripts:', error);
+      return null;
+    }
+  }
+
+  static async getNavigator(slug: string): Promise<any> {
+    const baseUrl = getBaseUrl();
+    try {
+      const response = await fetch(`${baseUrl}/public/interactive/navigators/${slug}`, {
+        next: { revalidate: 3600 },
+      } as any);
+      if (!response.ok) throw new Error('Failed to fetch navigator');
+      return await response.json();
+    } catch (error) {
+      console.error('[InteractivePlatform] Error getting navigator:', error);
+      return null;
+    }
+  }
+
+  static async getHomepageData(): Promise<any> {
+    const baseUrl = getBaseUrl();
+    try {
+      const response = await fetch(`${baseUrl}/public/homepage`, {
+        next: { revalidate: 3600 },
+        signal: AbortSignal.timeout(5000),
+      } as any);
+      if (!response.ok) throw new Error('Failed to fetch homepage data');
+      return await response.json();
+    } catch (error) {
+      console.error('[InteractivePlatform] Error getting homepage data:', error);
+      return {
+        topics: [
+          { code: 'anxiety', title: 'Тревога' },
+          { code: 'burnout', title: 'Выгорание' },
+          { code: 'relationships', title: 'Отношения' },
+        ],
+        featured_interactives: [],
+        trust_blocks: [
+          { id: 'confidentiality', title: 'Конфиденциальность', description: 'Ваши данные под защитой.' },
+          { id: 'how_it_works', title: 'Как это работает', description: '3 шага к балансу.' },
+        ],
+      };
     }
   }
 }

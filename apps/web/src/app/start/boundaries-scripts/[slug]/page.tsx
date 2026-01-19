@@ -1,24 +1,9 @@
 import { notFound } from 'next/navigation';
 import { BoundaryScriptsClient } from '../BoundaryScriptsClient';
-
-async function getBoundaryScripts(slug: string) {
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
-  
-  try {
-    const res = await fetch(`${API_BASE_URL}/public/interactive/boundaries-scripts/${slug}`, {
-      next: { revalidate: 0 }
-    });
-    
-    if (!res.ok) return null;
-    return res.json();
-  } catch (error) {
-    console.error('Error fetching boundary scripts:', error);
-    return null;
-  }
-}
+import { InteractivePlatform } from '@/lib/interactive';
 
 export default async function BoundaryScriptsPage({ params }: { params: { slug: string } }) {
-  const data = await getBoundaryScripts(params.slug);
+  const data = await InteractivePlatform.getBoundaryScripts(params.slug);
   
   if (!data) {
     notFound();

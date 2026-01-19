@@ -1,22 +1,7 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
 import { PrepClient } from './PrepClient';
-
-async function getPrep(slug: string) {
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
-
-  try {
-    const res = await fetch(`${API_BASE_URL}/public/interactive/prep/${slug}`, {
-      next: { revalidate: 0 },
-      signal: AbortSignal.timeout(5000),
-    });
-    if (!res.ok) return null;
-    return res.json();
-  } catch (error) {
-    console.error('Error fetching prep:', error);
-    return null;
-  }
-}
+import { InteractivePlatform } from '@/lib/interactive';
 
 const FALLBACK_PREP: Record<string, any> = {
   'consultation-prep': {
@@ -97,7 +82,7 @@ const FALLBACK_PREP: Record<string, any> = {
 };
 
 export default async function PrepPage({ params }: { params: { slug: string } }) {
-  const data = await getPrep(params.slug);
+  const data = await InteractivePlatform.getPrep(params.slug);
   const prep = data ?? FALLBACK_PREP[params.slug];
 
   if (!prep) {

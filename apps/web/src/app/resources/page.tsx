@@ -11,25 +11,7 @@ import {
   Container,
   Section,
 } from '@psychology/design-system';
-
-async function getResources() {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
-  
-  try {
-    const res = await fetch(`${apiUrl}/public/content/resource`, {
-      next: { revalidate: 300 }, // Revalidate every 5 minutes
-      signal: AbortSignal.timeout(5000),
-    });
-    
-    if (!res.ok) {
-      throw new Error(`API responded with status ${res.status}`);
-    }
-    return res.json();
-  } catch (error) {
-    console.error('Error fetching resources:', error);
-    return { items: [], total: 0 };
-  }
-}
+import { ContentPlatform } from '@/lib/content';
 
 export const metadata: Metadata = {
   title: 'Полезные ресурсы | Эмоциональный баланс',
@@ -37,7 +19,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ResourcesPage() {
-  const data = await getResources();
+  const data = await ContentPlatform.listContent('resource');
   const resources = data.items || [];
 
   return (

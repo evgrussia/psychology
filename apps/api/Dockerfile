@@ -105,7 +105,7 @@ COPY apps/api/package.json ./apps/api/
 
 # Устанавливаем только production зависимости
 RUN npm install -g pnpm
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install --frozen-lockfile --prod --shamefully-hoist
 
 # Этап 5: Production образ
 FROM node:18-alpine AS runner
@@ -115,8 +115,8 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Устанавливаем pnpm и prisma CLI для выполнения миграций
-RUN npm install -g pnpm prisma
+# Устанавливаем pnpm, prisma, ts-node и typescript для выполнения миграций и сидов
+RUN npm install -g pnpm prisma ts-node typescript
 
 # Создаем непривилегированного пользователя
 RUN addgroup --system --gid 1001 nodejs
@@ -125,6 +125,7 @@ RUN adduser --system --uid 1001 nestjs
 # Копируем необходимые файлы
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./apps/api/dist
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/package.json ./
+COPY --from=builder --chown=nestjs:nodejs /app/apps/api/tsconfig.json ./
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/prisma ./prisma
 COPY --from=prod-deps --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --from=prod-deps --chown=nestjs:nodejs /app/apps/api/node_modules ./apps/api/node_modules

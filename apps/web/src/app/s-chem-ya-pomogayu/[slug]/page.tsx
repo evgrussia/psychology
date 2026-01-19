@@ -3,46 +3,14 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import TopicLandingClient from './TopicLandingClient';
 import { isFeatureEnabled } from '../../../lib/feature-flags';
+import { ContentPlatform } from '@/lib/content';
 
 interface TopicLandingPageProps {
   params: { slug: string };
 }
 
-async function getTopicLandingData(slug: string) {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
-  try {
-    const res = await fetch(`${apiUrl}/public/topic-landings/${slug}`, {
-      next: { revalidate: 3600 },
-      signal: AbortSignal.timeout(5000)
-    });
-    
-    if (res.status === 404) return null;
-    if (!res.ok) throw new Error(`API responded with status ${res.status}`);
-    
-    return res.json();
-  } catch (error) {
-    console.error(`Error fetching topic landing data for ${slug}:`, error);
-    // Fallback data for critical topics if API is down
-    const fallbacks: Record<string, any> = {
-      'anxiety': {
-        topic: { code: 'anxiety', title: 'Тревога' },
-        relatedContent: [],
-        relatedInteractives: [],
-        relatedServices: []
-      },
-      'burnout': {
-        topic: { code: 'burnout', title: 'Выгорание' },
-        relatedContent: [],
-        relatedInteractives: [],
-        relatedServices: []
-      }
-    };
-    return fallbacks[slug] || null;
-  }
-}
-
 export async function generateMetadata({ params }: TopicLandingPageProps): Promise<Metadata> {
-  const data = await getTopicLandingData(params.slug);
+  const data = await ContentPlatform.getTopicLanding(params.slug);
   
   if (!data) {
     return {
@@ -63,7 +31,7 @@ export default async function TopicLandingPage({ params }: TopicLandingPageProps
     notFound();
   }
 
-  const data = await getTopicLandingData(params.slug);
+  const data = await ContentPlatform.getTopicLanding(params.slug);
 
   if (!data) {
     notFound();
