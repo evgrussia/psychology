@@ -5,6 +5,11 @@ export interface UploadMediaDto {
   altText?: string;
 }
 
+export interface UpdateMediaDto {
+  title?: string | null;
+  altText?: string | null;
+}
+
 export interface MediaAssetResponseDto {
   id: string;
   publicUrl: string;

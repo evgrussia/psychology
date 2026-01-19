@@ -97,6 +97,18 @@ chmod +x scripts/*.sh
 
 **Ждите 10-15 минут...**
 
+### Шаг 8: Seed (наполнение базы контентом) — первый запуск
+
+Чтобы сайт/админка/интерактивы работали с реальными данными, выполните seed **один раз** после первого деплоя.
+
+```bash
+cd /var/www/psychology
+docker compose -f docker-compose.prod.yml run --rm api \
+  sh -c "cd /app && npx -y ts-node --transpile-only prisma/seed.ts"
+```
+
+Примечание: для seed должны быть заданы `ENCRYPTION_KEY_ID` и `ENCRYPTION_KEY` в `.env.prod`.
+
 ---
 
 ## ✅ Проверка

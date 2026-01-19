@@ -7,6 +7,7 @@ import { IMediaAssetRepository } from '../../domain/media/repositories/IMediaAss
 import { UploadMediaAssetUseCase } from '../../application/media/use-cases/UploadMediaAssetUseCase';
 import { DeleteMediaAssetUseCase } from '../../application/media/use-cases/DeleteMediaAssetUseCase';
 import { ListMediaAssetsUseCase } from '../../application/media/use-cases/ListMediaAssetsUseCase';
+import { UpdateMediaAssetUseCase } from '../../application/media/use-cases/UpdateMediaAssetUseCase';
 import { AdminMediaController } from '../../presentation/controllers/admin-media.controller';
 import { IStorageService } from '../../application/media/interfaces/IStorageService';
 import { TrackingService } from '../tracking/tracking.service';
@@ -34,6 +35,7 @@ import { AnalyticsModule } from '../analytics/analytics.module';
     UploadMediaAssetUseCase,
     DeleteMediaAssetUseCase,
     ListMediaAssetsUseCase,
+    UpdateMediaAssetUseCase,
     TrackingService,
     MediaTrackingHandler,
   ],
@@ -41,6 +43,7 @@ import { AnalyticsModule } from '../analytics/analytics.module';
     UploadMediaAssetUseCase,
     DeleteMediaAssetUseCase,
     ListMediaAssetsUseCase,
+    UpdateMediaAssetUseCase,
     'IMediaAssetRepository',
   ],
 })

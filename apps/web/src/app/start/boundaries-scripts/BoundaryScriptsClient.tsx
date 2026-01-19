@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { ProgressBar, Button, CrisisBanner, Card, Section, Container } from '@psychology/design-system';
 import { InteractivePlatform } from '@/lib/interactive';
+import { createTelegramDeepLink } from '@/lib/telegram';
+import { track } from '@/lib/tracking';
 
 interface BoundaryScriptsClientProps {
   data: {
@@ -37,7 +39,7 @@ export const BoundaryScriptsClient: React.FC<BoundaryScriptsClientProps> = ({ da
     const scenario = config.scenarios.find((s: any) => s.id === id);
     if (scenario?.is_unsafe) {
       setIsCrisisVisible(true);
-      InteractivePlatform.trackCrisisTriggered('violence_risk', 'boundaries_script_scenario');
+      InteractivePlatform.trackCrisisTriggered('violence', 'other');
     } else {
       setStep('tone');
     }
@@ -74,6 +76,24 @@ export const BoundaryScriptsClient: React.FC<BoundaryScriptsClientProps> = ({ da
     setStep('scenario');
     setSelections({ scenario: '', tone: '', goal: '' });
     setIsCrisisVisible(false);
+  };
+
+  const handleTelegram = async (ctaId: string) => {
+    const { deepLinkId, url } = await createTelegramDeepLink({
+      flow: 'save_resource',
+      tgTarget: 'bot',
+      source: `/start/boundaries-scripts/${data.slug}`,
+      entityId: data.slug,
+      utmMedium: 'bot',
+      utmContent: ctaId,
+    });
+    track('cta_tg_click', {
+      tg_target: 'bot',
+      tg_flow: 'save_resource',
+      deep_link_id: deepLinkId,
+      cta_id: ctaId,
+    });
+    window.location.href = url;
   };
 
   if (isCrisisVisible) {
@@ -171,6 +191,7 @@ export const BoundaryScriptsClient: React.FC<BoundaryScriptsClientProps> = ({ da
             onCopy={handleCopy} 
             copiedVariantId={copiedVariantId}
             onReset={reset}
+            onTelegram={() => void handleTelegram(`boundaries_${data.slug}_result`)}
           />
         );
     }
@@ -214,9 +235,10 @@ interface ResultViewProps {
   onCopy: (id: string, text: string) => void;
   copiedVariantId: string | null;
   onReset: () => void;
+  onTelegram: () => void;
 }
 
-const ResultView: React.FC<ResultViewProps> = ({ variants, scenario, tone, safetyText, onCopy, copiedVariantId, onReset }) => {
+const ResultView: React.FC<ResultViewProps> = ({ variants, scenario, tone, safetyText, onCopy, copiedVariantId, onReset, onTelegram }) => {
   const headingRef = React.useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -263,7 +285,7 @@ const ResultView: React.FC<ResultViewProps> = ({ variants, scenario, tone, safet
         <Button onClick={onReset} variant="outline">
           Попробовать другой вариант
         </Button>
-        <Button onClick={() => (window.location.href = 'https://t.me/psy_balance_bot')}>
+        <Button onClick={onTelegram}>
           Больше техник в Telegram
         </Button>
       </div>

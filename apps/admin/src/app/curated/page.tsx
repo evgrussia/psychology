@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { AdminAuthGuard } from '@/components/admin-auth-guard';
+import { useAdminAuth } from '@/components/admin-auth-context';
 
 interface CuratedCollection {
   id: string;
@@ -13,11 +15,13 @@ interface CuratedCollection {
 }
 
 export default function CuratedListPage() {
+  const { user } = useAdminAuth();
+  const canEdit = Boolean(user?.roles.some((role) => role === 'owner' || role === 'editor'));
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<CuratedCollection[]>([]);
 
   useEffect(() => {
-    fetch('http://127.0.0.1:3001/api/admin/curated')
+    fetch('/api/admin/curated', { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         setItems(data);
@@ -30,13 +34,16 @@ export default function CuratedListPage() {
   }, []);
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>Управление подборками (/curated/)</h1>
-        <Link href="/curated/new" className="btn btn-primary">
-          Создать подборку
-        </Link>
-      </div>
+    <AdminAuthGuard allowedRoles={['owner', 'assistant', 'editor']}>
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h1>Управление подборками (/curated/)</h1>
+          {canEdit && (
+            <Link href="/curated/new" className="btn btn-primary">
+              Создать подборку
+            </Link>
+          )}
+        </div>
 
       {loading ? (
         <p>Загрузка...</p>
@@ -81,6 +88,7 @@ export default function CuratedListPage() {
           </tbody>
         </table>
       )}
-    </div>
+      </div>
+    </AdminAuthGuard>
   );
 }

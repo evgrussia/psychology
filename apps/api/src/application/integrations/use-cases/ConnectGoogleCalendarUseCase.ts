@@ -6,6 +6,7 @@ import { IGoogleCalendarIntegrationRepository } from '@domain/integrations/repos
 import { IGoogleCalendarOAuthService } from '@domain/integrations/services/IGoogleCalendarOAuthService';
 import { IGoogleCalendarService } from '@domain/integrations/services/IGoogleCalendarService';
 import { IEncryptionService } from '@domain/security/services/IEncryptionService';
+import { ISystemSettingsRepository } from '@domain/settings/repositories/ISystemSettingsRepository';
 import { GoogleCalendarConnectStartResponseDto, GoogleCalendarStatusResponseDto } from '../dto/google-calendar.dto';
 import { AuditLogHelper } from '../../audit/helpers/audit-log.helper';
 import { AuditLogAction } from '../../audit/dto/audit-log.dto';
@@ -25,6 +26,8 @@ export class ConnectGoogleCalendarUseCase {
     private readonly googleCalendarService: IGoogleCalendarService,
     @Inject('IEncryptionService')
     private readonly encryptionService: IEncryptionService,
+    @Inject('ISystemSettingsRepository')
+    private readonly settingsRepo: ISystemSettingsRepository,
     @Inject('AuditLogHelper')
     private readonly auditLogHelper: AuditLogHelper,
   ) {}
@@ -175,7 +178,10 @@ export class ConnectGoogleCalendarUseCase {
         status: GoogleCalendarIntegrationStatus.connected,
       });
 
-      return this.toStatusDto(integration);
+      const settings = await this.settingsRepo.get();
+      const syncMode = settings?.googleCalendarSyncMode ?? 'auto';
+
+      return this.toStatusDto(integration, syncMode);
     } catch (error) {
       integration.update({
         status: GoogleCalendarIntegrationStatus.error,
@@ -193,7 +199,10 @@ export class ConnectGoogleCalendarUseCase {
     }
   }
 
-  private toStatusDto(integration: GoogleCalendarIntegration): GoogleCalendarStatusResponseDto {
+  private toStatusDto(
+    integration: GoogleCalendarIntegration,
+    syncMode: string,
+  ): GoogleCalendarStatusResponseDto {
     return {
       status: integration.status,
       calendarId: integration.calendarId || null,
@@ -201,6 +210,7 @@ export class ConnectGoogleCalendarUseCase {
       scopes: integration.scopes || [],
       tokenExpiresAt: integration.tokenExpiresAt || null,
       connectedAt: integration.connectedAt || null,
+      syncMode,
     };
   }
 }

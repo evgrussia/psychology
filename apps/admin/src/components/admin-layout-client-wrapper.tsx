@@ -28,25 +28,27 @@ import {
   Mail,
   BarChart3,
   Activity,
-  Settings
+  Settings,
+  Image as ImageIcon
 } from 'lucide-react';
 import { AdminAuthProvider, useAdminAuth } from './admin-auth-context';
 import { AdminAuthGuard } from './admin-auth-guard';
 import { MobileAdminShell } from './mobile-admin-shell';
 
 const navItems = [
-  { title: 'Дашборд', icon: LayoutDashboard, href: '/', roles: ['owner', 'assistant'] },
+  { title: 'Дашборд', icon: LayoutDashboard, href: '/', roles: ['owner'] },
   { title: 'Расписание', icon: CalendarDays, href: '/schedule', roles: ['owner', 'assistant'] },
   { title: 'Услуги', icon: Briefcase, href: '/services', roles: ['owner', 'assistant'] },
   { title: 'Контент', icon: FileText, href: '/content', roles: ['owner', 'assistant', 'editor'] },
+  { title: 'Медиа', icon: ImageIcon, href: '/content/media', roles: ['owner', 'assistant'] },
   { title: 'Интерактивы', icon: Gamepad2, href: '/interactive', roles: ['owner', 'assistant', 'editor'] },
   { title: 'Подборки', icon: LibraryBig, href: '/curated', roles: ['owner', 'assistant', 'editor'] },
   { title: 'Словарь', icon: Book, href: '/glossary', roles: ['owner', 'assistant', 'editor'] },
-  { title: 'Мероприятия', icon: Calendar, href: '/events', roles: ['owner', 'assistant', 'editor'] },
+  { title: 'Мероприятия', icon: Calendar, href: '/events', roles: ['owner', 'editor'] },
   { title: 'CRM-лиды', icon: Users, href: '/leads', roles: ['owner', 'assistant'] },
   { title: 'Модерация', icon: ShieldCheck, href: '/moderation', roles: ['owner', 'assistant'] },
   { title: 'Шаблоны', icon: Mail, href: '/templates', roles: ['owner', 'assistant'] },
-  { title: 'Аналитика', icon: BarChart3, href: '/analytics', roles: ['owner', 'assistant'] },
+  { title: 'Аналитика', icon: BarChart3, href: '/analytics', roles: ['owner'] },
   { title: 'Аудит-лог', icon: Activity, href: '/audit-log', roles: ['owner', 'assistant'] },
   { title: 'Настройки', icon: Settings, href: '/settings', roles: ['owner'] },
 ];

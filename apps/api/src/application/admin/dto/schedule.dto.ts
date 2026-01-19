@@ -21,6 +21,10 @@ export interface ScheduleAppointmentDto {
   end_at_utc: string;
   status: AppointmentStatus;
   timezone: string;
+  outcome?: string | null;
+  outcome_reason_category?: string | null;
+  outcome_recorded_at?: string | null;
+  outcome_recorded_by_role?: string | null;
 }
 
 export interface ScheduleSettingsDto {

@@ -187,12 +187,14 @@ export class AdminScheduleController {
     @Body() dto: RecordAppointmentOutcomeRequestDto,
     @Request() req: any,
   ) {
+    const actorUserId = req.user?.id ?? null;
     const actorRole = req.user?.roles?.[0] || 'owner';
     await this.recordAppointmentOutcomeUseCase.execute({
       appointmentId,
       outcome: dto.outcome,
       reasonCategory: dto.reason_category ?? null,
       recordedByRole: actorRole,
+      recordedByUserId: actorUserId,
     });
     return { status: 'ok' };
   }

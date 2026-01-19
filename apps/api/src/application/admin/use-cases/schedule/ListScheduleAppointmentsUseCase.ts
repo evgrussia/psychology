@@ -48,6 +48,10 @@ export class ListScheduleAppointmentsUseCase {
         end_at_utc: appointment.endAtUtc.toISOString(),
         status: appointment.status,
         timezone: appointment.timezone,
+        outcome: appointment.outcome ?? null,
+        outcome_reason_category: appointment.outcomeReasonCategory ?? null,
+        outcome_recorded_at: appointment.outcomeRecordedAt ? appointment.outcomeRecordedAt.toISOString() : null,
+        outcome_recorded_by_role: appointment.outcomeRecordedByRole ?? null,
       };
     });
   }

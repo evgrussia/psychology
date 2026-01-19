@@ -52,6 +52,7 @@
 - `FEAT-WEB-11-Implementation-Report.md`
 - `FEAT-MOB-01-Implementation-Report.md`
 - `FEAT-RET-99-Implementation-Report.md`
+- `TechSpec-Research-Completion-Implementation-Report.md`
 
 ## Список фич (P0) и оценки токенов
 

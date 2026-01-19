@@ -25,6 +25,7 @@ export function LayoutClientWrapper({ children }: { children: React.ReactNode })
             <a href="/start" className="transition-colors hover:text-primary">С чего начать</a>
             <a href="/about" className="transition-colors hover:text-primary">Обо мне</a>
             <a href="/blog" className="transition-colors hover:text-primary">Блог</a>
+            <a href="/contacts" className="transition-colors hover:text-primary">Контакты</a>
             <a href="/cabinet" className="transition-colors hover:text-primary">Личный кабинет</a>
           </nav>
           <div className="flex items-center gap-4">
@@ -66,6 +67,7 @@ export function LayoutClientWrapper({ children }: { children: React.ReactNode })
                 <a href="/about" className="text-sm text-muted-foreground hover:text-foreground">О психологе</a>
                 <a href="/how-it-works" className="text-sm text-muted-foreground hover:text-foreground">Как проходит консультация</a>
                 <a href="/blog" className="text-sm text-muted-foreground hover:text-foreground">Блог</a>
+                <a href="/contacts" className="text-sm text-muted-foreground hover:text-foreground">Контакты</a>
               </nav>
             </div>
             <div>

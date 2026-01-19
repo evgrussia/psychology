@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { AdminAuthGuard } from '@/components/admin-auth-guard';
 
 interface InteractiveDefinition {
   id: string;
@@ -40,14 +41,17 @@ export default function BoundariesListPage() {
     }
   };
 
-  if (loading) return <div className="p-8">Загрузка...</div>;
-  if (error) return <div className="p-8 text-red-500">Ошибка: {error}</div>;
-
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Скрипты границ</h1>
-      </div>
+    <AdminAuthGuard allowedRoles={['owner', 'assistant', 'editor']}>
+      {loading ? (
+        <div className="p-8">Загрузка...</div>
+      ) : error ? (
+        <div className="p-8 text-red-500">Ошибка: {error}</div>
+      ) : (
+        <div className="p-8">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-bold">Скрипты границ</h1>
+          </div>
 
       <div className="bg-white shadow-md rounded-lg overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
@@ -97,6 +101,8 @@ export default function BoundariesListPage() {
           </tbody>
         </table>
       </div>
-    </div>
+        </div>
+      )}
+    </AdminAuthGuard>
   );
 }

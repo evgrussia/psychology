@@ -56,6 +56,16 @@ export class InteractiveController {
     return await this.getInteractiveDefinitionUseCase.execute(InteractiveType.QUIZ, slug);
   }
 
+  @Get('thermometers/:slug')
+  async getThermometer(@Param('slug') slug: string) {
+    return await this.getInteractiveDefinitionUseCase.execute(InteractiveType.THERMOMETER, slug);
+  }
+
+  @Get('prep/:slug')
+  async getPrep(@Param('slug') slug: string) {
+    return await this.getInteractiveDefinitionUseCase.execute(InteractiveType.PREP, slug);
+  }
+
   @Get('rituals')
   async listRituals(@Query('topic') topicCode?: string) {
     return await this.listRitualsUseCase.execute({ topicCode });

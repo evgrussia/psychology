@@ -4,11 +4,15 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import MarkdownEditor from '../../../components/MarkdownEditor';
+import { AdminAuthGuard } from '@/components/admin-auth-guard';
+import { useAdminAuth } from '@/components/admin-auth-context';
 
 export default function EditGlossaryTermPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
+  const { user } = useAdminAuth();
+  const canEdit = Boolean(user?.roles.some((role) => role === 'owner' || role === 'editor'));
   
   const [formData, setFormData] = useState({
     title: '',
@@ -29,8 +33,8 @@ export default function EditGlossaryTermPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch(`http://127.0.0.1:3001/api/admin/glossary/${id}`).then(res => res.json()),
-      fetch(`http://127.0.0.1:3001/api/admin/content`).then(res => res.json())
+      fetch(`/api/admin/glossary/${id}`, { credentials: 'include' }).then(res => res.json()),
+      fetch(`/api/admin/content`, { credentials: 'include' }).then(res => res.json())
     ])
       .then(([data, contentData]) => {
         setFormData({
@@ -56,6 +60,9 @@ export default function EditGlossaryTermPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canEdit) {
+      return;
+    }
     setSaving(true);
 
     try {
@@ -70,12 +77,12 @@ export default function EditGlossaryTermPage() {
         synonyms: synonymsArray,
       };
 
-      const res = await fetch(`http://127.0.0.1:3001/api/admin/glossary`, {
+      const res = await fetch(`/api/admin/glossary`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer test-token',
         },
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
 
@@ -95,15 +102,16 @@ export default function EditGlossaryTermPage() {
   };
 
   const handlePublish = async () => {
+    if (!canEdit) {
+      return;
+    }
     if (!confirm('Вы уверены, что хотите опубликовать этот термин?')) return;
     
     setPublishing(true);
     try {
-      const res = await fetch(`http://127.0.0.1:3001/api/admin/glossary/${id}/publish`, {
+      const res = await fetch(`/api/admin/glossary/${id}/publish`, {
         method: 'POST',
-        headers: {
-          'Authorization': 'Bearer test-token',
-        },
+        credentials: 'include',
       });
 
       if (res.ok) {
@@ -123,14 +131,15 @@ export default function EditGlossaryTermPage() {
   };
 
   const handleDelete = async () => {
+    if (!canEdit) {
+      return;
+    }
     if (!confirm('ВЫ УВЕРЕНЫ? Это действие необратимо.')) return;
     
     try {
-      const res = await fetch(`http://127.0.0.1:3001/api/admin/glossary/${id}`, {
+      const res = await fetch(`/api/admin/glossary/${id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': 'Bearer test-token',
-        },
+        credentials: 'include',
       });
 
       if (res.ok) {
@@ -145,22 +154,25 @@ export default function EditGlossaryTermPage() {
     }
   };
 
-  if (loading) return <p>Загрузка...</p>;
-
   return (
-    <div className="editor-page">
-      <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <Link href="/glossary" style={{ color: '#3498db' }}>← Назад к списку</Link>
-          <h1>Редактирование: {formData.title}</h1>
-        </div>
-        <button 
-          onClick={handleDelete}
-          style={{ backgroundColor: '#e74c3c', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer' }}
-        >
-          Удалить термин
-        </button>
-      </div>
+    <AdminAuthGuard allowedRoles={['owner', 'assistant', 'editor']}>
+      {loading ? (
+        <p>Загрузка...</p>
+      ) : (
+        <div className="editor-page">
+          <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <Link href="/glossary" style={{ color: '#3498db' }}>← Назад к списку</Link>
+              <h1>Редактирование: {formData.title}</h1>
+            </div>
+            <button 
+              onClick={handleDelete}
+              disabled={!canEdit}
+              style={{ backgroundColor: '#e74c3c', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer' }}
+            >
+              Удалить термин
+            </button>
+          </div>
 
       <form onSubmit={handleSubmit} className="editor-form">
         <div className="editor-sidebar">
@@ -271,11 +283,11 @@ export default function EditGlossaryTermPage() {
             </div>
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '20px' }} disabled={saving}>
+          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '20px' }} disabled={!canEdit || saving}>
             {saving ? 'Сохранение...' : 'Сохранить изменения'}
           </button>
 
-          {formData.status !== 'published' && (
+          {canEdit && formData.status !== 'published' && (
             <button 
               type="button" 
               className="btn btn-success" 
@@ -355,6 +367,8 @@ export default function EditGlossaryTermPage() {
           background-color: #bdc3c7;
         }
       `}</style>
-    </div>
+        </div>
+      )}
+    </AdminAuthGuard>
   );
 }

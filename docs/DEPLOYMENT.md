@@ -338,6 +338,32 @@ cd /var/www/psychology
 8. ✅ Запустит контейнеры
 9. ✅ Проверит здоровье сервисов
 
+### 6.2 Наполнение базы (seed) — первый запуск
+
+После первого деплоя база будет пустой (или с только что применёнными миграциями).  
+Чтобы **весь функционал (контент/интерактивы/подборки/события/слоты/демо UGC/лиды) работал “из коробки”**, запустите seed один раз.
+
+**Важно:**
+- Seed использует шифрование для полей `*_encrypted`, поэтому в `.env.prod` должны быть заданы `ENCRYPTION_KEY_ID` и `ENCRYPTION_KEY` (см. `env.prod.example`).
+- Seed **идемпотентный**: повторный запуск безопасен (используются `upsert`/очистка связей).
+
+Запуск seed через контейнер API:
+
+```bash
+cd /var/www/psychology
+
+# Запуск seed (выполняется внутри контейнера api)
+docker compose -f docker-compose.prod.yml run --rm api \
+  sh -c "cd /app && npx -y ts-node --transpile-only prisma/seed.ts"
+```
+
+Если вам нужны только подборки (curated) отдельно:
+
+```bash
+docker compose -f docker-compose.prod.yml run --rm api \
+  sh -c "cd /app && npx -y ts-node --transpile-only prisma/seed-curated.ts"
+```
+
 ### 6.2 Мониторинг процесса деплоя
 
 Процесс деплоя может занять 10-15 минут в зависимости от скорости сервера.

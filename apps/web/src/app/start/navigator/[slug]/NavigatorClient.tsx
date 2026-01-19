@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { ProgressBar, ResultCard, CrisisBanner, Button, Section, Container, Card } from '@psychology/design-system';
-import { InteractivePlatform, ResultLevel } from '@/lib/interactive';
-import SafeMarkdownRenderer from '@/components/SafeMarkdownRenderer';
+import React, { useState } from 'react';
+import { ResultCard, CrisisBanner, Button, Section, Container, Card } from '@psychology/design-system';
+import { InteractivePlatform, type CrisisTriggerType } from '@/lib/interactive';
+import { createTelegramDeepLink } from '@/lib/telegram';
+import { track } from '@/lib/tracking';
 
 interface NavigatorClientProps {
   definition: any; // NavigatorConfig
@@ -18,6 +19,7 @@ export const NavigatorClient: React.FC<NavigatorClientProps> = ({ definition, sl
   const [startTime, setStartTime] = useState<number>(0);
   const [finalResultProfile, setFinalResultProfile] = useState<any>(null);
   const [crisisTriggered, setCrisisTriggered] = useState(false);
+  const [crisisTriggerType, setCrisisTriggerType] = useState<CrisisTriggerType | null>(null);
   const [isCrisisVisible, setIsCrisisVisible] = useState(true);
 
   const currentStep = definition.steps.find((s: any) => s.step_id === currentStepId);
@@ -40,7 +42,9 @@ export const NavigatorClient: React.FC<NavigatorClientProps> = ({ definition, sl
     if (choice.crisis_trigger) {
       setCrisisTriggered(true);
       setIsCrisisVisible(true);
-      InteractivePlatform.trackCrisisTriggered('navigator_trigger', 'navigator');
+      const resolvedTrigger = (choice.crisis_trigger_type as CrisisTriggerType | undefined) ?? 'minor_risk';
+      setCrisisTriggerType(resolvedTrigger);
+      InteractivePlatform.trackCrisisTriggered(resolvedTrigger, 'other');
     }
 
     if (choice.next_step_id) {
@@ -73,12 +77,29 @@ export const NavigatorClient: React.FC<NavigatorClientProps> = ({ definition, sl
         resultProfile: resultProfile.id,
         durationMs,
         crisisTriggered,
-        crisisTriggerType: crisisTriggered ? 'navigator_trigger' : undefined,
+        crisisTriggerType: crisisTriggered ? crisisTriggerType ?? 'minor_risk' : undefined,
       });
     }
 
     InteractivePlatform.trackNavigatorComplete(slug, resultProfile.id, durationMs, runId ?? undefined);
     setStep('result');
+  };
+
+  const handleTelegram = async (ctaId: string) => {
+    const { deepLinkId, url } = await createTelegramDeepLink({
+      flow: 'plan_7d',
+      tgTarget: 'bot',
+      source: `/start/navigator/${slug}`,
+      utmMedium: 'bot',
+      utmContent: ctaId,
+    });
+    track('cta_tg_click', {
+      tg_target: 'bot',
+      tg_flow: 'plan_7d',
+      deep_link_id: deepLinkId,
+      cta_id: ctaId,
+    });
+    window.location.href = url;
   };
 
   if (step === 'start') {
@@ -180,9 +201,7 @@ export const NavigatorClient: React.FC<NavigatorClientProps> = ({ definition, sl
                     {finalResultProfile.cta.text}
                   </Button>
                 ) : (
-                  <Button 
-                    onClick={() => window.location.href = 'https://t.me/psy_balance_bot'}
-                  >
+                  <Button onClick={() => void handleTelegram(`navigator_${slug}_result`)}>
                     Получить план в Telegram
                   </Button>
                 )}

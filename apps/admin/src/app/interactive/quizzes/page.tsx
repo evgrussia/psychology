@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { AdminAuthGuard } from '@/components/admin-auth-guard';
 
 interface QuizDefinition {
   id: string;
@@ -39,14 +40,17 @@ export default function QuizzesListPage() {
     }
   };
 
-  if (loading) return <div className="p-8">Загрузка...</div>;
-  if (error) return <div className="p-8 text-red-500">Ошибка: {error}</div>;
-
   return (
-    <div className="p-8">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1 className="text-2xl font-bold">Управление квизами</h1>
-      </div>
+    <AdminAuthGuard allowedRoles={['owner', 'assistant', 'editor']}>
+      {loading ? (
+        <div className="p-8">Загрузка...</div>
+      ) : error ? (
+        <div className="p-8 text-red-500">Ошибка: {error}</div>
+      ) : (
+        <div className="p-8">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h1 className="text-2xl font-bold">Управление квизами</h1>
+          </div>
 
       <div className="bg-white shadow-md rounded-lg overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
@@ -80,7 +84,7 @@ export default function QuizzesListPage() {
                   {quiz.publishedAt ? new Date(quiz.publishedAt).toLocaleDateString('ru-RU') : '—'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <Link href={`/admin/interactive/quizzes/${quiz.id}`} className="text-indigo-600 hover:text-indigo-900">
+                  <Link href={`/interactive/quizzes/${quiz.id}`} className="text-indigo-600 hover:text-indigo-900">
                     Редактировать
                   </Link>
                 </td>
@@ -96,6 +100,8 @@ export default function QuizzesListPage() {
           </tbody>
         </table>
       </div>
-    </div>
+        </div>
+      )}
+    </AdminAuthGuard>
   );
 }

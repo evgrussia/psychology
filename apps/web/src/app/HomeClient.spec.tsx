@@ -31,10 +31,8 @@ const locationMock = {
 };
 
 beforeAll(() => {
-  // @ts-expect-error jsdom allows replacing location in tests
-  delete window.location;
-  // @ts-expect-error jsdom allows replacing location in tests
-  window.location = locationMock;
+  delete (window as any).location;
+  (window as any).location = locationMock;
 });
 
 describe('HomeClient', () => {

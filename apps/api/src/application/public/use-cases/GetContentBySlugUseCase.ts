@@ -18,6 +18,7 @@ export interface GetContentBySlugResponse {
   time_to_benefit?: string;
   format?: string;
   support_level?: string;
+  practical_block?: Record<string, unknown> | null;
   seo_title?: string;
   seo_description?: string;
   seo_keywords?: string;
@@ -51,6 +52,7 @@ export class GetContentBySlugUseCase {
       time_to_benefit: obj.timeToBenefit,
       format: obj.format,
       support_level: obj.supportLevel,
+      practical_block: obj.practicalBlock ?? null,
       seo_title: obj.seoTitle,
       seo_description: obj.seoDescription,
       seo_keywords: obj.seoKeywords,

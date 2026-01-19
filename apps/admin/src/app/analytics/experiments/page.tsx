@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { AdminAuthGuard } from '@/components/admin-auth-guard';
 
-type RangePreset = 'today' | '7d' | '30d' | 'custom';
+type RangePreset = 'today' | '7d' | '30d' | '90d' | 'custom';
 
 interface ExperimentVariantStats {
   key: string;
@@ -33,6 +33,7 @@ const rangeOptions: { value: RangePreset; label: string }[] = [
   { value: 'today', label: 'Сегодня' },
   { value: '7d', label: '7 дней' },
   { value: '30d', label: '30 дней' },
+  { value: '90d', label: '90 дней' },
   { value: 'custom', label: 'Выбрать' },
 ];
 
@@ -88,7 +89,7 @@ export default function ExperimentsAnalyticsPage() {
   }, [query, range, customFrom, customTo]);
 
   return (
-    <AdminAuthGuard allowedRoles={['owner', 'assistant']}>
+    <AdminAuthGuard allowedRoles={['owner']}>
       <div className="space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>

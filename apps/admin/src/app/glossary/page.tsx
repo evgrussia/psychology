@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { AdminAuthGuard } from '@/components/admin-auth-guard';
+import { useAdminAuth } from '@/components/admin-auth-context';
 
 interface GlossaryTerm {
   id: string;
@@ -13,6 +15,8 @@ interface GlossaryTerm {
 }
 
 export default function GlossaryListPage() {
+  const { user } = useAdminAuth();
+  const canEdit = Boolean(user?.roles.some((role) => role === 'owner' || role === 'editor'));
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<GlossaryTerm[]>([]);
   const [filters, setFilters] = useState({
@@ -22,12 +26,12 @@ export default function GlossaryListPage() {
   });
 
   useEffect(() => {
-    let url = 'http://127.0.0.1:3001/api/admin/glossary?';
+    let url = '/api/admin/glossary?';
     if (filters.category) url += `category=${filters.category}&`;
     if (filters.status) url += `status=${filters.status}&`;
     if (filters.search) url += `search=${filters.search}&`;
 
-    fetch(url)
+    fetch(url, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         setItems(data);
@@ -40,13 +44,16 @@ export default function GlossaryListPage() {
   }, [filters]);
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-        <h1>Словарь терминов</h1>
-        <Link href="/glossary/new" className="btn btn-primary">
-          Создать термин
-        </Link>
-      </div>
+    <AdminAuthGuard allowedRoles={['owner', 'assistant', 'editor']}>
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+          <h1>Словарь терминов</h1>
+          {canEdit && (
+            <Link href="/glossary/new" className="btn btn-primary">
+              Создать термин
+            </Link>
+          )}
+        </div>
 
       <div className="filters" style={{ display: 'flex', gap: '20px', marginBottom: '30px', backgroundColor: '#f9f9f9', padding: '20px', borderRadius: '8px' }}>
         <div className="filter-group">
@@ -137,6 +144,7 @@ export default function GlossaryListPage() {
           </tbody>
         </table>
       )}
-    </div>
+      </div>
+    </AdminAuthGuard>
   );
 }

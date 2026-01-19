@@ -3,6 +3,9 @@ import { IAppointmentRepository } from '@domain/booking/repositories/IAppointmen
 import { IServiceRepository } from '@domain/booking/repositories/IServiceRepository';
 import { TrackingService } from '@infrastructure/tracking/tracking.service';
 import { ILeadRepository } from '@domain/crm/repositories/ILeadRepository';
+import { AppointmentStatus } from '@domain/booking/value-objects/BookingEnums';
+import { AuditLogHelper } from '@application/audit/helpers/audit-log.helper';
+import { AuditLogAction } from '@application/audit/dto/audit-log.dto';
 
 const ALLOWED_OUTCOMES = new Set([
   'attended',
@@ -29,6 +32,8 @@ export class RecordAppointmentOutcomeUseCase {
     private readonly serviceRepository: IServiceRepository,
     @Inject('ILeadRepository')
     private readonly leadRepository: ILeadRepository,
+    @Inject('AuditLogHelper')
+    private readonly auditLogHelper: AuditLogHelper,
     private readonly trackingService: TrackingService,
   ) {}
 
@@ -37,6 +42,7 @@ export class RecordAppointmentOutcomeUseCase {
     outcome: string;
     reasonCategory?: string | null;
     recordedByRole: string;
+    recordedByUserId?: string | null;
   }): Promise<void> {
     if (!ALLOWED_OUTCOMES.has(params.outcome)) {
       throw new BadRequestException('Unsupported outcome');
@@ -50,11 +56,39 @@ export class RecordAppointmentOutcomeUseCase {
     if (!appointment) {
       throw new NotFoundException('Appointment not found');
     }
+    if (![AppointmentStatus.completed, AppointmentStatus.canceled, AppointmentStatus.rescheduled].includes(appointment.status)) {
+      throw new BadRequestException('Cannot record outcome for active appointment');
+    }
 
     const service = await this.serviceRepository.findById(appointment.serviceId);
     if (!service) {
       throw new NotFoundException('Service not found');
     }
+
+    const previousOutcome = {
+      outcome: appointment.outcome ?? null,
+      reason_category: appointment.outcomeReasonCategory ?? null,
+      recorded_at: appointment.outcomeRecordedAt ?? null,
+      recorded_by_role: appointment.outcomeRecordedByRole ?? null,
+    };
+
+    appointment.recordOutcome(params.outcome, params.reasonCategory ?? null, params.recordedByRole);
+    await this.appointmentRepository.save(appointment);
+
+    await this.auditLogHelper.logAction(
+      params.recordedByUserId ?? null,
+      params.recordedByRole,
+      AuditLogAction.ADMIN_APPOINTMENT_OUTCOME_RECORDED,
+      'Appointment',
+      appointment.id,
+      previousOutcome,
+      {
+        outcome: appointment.outcome,
+        reason_category: appointment.outcomeReasonCategory,
+        recorded_at: appointment.outcomeRecordedAt,
+        recorded_by_role: appointment.outcomeRecordedByRole,
+      },
+    );
 
     const deepLinkId = appointment.leadId
       ? await this.leadRepository.findLatestDeepLinkId(appointment.leadId)

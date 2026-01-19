@@ -35,13 +35,13 @@ export default async () => {
 
   execSync('npx prisma migrate deploy', {
     cwd: apiRoot,
-    env,
+    env: env as any,
     stdio: 'inherit',
   });
 
   execSync('npx prisma db seed', {
     cwd: apiRoot,
-    env,
+    env: env as any,
     stdio: 'inherit',
   });
 };

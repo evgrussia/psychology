@@ -1,30 +1,37 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { AuditLogHelper } from '../../audit/helpers/audit-log.helper';
 import { AuditLogAction } from '../../audit/dto/audit-log.dto';
+import { ISystemSettingsRepository } from '@domain/settings/repositories/ISystemSettingsRepository';
 
 export interface UpdateSystemSettingsDto {
   maintenanceMode?: boolean;
   registrationEnabled?: boolean;
+  googleCalendarSyncMode?: string;
 }
 
 @Injectable()
 export class UpdateSystemSettingsUseCase {
   constructor(
+    @Inject('ISystemSettingsRepository')
+    private readonly settingsRepository: ISystemSettingsRepository,
     @Inject('AuditLogHelper')
     private readonly auditLogHelper: AuditLogHelper,
   ) {}
 
-  async execute(dto: UpdateSystemSettingsDto, actorUserId: string, actorRole: string): Promise<void> {
-    // This would typically update a settings table or a config file
-    // For now we'll just log the action
-    
-    // Mocking current values
+  async execute(dto: UpdateSystemSettingsDto, actorUserId: string, actorRole: string) {
+    const current = await this.settingsRepository.get();
     const currentSettings = {
-      maintenanceMode: false,
-      registrationEnabled: true,
+      maintenanceMode: current?.maintenanceMode ?? false,
+      registrationEnabled: current?.registrationEnabled ?? true,
+      googleCalendarSyncMode: current?.googleCalendarSyncMode ?? 'auto',
     };
 
-    // Log to audit log
+    const updated = await this.settingsRepository.upsert({
+      maintenanceMode: dto.maintenanceMode ?? currentSettings.maintenanceMode,
+      registrationEnabled: dto.registrationEnabled ?? currentSettings.registrationEnabled,
+      googleCalendarSyncMode: dto.googleCalendarSyncMode ?? currentSettings.googleCalendarSyncMode,
+    });
+
     try {
       await this.auditLogHelper.logAction(
         actorUserId,
@@ -33,10 +40,20 @@ export class UpdateSystemSettingsUseCase {
         'SystemSettings',
         'global',
         currentSettings,
-        { ...currentSettings, ...dto }
+        {
+          maintenanceMode: updated.maintenanceMode,
+          registrationEnabled: updated.registrationEnabled,
+          googleCalendarSyncMode: updated.googleCalendarSyncMode,
+        },
       );
     } catch (error) {
       console.error('Failed to log settings change to audit log:', error);
     }
+
+    return {
+      maintenanceMode: updated.maintenanceMode,
+      registrationEnabled: updated.registrationEnabled,
+      googleCalendarSyncMode: updated.googleCalendarSyncMode,
+    };
   }
 }

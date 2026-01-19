@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { AdminAuthGuard } from '@/components/admin-auth-guard';
+import { useAdminAuth } from '@/components/admin-auth-context';
 
 interface BoundaryScriptVariant {
   variant_id: string;
@@ -62,6 +64,8 @@ const createId = () => {
 export default function EditBoundariesPage() {
   const params = useParams();
   const id = params.id as string;
+  const { user } = useAdminAuth();
+  const canEdit = Boolean(user?.roles.some((role) => role === 'owner' || role === 'editor'));
 
   const [definition, setDefinition] = useState<BoundariesDefinition | null>(null);
   const [loading, setLoading] = useState(true);
@@ -129,6 +133,9 @@ export default function EditBoundariesPage() {
 
   const handleSave = async () => {
     if (!definition) return;
+    if (!canEdit) {
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
@@ -156,6 +163,9 @@ export default function EditBoundariesPage() {
 
   const handlePublish = async () => {
     if (!definition) return;
+    if (!canEdit) {
+      return;
+    }
     setPublishing(true);
     setError(null);
     try {
@@ -214,24 +224,36 @@ export default function EditBoundariesPage() {
   };
 
   const addScenario = () => {
+    if (!canEdit) {
+      return;
+    }
     if (!definition?.config) return;
     const scenarios = [...definition.config.scenarios, { id: createId(), name: '', description: '', is_unsafe: false }];
     setDefinition({ ...definition, config: { ...definition.config, scenarios } });
   };
 
   const addTone = () => {
+    if (!canEdit) {
+      return;
+    }
     if (!definition?.config) return;
     const tones = [...definition.config.tones, { id: createId(), name: '' }];
     setDefinition({ ...definition, config: { ...definition.config, tones } });
   };
 
   const addGoal = () => {
+    if (!canEdit) {
+      return;
+    }
     if (!definition?.config) return;
     const goals = [...definition.config.goals, { id: createId(), name: '' }];
     setDefinition({ ...definition, config: { ...definition.config, goals } });
   };
 
   const addMatrixItem = () => {
+    if (!canEdit) {
+      return;
+    }
     if (!definition?.config) return;
     const scenarioId = definition.config.scenarios[0]?.id;
     const toneId = definition.config.tones[0]?.id;
@@ -250,6 +272,9 @@ export default function EditBoundariesPage() {
   };
 
   const addVariant = (matrixIndex: number) => {
+    if (!canEdit) {
+      return;
+    }
     if (!definition?.config) return;
     const matrix = [...definition.config.matrix];
     const variants = [...matrix[matrixIndex].variants, { variant_id: createId(), text: '' }];
@@ -258,6 +283,9 @@ export default function EditBoundariesPage() {
   };
 
   const removeVariant = (matrixIndex: number, variantIndex: number) => {
+    if (!canEdit) {
+      return;
+    }
     if (!definition?.config) return;
     const matrix = [...definition.config.matrix];
     const variants = matrix[matrixIndex].variants.filter((_, idx) => idx !== variantIndex);
@@ -265,27 +293,31 @@ export default function EditBoundariesPage() {
     setDefinition({ ...definition, config: { ...definition.config, matrix } });
   };
 
-  if (loading) return <div className="p-8">Загрузка...</div>;
-  if (error && !definition) return <div className="p-8 text-red-500">Ошибка: {error}</div>;
-  if (!definition) return <div className="p-8">Интерактив не найден</div>;
-
   return (
-    <div className="p-8">
-      <div className="mb-6">
-        <Link href="/interactive/boundaries" className="text-blue-600">← Назад к списку</Link>
-        <h1 className="text-2xl font-bold mt-4">Редактирование: {definition.title}</h1>
-        {error && <div className="mt-2 text-red-500">{error}</div>}
-      </div>
+    <AdminAuthGuard allowedRoles={['owner', 'assistant', 'editor']}>
+      {loading ? (
+        <div className="p-8">Загрузка...</div>
+      ) : error && !definition ? (
+        <div className="p-8 text-red-500">Ошибка: {error}</div>
+      ) : !definition ? (
+        <div className="p-8">Интерактив не найден</div>
+      ) : (
+        <div className="p-8">
+          <div className="mb-6">
+            <Link href="/interactive/boundaries" className="text-blue-600">← Назад к списку</Link>
+            <h1 className="text-2xl font-bold mt-4">Редактирование: {definition.title}</h1>
+            {error && <div className="mt-2 text-red-500">{error}</div>}
+          </div>
 
       <div className="flex flex-wrap gap-3 mb-6">
         <button
           onClick={handleSave}
-          disabled={saving}
+          disabled={!canEdit || saving}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
         >
           {saving ? 'Сохранение...' : 'Сохранить'}
         </button>
-        {definition.status !== 'published' && (
+        {canEdit && definition.status !== 'published' && (
           <button
             onClick={handlePublish}
             disabled={publishing}
@@ -385,7 +417,7 @@ export default function EditBoundariesPage() {
             <div>
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-xl font-bold">Сценарии</h2>
-                <button onClick={addScenario} className="text-sm text-blue-600">Добавить</button>
+                <button onClick={addScenario} disabled={!canEdit} className="text-sm text-blue-600">Добавить</button>
               </div>
               <div className="space-y-3">
                 {definition.config.scenarios.map((scenario, index) => (
@@ -427,7 +459,7 @@ export default function EditBoundariesPage() {
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="text-xl font-bold">Тон</h2>
-                  <button onClick={addTone} className="text-sm text-blue-600">Добавить</button>
+                  <button onClick={addTone} disabled={!canEdit} className="text-sm text-blue-600">Добавить</button>
                 </div>
                 <div className="space-y-2">
                   {definition.config.tones.map((tone, index) => (
@@ -444,7 +476,7 @@ export default function EditBoundariesPage() {
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="text-xl font-bold">Цели</h2>
-                  <button onClick={addGoal} className="text-sm text-blue-600">Добавить</button>
+                  <button onClick={addGoal} disabled={!canEdit} className="text-sm text-blue-600">Добавить</button>
                 </div>
                 <div className="space-y-2">
                   {definition.config.goals.map((goal, index) => (
@@ -463,7 +495,7 @@ export default function EditBoundariesPage() {
             <div>
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-xl font-bold">Матрица вариантов</h2>
-                <button onClick={addMatrixItem} className="text-sm text-blue-600">Добавить комбинацию</button>
+                <button onClick={addMatrixItem} disabled={!canEdit} className="text-sm text-blue-600">Добавить комбинацию</button>
               </div>
               <div className="space-y-4">
                 {definition.config.matrix.map((item, matrixIndex) => (
@@ -514,6 +546,7 @@ export default function EditBoundariesPage() {
                             <button
                               type="button"
                               onClick={() => removeVariant(matrixIndex, variantIndex)}
+                              disabled={!canEdit}
                               className="text-xs text-red-500"
                             >
                               Удалить
@@ -537,6 +570,7 @@ export default function EditBoundariesPage() {
                       <button
                         type="button"
                         onClick={() => addVariant(matrixIndex)}
+                        disabled={!canEdit}
                         className="text-sm text-blue-600"
                       >
                         Добавить вариант
@@ -562,6 +596,8 @@ export default function EditBoundariesPage() {
           </>
         )}
       </div>
-    </div>
+        </div>
+      )}
+    </AdminAuthGuard>
   );
 }

@@ -2,14 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import ReactMarkdown from 'react-markdown';
 import Link from 'next/link';
 import MarkdownEditor from '../../../components/MarkdownEditor';
+import { AdminAuthGuard } from '@/components/admin-auth-guard';
+import { useAdminAuth } from '@/components/admin-auth-context';
 
 export default function EditContentPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
+  const { user } = useAdminAuth();
+  const canEdit = Boolean(user?.roles.some((role) => role === 'owner' || role === 'editor'));
   
   const [formData, setFormData] = useState({
     title: '',
@@ -18,12 +21,16 @@ export default function EditContentPage() {
     bodyMarkdown: '',
     excerpt: '',
     status: 'draft',
+    timeToBenefit: '',
+    format: '',
+    supportLevel: '',
     seoTitle: '',
     seoDescription: '',
     seoKeywords: '',
     canonicalUrl: '',
     topicCodes: [] as string[],
     tagIds: [] as string[],
+    practicalBlock: buildPracticalTemplate('article', ''),
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -44,7 +51,7 @@ export default function EditContentPage() {
   });
 
   useEffect(() => {
-    fetch(`http://127.0.0.1:3001/api/admin/content/${id}`)
+    fetch(`/api/admin/content/${id}`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         setFormData({
@@ -54,12 +61,16 @@ export default function EditContentPage() {
           bodyMarkdown: data.bodyMarkdown,
           excerpt: data.excerpt || '',
           status: data.status,
+          timeToBenefit: data.timeToBenefit || '',
+          format: data.format || '',
+          supportLevel: data.supportLevel || '',
           seoTitle: data.seoTitle || '',
           seoDescription: data.seoDescription || '',
           seoKeywords: data.seoKeywords || '',
           canonicalUrl: data.canonicalUrl || '',
           topicCodes: data.topicCodes || [],
           tagIds: data.tagIds || [],
+          practicalBlock: data.practicalBlock || buildPracticalTemplate(data.contentType, data.format || ''),
         });
         setLoading(false);
       })
@@ -74,8 +85,8 @@ export default function EditContentPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch('http://127.0.0.1:3001/api/admin/content/topics').then(res => res.json()),
-      fetch('http://127.0.0.1:3001/api/admin/content/tags').then(res => res.json())
+      fetch('/api/admin/content/topics', { credentials: 'include' }).then(res => res.json()),
+      fetch('/api/admin/content/tags', { credentials: 'include' }).then(res => res.json())
     ]).then(([topicsData, tagsData]) => {
       setTopics(topicsData);
       setTags(tagsData);
@@ -84,15 +95,18 @@ export default function EditContentPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canEdit) {
+      return;
+    }
     setSaving(true);
 
     try {
-      const res = await fetch(`http://127.0.0.1:3001/api/admin/content/${id}`, {
+      const res = await fetch(`/api/admin/content/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer test-token',
         },
+        credentials: 'include',
         body: JSON.stringify(formData),
       });
 
@@ -112,14 +126,17 @@ export default function EditContentPage() {
   };
 
   const handlePublish = async () => {
+    if (!canEdit) {
+      return;
+    }
     setPublishing(true);
     try {
-      const res = await fetch(`http://127.0.0.1:3001/api/admin/content/${id}/publish`, {
+      const res = await fetch(`/api/admin/content/${id}/publish`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer test-token',
         },
+        credentials: 'include',
         body: JSON.stringify({ qaChecklist }),
       });
 
@@ -141,7 +158,7 @@ export default function EditContentPage() {
 
   const loadRevisions = async () => {
     try {
-      const res = await fetch(`http://127.0.0.1:3001/api/admin/content/${id}/revisions`);
+      const res = await fetch(`/api/admin/content/${id}/revisions`, { credentials: 'include' });
       const data = await res.json();
       setRevisions(data);
       setShowRevisions(true);
@@ -152,14 +169,15 @@ export default function EditContentPage() {
   };
 
   const handleRollback = async (revisionId: string) => {
+    if (!canEdit) {
+      return;
+    }
     if (!confirm('Вы уверены, что хотите откатиться к этой версии? Текущие несохраненные изменения будут потеряны.')) return;
     
     try {
-      const res = await fetch(`http://127.0.0.1:3001/api/admin/content/${id}/revisions/${revisionId}/rollback`, {
+      const res = await fetch(`/api/admin/content/${id}/revisions/${revisionId}/rollback`, {
         method: 'POST',
-        headers: {
-          'Authorization': 'Bearer test-token',
-        },
+        credentials: 'include',
       });
 
       if (res.ok) {
@@ -176,8 +194,11 @@ export default function EditContentPage() {
   };
 
   const loadMedia = async () => {
+    if (!canEdit) {
+      return;
+    }
     try {
-      const res = await fetch('http://127.0.0.1:3001/api/admin/media');
+      const res = await fetch('/api/admin/media', { credentials: 'include' });
       const data = await res.json();
       setMediaAssets(data);
       setShowMediaPicker(true);
@@ -188,6 +209,9 @@ export default function EditContentPage() {
   };
 
   const insertMedia = (asset: any) => {
+    if (!canEdit) {
+      return;
+    }
     const markdown = asset.media_type === 'image' 
       ? `![${asset.alt_text || asset.title || ''}](${asset.public_url})`
       : `[${asset.title || 'Медиа файл'}](${asset.public_url})`;
@@ -199,14 +223,16 @@ export default function EditContentPage() {
     setShowMediaPicker(false);
   };
 
-  if (loading) return <p>Загрузка...</p>;
-
   return (
-    <div className="editor-page">
-      <div style={{ marginBottom: '20px' }}>
-        <Link href="/content" style={{ color: '#3498db' }}>← Назад к списку</Link>
-        <h1>Редактирование: {formData.title}</h1>
-      </div>
+    <AdminAuthGuard allowedRoles={['owner', 'assistant', 'editor']}>
+      {loading ? (
+        <p>Загрузка...</p>
+      ) : (
+        <div className="editor-page">
+          <div style={{ marginBottom: '20px' }}>
+            <Link href="/content" style={{ color: '#3498db' }}>← Назад к списку</Link>
+            <h1>Редактирование: {formData.title}</h1>
+          </div>
 
       <form onSubmit={handleSubmit} className="editor-form">
         <div className="editor-sidebar">
@@ -245,6 +271,51 @@ export default function EditContentPage() {
           </div>
 
           <div className="form-group">
+            <label>Time to benefit</label>
+            <select
+              value={formData.timeToBenefit}
+              onChange={e => setFormData({ ...formData, timeToBenefit: e.target.value })}
+            >
+              <option value="">—</option>
+              <option value="min_1_3">1–3 минуты</option>
+              <option value="min_7_10">7–10 минут</option>
+              <option value="min_20_30">20–30 минут</option>
+              <option value="series">Серия шагов</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label>Формат</label>
+            <select
+              value={formData.format}
+              onChange={e => setFormData({
+                ...formData,
+                format: e.target.value,
+              })}
+            >
+              <option value="">—</option>
+              <option value="article">Статья</option>
+              <option value="note">Заметка</option>
+              <option value="resource">Ресурс</option>
+              <option value="audio">Аудио</option>
+              <option value="checklist">Чек-лист</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label>Уровень поддержки</label>
+            <select
+              value={formData.supportLevel}
+              onChange={e => setFormData({ ...formData, supportLevel: e.target.value })}
+            >
+              <option value="">—</option>
+              <option value="self_help">Самопомощь</option>
+              <option value="micro_support">Мягкая поддержка</option>
+              <option value="consultation">Консультация</option>
+            </select>
+          </div>
+
+          <div className="form-group">
             <label>Статус</label>
             <select 
               value={formData.status} 
@@ -262,6 +333,180 @@ export default function EditContentPage() {
               rows={3} 
               value={formData.excerpt} 
               onChange={e => setFormData({ ...formData, excerpt: e.target.value })} 
+            />
+          </div>
+
+          <hr style={{ margin: '20px 0', border: '0', borderTop: '1px solid #eee' }} />
+          <h3>Практический блок</h3>
+
+          <div className="form-group">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={formData.practicalBlock.enabled !== false}
+                onChange={e => setFormData({
+                  ...formData,
+                  practicalBlock: { ...formData.practicalBlock, enabled: e.target.checked },
+                })}
+              />
+              Показывать практический блок
+            </label>
+          </div>
+
+          <div className="form-group">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              disabled={!canEdit}
+              onClick={() => setFormData({
+                ...formData,
+                practicalBlock: buildPracticalTemplate(formData.contentType, formData.format),
+              })}
+            >
+              Применить шаблон по типу
+            </button>
+          </div>
+
+          <div className="form-group">
+            <label>Заголовок блока</label>
+            <input
+              type="text"
+              value={formData.practicalBlock.title || ''}
+              onChange={e => setFormData({
+                ...formData,
+                practicalBlock: { ...formData.practicalBlock, title: e.target.value },
+              })}
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Описание</label>
+            <textarea
+              rows={3}
+              value={formData.practicalBlock.description || ''}
+              onChange={e => setFormData({
+                ...formData,
+                practicalBlock: { ...formData.practicalBlock, description: e.target.value },
+              })}
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Мета (каждая строка — отдельная метка)</label>
+            <textarea
+              rows={3}
+              value={(formData.practicalBlock.meta || []).join('\n')}
+              onChange={e => setFormData({
+                ...formData,
+                practicalBlock: { ...formData.practicalBlock, meta: splitLines(e.target.value) },
+              })}
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Primary CTA</label>
+            <select
+              value={formData.practicalBlock.primary_cta?.target || 'practice'}
+              onChange={e => setFormData({
+                ...formData,
+                practicalBlock: {
+                  ...formData.practicalBlock,
+                  primary_cta: {
+                    ...formData.practicalBlock.primary_cta,
+                    target: e.target.value,
+                  },
+                },
+              })}
+            >
+              <option value="practice">Подобрать практику</option>
+              <option value="thermometer">Термометр ресурса</option>
+              <option value="rituals">Послушать практику</option>
+              <option value="consultation-prep">Подготовка к консультации</option>
+              <option value="custom">Своя ссылка</option>
+            </select>
+            <input
+              type="text"
+              placeholder="Текст кнопки"
+              value={formData.practicalBlock.primary_cta?.label || ''}
+              onChange={e => setFormData({
+                ...formData,
+                practicalBlock: {
+                  ...formData.practicalBlock,
+                  primary_cta: {
+                    ...formData.practicalBlock.primary_cta,
+                    label: e.target.value,
+                  },
+                },
+              })}
+            />
+            <input
+              type="text"
+              placeholder="Ссылка (если target = custom)"
+              value={formData.practicalBlock.primary_cta?.href || ''}
+              onChange={e => setFormData({
+                ...formData,
+                practicalBlock: {
+                  ...formData.practicalBlock,
+                  primary_cta: {
+                    ...formData.practicalBlock.primary_cta,
+                    href: e.target.value,
+                  },
+                },
+              })}
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Secondary CTA</label>
+            <select
+              value={formData.practicalBlock.secondary_cta?.target || ''}
+              onChange={e => setFormData({
+                ...formData,
+                practicalBlock: {
+                  ...formData.practicalBlock,
+                  secondary_cta: {
+                    ...formData.practicalBlock.secondary_cta,
+                    target: e.target.value || undefined,
+                  },
+                },
+              })}
+            >
+              <option value="">—</option>
+              <option value="practice">Подобрать практику</option>
+              <option value="thermometer">Термометр ресурса</option>
+              <option value="rituals">Послушать практику</option>
+              <option value="consultation-prep">Подготовка к консультации</option>
+              <option value="custom">Своя ссылка</option>
+            </select>
+            <input
+              type="text"
+              placeholder="Текст кнопки"
+              value={formData.practicalBlock.secondary_cta?.label || ''}
+              onChange={e => setFormData({
+                ...formData,
+                practicalBlock: {
+                  ...formData.practicalBlock,
+                  secondary_cta: {
+                    ...formData.practicalBlock.secondary_cta,
+                    label: e.target.value,
+                  },
+                },
+              })}
+            />
+            <input
+              type="text"
+              placeholder="Ссылка (если target = custom)"
+              value={formData.practicalBlock.secondary_cta?.href || ''}
+              onChange={e => setFormData({
+                ...formData,
+                practicalBlock: {
+                  ...formData.practicalBlock,
+                  secondary_cta: {
+                    ...formData.practicalBlock.secondary_cta,
+                    href: e.target.value,
+                  },
+                },
+              })}
             />
           </div>
 
@@ -349,11 +594,11 @@ export default function EditContentPage() {
             </div>
           </div>
 
-          <button type="submit" className="btn btn-primary" disabled={saving}>
+          <button type="submit" className="btn btn-primary" disabled={!canEdit || saving}>
             {saving ? 'Сохранение...' : 'Сохранить изменения'}
           </button>
 
-          {formData.status !== 'published' && (
+          {canEdit && formData.status !== 'published' && (
             <button 
               type="button" 
               className="btn btn-success" 
@@ -423,7 +668,7 @@ export default function EditContentPage() {
               <button className="btn" onClick={() => setShowQAChecklist(false)}>Отмена</button>
               <button 
                 className="btn btn-primary" 
-                disabled={publishing || !Object.values(qaChecklist).every(v => v)}
+                disabled={!canEdit || publishing || !Object.values(qaChecklist).every(v => v)}
                 onClick={handlePublish}
               >
                 {publishing ? 'Публикация...' : 'Опубликовать'}
@@ -444,7 +689,7 @@ export default function EditContentPage() {
                     <strong>{new Date(rev.createdAt).toLocaleString()}</strong>
                     <span>{rev.title}</span>
                   </div>
-                  <button className="btn btn-secondary btn-sm" onClick={() => handleRollback(rev.id)}>
+                  <button className="btn btn-secondary btn-sm" disabled={!canEdit} onClick={() => handleRollback(rev.id)}>
                     Восстановить
                   </button>
                 </div>
@@ -637,6 +882,74 @@ export default function EditContentPage() {
           width: 100%;
         }
       `}</style>
-    </div>
+        </div>
+      )}
+    </AdminAuthGuard>
   );
+}
+
+type PracticalTarget = 'practice' | 'thermometer' | 'rituals' | 'consultation-prep' | 'custom';
+
+type PracticalBlock = {
+  enabled?: boolean;
+  title?: string;
+  description?: string;
+  meta?: string[];
+  primary_cta?: { target?: PracticalTarget; label?: string; href?: string };
+  secondary_cta?: { target?: PracticalTarget; label?: string; href?: string };
+};
+
+function splitLines(value: string): string[] {
+  return value
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function buildPracticalTemplate(contentType: string, format: string): PracticalBlock {
+  const meta = [
+    format ? `Формат: ${format}` : null,
+  ].filter(Boolean) as string[];
+
+  const primaryTarget = resolvePrimaryTargetByFormat(format);
+  const secondaryTarget = primaryTarget === 'thermometer' ? 'practice' : 'thermometer';
+
+  return {
+    enabled: true,
+    title: contentType === 'resource' ? 'Практический шаг' : 'Попробовать сейчас',
+    description: contentType === 'resource'
+      ? 'Короткий шаг поможет закрепить пользу от материала.'
+      : 'Небольшая практика помогает почувствовать эффект уже сейчас.',
+    meta,
+    primary_cta: { target: primaryTarget, label: resolveTargetLabel(primaryTarget) },
+    secondary_cta: { target: secondaryTarget, label: resolveTargetLabel(secondaryTarget) },
+  };
+}
+
+function resolvePrimaryTargetByFormat(format: string): PracticalTarget {
+  switch (format) {
+    case 'audio':
+      return 'rituals';
+    case 'checklist':
+      return 'consultation-prep';
+    case 'resource':
+      return 'thermometer';
+    default:
+      return 'practice';
+  }
+}
+
+function resolveTargetLabel(target: PracticalTarget): string {
+  switch (target) {
+    case 'thermometer':
+      return 'Термометр ресурса';
+    case 'rituals':
+      return 'Послушать практику';
+    case 'consultation-prep':
+      return 'Подготовка к консультации';
+    case 'custom':
+      return 'Открыть ссылку';
+    default:
+      return 'Подобрать практику';
+  }
 }

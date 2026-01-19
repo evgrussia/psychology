@@ -17,6 +17,7 @@ export interface GoogleCalendarStatusResponseDto {
   scopes: string[];
   tokenExpiresAt: Date | null;
   connectedAt: Date | null;
+  syncMode: string;
 }
 
 export interface GoogleCalendarSyncResultDto {

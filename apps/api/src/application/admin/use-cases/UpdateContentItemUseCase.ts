@@ -54,13 +54,14 @@ export class UpdateContentItemUseCase {
           timeToBenefit: contentItem.timeToBenefit,
           format: contentItem.format,
           supportLevel: contentItem.supportLevel,
+          practicalBlock: contentItem.practicalBlock,
           seoTitle: contentItem.seoTitle,
           seoDescription: contentItem.seoDescription,
           seoKeywords: contentItem.seoKeywords,
           canonicalUrl: contentItem.canonicalUrl,
           topicCodes: contentItem.topicCodes,
           tagIds: contentItem.tagIds,
-        },
+        } as any,
       },
     });
 

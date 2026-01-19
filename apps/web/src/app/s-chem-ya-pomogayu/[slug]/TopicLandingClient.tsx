@@ -12,6 +12,7 @@ import {
 } from '@psychology/design-system';
 import SafeMarkdownRenderer from '../../../components/SafeMarkdownRenderer';
 import { track } from '../../../lib/tracking';
+import { createTelegramDeepLink } from '../../../lib/telegram';
 
 interface TopicLandingClientProps {
   data: {
@@ -47,6 +48,24 @@ export default function TopicLandingClient({ data }: TopicLandingClientProps) {
     };
     const folder = typeMap[interactive.type] || `${interactive.type}s`;
     return `/start/${folder}/${interactive.slug}`;
+  };
+
+  const handleTelegramClick = async (ctaId: string) => {
+    const { deepLinkId, url } = await createTelegramDeepLink({
+      flow: 'concierge',
+      tgTarget: 'bot',
+      source: `/s-chem-ya-pomogayu/${topic.code}`,
+      utmMedium: 'bot',
+      utmContent: ctaId,
+    });
+    track('cta_tg_click', {
+      tg_target: 'bot',
+      tg_flow: 'concierge',
+      deep_link_id: deepLinkId,
+      cta_id: ctaId,
+      topic: topic.code,
+    });
+    window.location.href = url;
   };
 
   // Парсинг markdown для извлечения специальных секций
@@ -237,7 +256,7 @@ export default function TopicLandingClient({ data }: TopicLandingClientProps) {
         primaryCTA={
           <Button 
             size="lg" 
-            onClick={() => window.location.href = 'https://t.me/your_bot'}
+            onClick={() => void handleTelegramClick('topic_footer_tg')}
           >
             Написать в Telegram
           </Button>

@@ -102,6 +102,18 @@ chmod +x scripts/deploy.sh
 ./scripts/deploy.sh deploy
 ```
 
+### Шаг 7: Seed (наполнение базы контентом) — первый запуск
+
+После первого деплоя БД будет пустой. Для корректной работы всех публичных разделов и админки запустите seed:
+
+```bash
+cd /var/www/psychology
+docker compose -f docker-compose.prod.yml run --rm api \
+  sh -c "cd /app && npx -y ts-node --transpile-only prisma/seed.ts"
+```
+
+**Важно:** в `.env.prod` должны быть заданы `ENCRYPTION_KEY_ID` и `ENCRYPTION_KEY` (см. `env.prod.example`).
+
 ---
 
 ## 📋 Что нужно сделать перед деплоем

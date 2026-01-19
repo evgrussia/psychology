@@ -33,6 +33,7 @@ export class CreateContentItemUseCase {
       timeToBenefit: dto.timeToBenefit,
       format: dto.format,
       supportLevel: dto.supportLevel,
+      practicalBlock: dto.practicalBlock,
       seoTitle: dto.seoTitle,
       seoDescription: dto.seoDescription,
       seoKeywords: dto.seoKeywords,
@@ -58,13 +59,14 @@ export class CreateContentItemUseCase {
           timeToBenefit: contentItem.timeToBenefit,
           format: contentItem.format,
           supportLevel: contentItem.supportLevel,
+          practicalBlock: contentItem.practicalBlock,
           seoTitle: contentItem.seoTitle,
           seoDescription: contentItem.seoDescription,
           seoKeywords: contentItem.seoKeywords,
           canonicalUrl: contentItem.canonicalUrl,
           topicCodes: contentItem.topicCodes,
           tagIds: contentItem.tagIds,
-        },
+        } as any,
       },
     });
 

@@ -48,3 +48,6 @@ backups/
 
 # Media files (local development)
 media/
+
+# Web app public assets (copied from root assets/ during build)
+apps/web/public/assets

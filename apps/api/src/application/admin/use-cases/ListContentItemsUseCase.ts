@@ -6,6 +6,9 @@ import { ContentType, ContentStatus } from '@domain/content/value-objects/Conten
 export interface ListContentItemsFilters {
   type?: ContentType;
   status?: ContentStatus;
+  authorUserId?: string;
+  topicCode?: string;
+  tagId?: string;
 }
 
 @Injectable()

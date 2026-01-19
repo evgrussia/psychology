@@ -38,7 +38,7 @@ const FALLBACK_NAVIGATORS: Record<string, any> = {
         step_id: 'step_crisis',
         question_text: 'Вы чувствуете, что не можете контролировать свои действия или боитесь причинить себе вред?',
         choices: [
-          { choice_id: 'c5', text: 'Да', result_profile_id: 'support_contact', crisis_trigger: true },
+          { choice_id: 'c5', text: 'Да', result_profile_id: 'support_contact', crisis_trigger: true, crisis_trigger_type: 'minor_risk' },
           { choice_id: 'c6', text: 'Нет, но мне очень тяжело', next_step_id: 'step_anxiety' },
         ],
       },

@@ -1,6 +1,14 @@
 import { Inject, Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { IInteractiveDefinitionRepository } from '@domain/interactive/repositories/IInteractiveDefinitionRepository';
-import { InteractiveConfig, QuizConfig, NavigatorConfig, BoundariesConfig, RitualConfig } from '@domain/interactive/types/InteractiveConfig';
+import {
+  InteractiveConfig,
+  QuizConfig,
+  NavigatorConfig,
+  BoundariesConfig,
+  RitualConfig,
+  ThermometerConfig,
+  PrepConfig,
+} from '@domain/interactive/types/InteractiveConfig';
 import { InteractiveType } from '@domain/interactive/value-objects/InteractiveType';
 import { InteractiveStatus } from '@domain/interactive/value-objects/InteractiveStatus';
 import { InteractiveDefinition } from '@domain/interactive/entities/InteractiveDefinition';
@@ -48,6 +56,16 @@ export class UpdateInteractiveDefinitionUseCase {
     // Validation for Rituals
     if (definition.type === InteractiveType.RITUAL && data.config) {
       this.validateRitualConfig(data.config as RitualConfig);
+    }
+
+    // Validation for Thermometer
+    if (definition.type === InteractiveType.THERMOMETER && data.config) {
+      this.validateThermometerConfig(data.config as ThermometerConfig);
+    }
+
+    // Validation for Prep
+    if (definition.type === InteractiveType.PREP && data.config) {
+      this.validatePrepConfig(data.config as PrepConfig);
     }
 
     const updatedDefinition = InteractiveDefinition.reconstitute({
@@ -183,6 +201,62 @@ export class UpdateInteractiveDefinitionUseCase {
     }
   }
 
+  private validateThermometerConfig(config: ThermometerConfig) {
+    if (!config.scales?.length) {
+      throw new BadRequestException('Thermometer config must include at least one scale');
+    }
+    if (!config.thresholds?.length) {
+      throw new BadRequestException('Thermometer config must include thresholds defined');
+    }
+    if (!config.results?.length) {
+      throw new BadRequestException('Thermometer config must include results defined');
+    }
+    for (const scale of config.scales) {
+      if (!scale.id?.trim()) {
+        throw new BadRequestException('Each thermometer scale must have an id');
+      }
+      if (!scale.title?.trim()) {
+        throw new BadRequestException('Each thermometer scale must have a title');
+      }
+    }
+    // Ensure each result level is present at least once
+    const levels = new Set(config.results.map((r) => r.level));
+    if (levels.size === 0) {
+      throw new BadRequestException('Thermometer results must include at least one level');
+    }
+  }
+
+  private validatePrepConfig(config: PrepConfig) {
+    if (!config.steps?.length) {
+      throw new BadRequestException('Prep config must include steps');
+    }
+    for (const step of config.steps) {
+      if (!step.id?.trim()) {
+        throw new BadRequestException('Each prep step must have an id');
+      }
+      if (!step.title?.trim()) {
+        throw new BadRequestException('Each prep step must have a title');
+      }
+      if (!step.options?.length) {
+        throw new BadRequestException('Each prep step must have at least one option');
+      }
+      for (const option of step.options) {
+        if (!option.id?.trim()) {
+          throw new BadRequestException('Each prep option must have an id');
+        }
+        if (!option.text?.trim()) {
+          throw new BadRequestException('Each prep option must have text');
+        }
+      }
+    }
+    if (!config.result?.title?.trim()) {
+      throw new BadRequestException('Prep config must include result.title');
+    }
+    if (!config.result?.checklist?.length) {
+      throw new BadRequestException('Prep config must include a non-empty result.checklist');
+    }
+  }
+
   private buildAuditSnapshot(definition: InteractiveDefinition): Record<string, any> {
     const base = {
       id: definition.id,
@@ -249,6 +323,29 @@ export class UpdateInteractiveDefinitionUseCase {
           step_count: ritualConfig.steps.length,
           total_duration_seconds: ritualConfig.totalDurationSeconds ?? null,
           has_audio: Boolean(ritualConfig.audioMediaAssetId),
+        },
+      };
+    }
+
+    if ('scales' in config && 'thresholds' in config) {
+      const thermometerConfig = config as ThermometerConfig;
+      return {
+        ...base,
+        config_summary: {
+          scale_count: thermometerConfig.scales.length,
+          threshold_count: thermometerConfig.thresholds.length,
+          result_count: thermometerConfig.results.length,
+        },
+      };
+    }
+
+    if ('steps' in config && 'result' in config && !('why' in config)) {
+      const prepConfig = config as PrepConfig;
+      return {
+        ...base,
+        config_summary: {
+          step_count: prepConfig.steps.length,
+          checklist_count: prepConfig.result?.checklist?.length ?? 0,
         },
       };
     }

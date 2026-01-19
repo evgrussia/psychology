@@ -7,6 +7,7 @@ import { CreateAdminUserInviteUseCase } from '../../application/identity/use-cas
 import { ExportDataUseCase, ExportDataDto } from '../../application/admin/use-cases/ExportDataUseCase';
 import { UpdateServicePriceUseCase, UpdateServicePriceDto } from '../../application/admin/use-cases/UpdateServicePriceUseCase';
 import { UpdateSystemSettingsUseCase, UpdateSystemSettingsDto } from '../../application/admin/use-cases/UpdateSystemSettingsUseCase';
+import { GetSystemSettingsUseCase } from '../../application/admin/use-cases/GetSystemSettingsUseCase';
 import { CreateAdminInviteDto } from '../../application/identity/dto/invite.dto';
 import { GetAdminDashboardUseCase } from '../../application/admin/use-cases/GetAdminDashboardUseCase';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
@@ -20,6 +21,7 @@ export class AdminController {
     private readonly exportDataUseCase: ExportDataUseCase,
     private readonly updateServicePriceUseCase: UpdateServicePriceUseCase,
     private readonly updateSystemSettingsUseCase: UpdateSystemSettingsUseCase,
+    private readonly getSystemSettingsUseCase: GetSystemSettingsUseCase,
     private readonly getAdminDashboardUseCase: GetAdminDashboardUseCase,
   ) {}
 
@@ -40,10 +42,7 @@ export class AdminController {
   @Roles(...AdminPermissions.settings.read)
   @ApiOperation({ summary: 'Get system settings' })
   async getSettings() {
-    return {
-      maintenanceMode: false,
-      registrationEnabled: true,
-    };
+    return this.getSystemSettingsUseCase.execute();
   }
 
   @Patch('settings')

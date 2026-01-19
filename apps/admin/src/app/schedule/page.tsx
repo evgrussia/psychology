@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState } from 'react';
 type SlotStatus = 'available' | 'reserved' | 'blocked';
 type SlotSource = 'product' | 'google_calendar';
 type BlockType = 'exception' | 'buffer' | null;
+type AppointmentOutcome = 'attended' | 'no_show' | 'canceled_by_client' | 'canceled_by_provider' | 'rescheduled';
+type AppointmentOutcomeReason = 'late_cancel' | 'tech_issue' | 'illness' | 'other' | 'unknown';
 
 interface ScheduleSlot {
   id: string;
@@ -26,6 +28,10 @@ interface ScheduleAppointment {
   end_at_utc: string;
   status: string;
   timezone: string;
+  outcome?: AppointmentOutcome | null;
+  outcome_reason_category?: AppointmentOutcomeReason | null;
+  outcome_recorded_at?: string | null;
+  outcome_recorded_by_role?: string | null;
 }
 
 interface ScheduleSettings {
@@ -55,6 +61,22 @@ const viewLabels: Record<ViewMode, string> = {
   month: 'Месяц',
 };
 
+const outcomeLabels: Record<AppointmentOutcome, string> = {
+  attended: 'Был на встрече',
+  no_show: 'Не пришел',
+  canceled_by_client: 'Отменил клиент',
+  canceled_by_provider: 'Отменил специалист',
+  rescheduled: 'Перенесено',
+};
+
+const reasonLabels: Record<AppointmentOutcomeReason, string> = {
+  late_cancel: 'Поздняя отмена',
+  tech_issue: 'Техническая проблема',
+  illness: 'Болезнь',
+  other: 'Другое',
+  unknown: 'Не указано',
+};
+
 export default function SchedulePage() {
   const [viewMode, setViewMode] = useState<ViewMode>('week');
   const [anchorDate, setAnchorDate] = useState<Date>(new Date());
@@ -67,6 +89,12 @@ export default function SchedulePage() {
   const [gcStatus, setGcStatus] = useState<GoogleCalendarStatus | null>(null);
   const [selectedSlotIds, setSelectedSlotIds] = useState<string[]>([]);
   const [syncLoading, setSyncLoading] = useState(false);
+  const [outcomeModalOpen, setOutcomeModalOpen] = useState(false);
+  const [outcomeAppointment, setOutcomeAppointment] = useState<ScheduleAppointment | null>(null);
+  const [outcomeValue, setOutcomeValue] = useState<AppointmentOutcome>('attended');
+  const [outcomeReason, setOutcomeReason] = useState<AppointmentOutcomeReason | ''>('');
+  const [outcomeSaving, setOutcomeSaving] = useState(false);
+  const [outcomeError, setOutcomeError] = useState<string | null>(null);
 
   const range = useMemo(() => {
     const start = new Date(anchorDate);
@@ -223,6 +251,47 @@ export default function SchedulePage() {
       setGcStatus(await res.json());
     } finally {
       setSyncLoading(false);
+    }
+  };
+
+  const openOutcomeModal = (appointment: ScheduleAppointment) => {
+    setOutcomeAppointment(appointment);
+    setOutcomeValue((appointment.outcome ?? 'attended') as AppointmentOutcome);
+    setOutcomeReason((appointment.outcome_reason_category ?? '') as AppointmentOutcomeReason | '');
+    setOutcomeError(null);
+    setOutcomeModalOpen(true);
+  };
+
+  const closeOutcomeModal = () => {
+    setOutcomeModalOpen(false);
+    setOutcomeAppointment(null);
+    setOutcomeError(null);
+  };
+
+  const handleOutcomeSave = async () => {
+    if (!outcomeAppointment) return;
+    setOutcomeSaving(true);
+    setOutcomeError(null);
+    try {
+      const response = await fetch(`/api/admin/schedule/appointments/${outcomeAppointment.id}/outcome`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          outcome: outcomeValue,
+          reason_category: outcomeReason || undefined,
+        }),
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => null);
+        throw new Error(err?.message || 'Не удалось сохранить исход');
+      }
+      await refreshData();
+      closeOutcomeModal();
+    } catch (error: any) {
+      setOutcomeError(error?.message || 'Не удалось сохранить исход');
+    } finally {
+      setOutcomeSaving(false);
     }
   };
 
@@ -419,6 +488,11 @@ export default function SchedulePage() {
                           </div>
                           <div className="flex items-center gap-2">
                             <AppointmentStatusBadge status={appointment.status} />
+                            {appointment.outcome && (
+                              <span className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-700">
+                                Исход: {outcomeLabels[appointment.outcome]}
+                              </span>
+                            )}
                             {appointment.status !== 'canceled' && appointment.status !== 'completed' && (
                               <button
                                 className="rounded-md border px-2 py-1 text-xs"
@@ -431,6 +505,14 @@ export default function SchedulePage() {
                                 }}
                               >
                                 Отменить
+                              </button>
+                            )}
+                            {appointment.status === 'completed' && (
+                              <button
+                                className="rounded-md border px-2 py-1 text-xs"
+                                onClick={() => openOutcomeModal(appointment)}
+                              >
+                                {appointment.outcome ? 'Изменить исход' : 'Отметить исход'}
                               </button>
                             )}
                           </div>
@@ -452,6 +534,76 @@ export default function SchedulePage() {
         </p>
         <ScheduleSettingsForm settings={settings} onSave={setScheduleSettings} />
       </div>
+
+      {outcomeModalOpen && outcomeAppointment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
+            <h3 className="text-lg font-semibold">Отметить исход встречи</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {outcomeAppointment.service_title} ·{' '}
+              {new Date(outcomeAppointment.start_at_utc).toLocaleString('ru-RU')}
+            </p>
+
+            <div className="mt-4 space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground">Исход</label>
+                <select
+                  value={outcomeValue}
+                  onChange={(event) => setOutcomeValue(event.target.value as AppointmentOutcome)}
+                  className="w-full rounded-md border px-2 py-2 text-sm"
+                >
+                  {Object.entries(outcomeLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground">Причина (опционально)</label>
+                <select
+                  value={outcomeReason}
+                  onChange={(event) => setOutcomeReason(event.target.value as AppointmentOutcomeReason | '')}
+                  className="w-full rounded-md border px-2 py-2 text-sm"
+                >
+                  <option value="">Не выбрано</option>
+                  {Object.entries(reasonLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {outcomeError && (
+              <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/5 p-2 text-sm text-destructive">
+                {outcomeError}
+              </div>
+            )}
+
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                type="button"
+                className="rounded-md border px-3 py-2 text-sm"
+                onClick={closeOutcomeModal}
+                disabled={outcomeSaving}
+              >
+                Отмена
+              </button>
+              <button
+                type="button"
+                className="rounded-md bg-primary px-3 py-2 text-sm text-white disabled:opacity-50"
+                onClick={handleOutcomeSave}
+                disabled={outcomeSaving}
+              >
+                {outcomeSaving ? 'Сохраняем...' : 'Сохранить'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 

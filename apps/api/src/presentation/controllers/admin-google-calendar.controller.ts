@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Query, UseGuards, Request, BadRequestException } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, Query, UseGuards, Request, BadRequestException } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../guards/auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
@@ -8,6 +8,8 @@ import { ConnectGoogleCalendarUseCase } from '../../application/integrations/use
 import { GetGoogleCalendarStatusUseCase } from '../../application/integrations/use-cases/GetGoogleCalendarStatusUseCase';
 import { SyncCalendarBusyTimesUseCase } from '../../application/integrations/use-cases/SyncCalendarBusyTimesUseCase';
 import { ConfigService } from '@nestjs/config';
+import { DisconnectGoogleCalendarUseCase } from '../../application/integrations/use-cases/DisconnectGoogleCalendarUseCase';
+import { UpdateSystemSettingsUseCase } from '../../application/admin/use-cases/UpdateSystemSettingsUseCase';
 
 const DEFAULT_SYNC_LOOKAHEAD_DAYS = 30;
 
@@ -19,6 +21,8 @@ export class AdminGoogleCalendarController {
     private readonly connectGoogleCalendarUseCase: ConnectGoogleCalendarUseCase,
     private readonly getGoogleCalendarStatusUseCase: GetGoogleCalendarStatusUseCase,
     private readonly syncCalendarBusyTimesUseCase: SyncCalendarBusyTimesUseCase,
+    private readonly disconnectGoogleCalendarUseCase: DisconnectGoogleCalendarUseCase,
+    private readonly updateSystemSettingsUseCase: UpdateSystemSettingsUseCase,
     private readonly configService: ConfigService,
   ) {}
 
@@ -85,5 +89,25 @@ export class AdminGoogleCalendarController {
     }
 
     return this.syncCalendarBusyTimesUseCase.execute({ from: fromDate, to: toDate });
+  }
+
+  @Post('disconnect')
+  @Roles(...AdminPermissions.googleCalendar.disconnect)
+  @ApiOperation({ summary: 'Disconnect Google Calendar integration' })
+  async disconnect() {
+    return this.disconnectGoogleCalendarUseCase.execute();
+  }
+
+  @Patch('sync-mode')
+  @Roles(...AdminPermissions.googleCalendar.updateSyncMode)
+  @ApiOperation({ summary: 'Update Google Calendar sync mode' })
+  async updateSyncMode(@Body() body: { sync_mode: string }, @Request() req: any) {
+    const actorUserId = req.user?.id;
+    const actorRole = req.user?.roles?.[0] || 'owner';
+    return this.updateSystemSettingsUseCase.execute(
+      { googleCalendarSyncMode: body.sync_mode },
+      actorUserId,
+      actorRole,
+    );
   }
 }

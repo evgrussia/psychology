@@ -19,6 +19,13 @@ type PrismaContentItemWithRelations = PrismaContentItem & {
 
 export class ContentItemMapper {
   static toDomain(prismaItem: PrismaContentItemWithRelations): ContentItem {
+    const practicalBlock =
+      prismaItem.practical_block &&
+      typeof prismaItem.practical_block === 'object' &&
+      !Array.isArray(prismaItem.practical_block)
+        ? (prismaItem.practical_block as Record<string, unknown>)
+        : undefined;
+
     return ContentItem.create({
       id: prismaItem.id,
       contentType: prismaItem.content_type as ContentType,
@@ -32,6 +39,7 @@ export class ContentItemMapper {
       timeToBenefit: (prismaItem.time_to_benefit as TimeToBenefit) ?? undefined,
       format: (prismaItem.format as ContentFormat) ?? undefined,
       supportLevel: (prismaItem.support_level as SupportLevel) ?? undefined,
+      practicalBlock,
       seoTitle: prismaItem.seo_title ?? undefined,
       seoDescription: prismaItem.seo_description ?? undefined,
       seoKeywords: prismaItem.seo_keywords ?? undefined,
@@ -58,6 +66,7 @@ export class ContentItemMapper {
       time_to_benefit: obj.timeToBenefit ?? null,
       format: obj.format ?? null,
       support_level: obj.supportLevel ?? null,
+      practical_block: (obj.practicalBlock ?? null) as any,
       seo_title: obj.seoTitle ?? null,
       seo_description: obj.seoDescription ?? null,
       seo_keywords: obj.seoKeywords ?? null,

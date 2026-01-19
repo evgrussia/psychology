@@ -28,7 +28,7 @@ export default function MarkdownEditor({
     try {
       // Basic validation - just check if ReactMarkdown can parse it
       setMarkdownError(null);
-    } catch (err) {
+    } catch {
       setMarkdownError('Ошибка в синтаксисе markdown');
     }
   }, [value]);

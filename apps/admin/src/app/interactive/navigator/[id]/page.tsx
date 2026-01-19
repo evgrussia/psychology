@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { AdminAuthGuard } from '@/components/admin-auth-guard';
+import { useAdminAuth } from '@/components/admin-auth-context';
 import ReactFlow, {
   addEdge,
   Background,
@@ -212,6 +214,8 @@ export default function NavigatorEditorPage() {
 
   const params = useParams();
   const id = params.id as string;
+  const { user } = useAdminAuth();
+  const canEdit = Boolean(user?.roles.some((role) => role === 'owner' || role === 'editor'));
 
   useEffect(() => {
     if (!id) return;
@@ -314,6 +318,9 @@ export default function NavigatorEditorPage() {
   };
 
   const handleSave = async () => {
+    if (!canEdit) {
+      return;
+    }
     if (!definition) return;
     setSaving(true);
     setError(null);
@@ -343,6 +350,9 @@ export default function NavigatorEditorPage() {
   };
 
   const handlePublish = async () => {
+    if (!canEdit) {
+      return;
+    }
     if (!definition) return;
     setPublishing(true);
     setError(null);
@@ -495,39 +505,45 @@ export default function NavigatorEditorPage() {
     return definition.config.result_profiles.find((profile) => profile.id === selectedNodeId) ?? null;
   }, [definition?.config, selectedNodeId]);
 
-  if (loading) return <div className="p-8">Загрузка...</div>;
-  if (error && !definition) return <div className="p-8 text-red-500">Ошибка: {error}</div>;
-  if (!definition || !definition.config) return <div className="p-8">Навигатор не найден</div>;
-
   return (
-    <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <Link href="/interactive/navigator" className="text-blue-600">← Назад к списку</Link>
-          <h1 className="text-2xl font-bold mt-2">{definition.title}</h1>
-          {error && <div className="mt-2 text-red-500">{error}</div>}
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-          >
-            {saving ? 'Сохранение...' : 'Сохранить'}
-          </button>
-          <button
-            onClick={handlePublish}
-            disabled={publishing}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-          >
-            {publishing ? 'Публикация...' : 'Опубликовать изменения'}
-          </button>
-          <button
-            onClick={fetchValidation}
-            className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-          >
-            Проверить валидность
-          </button>
+    <AdminAuthGuard allowedRoles={['owner', 'assistant', 'editor']}>
+      {loading ? (
+        <div className="p-8">Загрузка...</div>
+      ) : error && !definition ? (
+        <div className="p-8 text-red-500">Ошибка: {error}</div>
+      ) : !definition || !definition.config ? (
+        <div className="p-8">Навигатор не найден</div>
+      ) : (
+        <div className="p-8 space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <Link href="/interactive/navigator" className="text-blue-600">← Назад к списку</Link>
+              <h1 className="text-2xl font-bold mt-2">{definition.title}</h1>
+              {error && <div className="mt-2 text-red-500">{error}</div>}
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={handleSave}
+                disabled={!canEdit || saving}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+              >
+                {saving ? 'Сохранение...' : 'Сохранить'}
+              </button>
+              {canEdit && (
+                <button
+                  onClick={handlePublish}
+                  disabled={publishing}
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                >
+                  {publishing ? 'Публикация...' : 'Опубликовать изменения'}
+                </button>
+              )}
+              <button
+                onClick={fetchValidation}
+                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+              >
+                Проверить валидность
+              </button>
           <button
             onClick={addStep}
             className="px-4 py-2 border rounded hover:bg-gray-50"
@@ -839,6 +855,8 @@ export default function NavigatorEditorPage() {
           </div>
         </div>
       </div>
-    </div>
+        </div>
+      )}
+    </AdminAuthGuard>
   );
 }

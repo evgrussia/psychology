@@ -42,11 +42,32 @@ export class PrismaContentItemRepository implements IContentItemRepository {
     return ContentItemMapper.toDomain(item);
   }
 
-  async findAll(filters?: { type?: ContentType; status?: ContentStatus }): Promise<ContentItem[]> {
+  async findAll(filters?: {
+    type?: ContentType;
+    status?: ContentStatus;
+    authorUserId?: string;
+    topicCode?: string;
+    tagId?: string;
+  }): Promise<ContentItem[]> {
     const items = await this.prisma.contentItem.findMany({
       where: {
         content_type: filters?.type,
         status: filters?.status,
+        author_user_id: filters?.authorUserId,
+        topics: filters?.topicCode
+          ? {
+              some: {
+                topic_code: filters.topicCode,
+              },
+            }
+          : undefined,
+        tags: filters?.tagId
+          ? {
+              some: {
+                tag_id: filters.tagId,
+              },
+            }
+          : undefined,
       },
       include: {
         topics: true,

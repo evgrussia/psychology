@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { AdminAuthGuard } from '@/components/admin-auth-guard';
 
 interface ItemOption {
   id: string;
@@ -28,12 +29,13 @@ export default function NewCuratedCollectionPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch('http://127.0.0.1:3001/api/admin/content/topics').then(res => res.json()),
-      fetch('http://127.0.0.1:3001/api/admin/content').then(res => res.json()),
-      // Note: We might need a proper endpoint for interactives, using content for now as placeholder
-    ]).then(([topicsData, contentData]) => {
+      fetch('/api/admin/content/topics', { credentials: 'include' }).then(res => res.json()),
+      fetch('/api/admin/content', { credentials: 'include' }).then(res => res.json()),
+      fetch('/api/admin/interactive/definitions?status=published', { credentials: 'include' }).then(res => res.json()).catch(() => []),
+    ]).then(([topicsData, contentData, interactiveData]) => {
       setTopics(topicsData);
       setContentItems(contentData.map((i: any) => ({ id: i.id, title: i.title, type: 'content' })));
+      setInteractives((interactiveData || []).map((i: any) => ({ id: i.id, title: i.title, type: 'interactive' })));
       setLoading(false);
     }).catch(err => {
       console.error(err);
@@ -46,12 +48,12 @@ export default function NewCuratedCollectionPage() {
     setLoading(true);
 
     try {
-      const res = await fetch('http://127.0.0.1:3001/api/admin/curated', {
+      const res = await fetch('/api/admin/curated', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer test-token',
         },
+        credentials: 'include',
         body: JSON.stringify(formData),
       });
 
@@ -89,11 +91,12 @@ export default function NewCuratedCollectionPage() {
   };
 
   return (
-    <div className="admin-page">
-      <div style={{ marginBottom: '20px' }}>
-        <Link href="/curated" style={{ color: '#3498db' }}>← Назад к списку</Link>
-        <h1>Новая подборка</h1>
-      </div>
+    <AdminAuthGuard allowedRoles={['owner', 'editor']}>
+      <div className="admin-page">
+        <div style={{ marginBottom: '20px' }}>
+          <Link href="/curated" style={{ color: '#3498db' }}>← Назад к списку</Link>
+          <h1>Новая подборка</h1>
+        </div>
 
       <form onSubmit={handleSubmit} className="admin-form">
         <div style={{ display: 'flex', gap: '30px' }}>
@@ -170,6 +173,19 @@ export default function NewCuratedCollectionPage() {
                 </div>
               ))}
             </div>
+
+            <h4 style={{ marginTop: '20px' }}>Добавить интерактив:</h4>
+            <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid #eee', padding: '10px' }}>
+              {interactives.map(item => (
+                <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px' }}>
+                  <span style={{ fontSize: '14px' }}>{item.title}</span>
+                  <button type="button" onClick={() => addItem(item)} className="btn-sm">+</button>
+                </div>
+              ))}
+              {interactives.length === 0 && (
+                <p style={{ fontSize: '12px', color: '#999' }}>Интерактивы не найдены</p>
+              )}
+            </div>
           </div>
         </div>
       </form>
@@ -180,6 +196,7 @@ export default function NewCuratedCollectionPage() {
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
         .btn-sm { padding: 2px 8px; cursor: pointer; }
       `}</style>
-    </div>
+      </div>
+    </AdminAuthGuard>
   );
 }

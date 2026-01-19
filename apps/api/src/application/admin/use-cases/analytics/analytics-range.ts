@@ -1,4 +1,4 @@
-export type AnalyticsRangePreset = 'today' | '7d' | '30d' | 'custom';
+export type AnalyticsRangePreset = 'today' | '7d' | '30d' | '90d' | 'custom';
 
 export interface AnalyticsRangeQuery {
   range?: string;
@@ -40,18 +40,18 @@ export function resolveAnalyticsRange(query: AnalyticsRangeQuery = {}): Analytic
     };
   }
 
-  const days = preset === '30d' ? 30 : 7;
+  const days = preset === '90d' ? 90 : preset === '30d' ? 30 : 7;
   const from = startOfUtcDay(new Date(now.getTime() - (days - 1) * 24 * 60 * 60 * 1000));
   return {
     preset: preset === 'custom' ? '7d' : preset,
     from,
     to: now,
-    label: preset === '30d' ? 'last_30_days' : 'last_7_days',
+    label: preset === '90d' ? 'last_90_days' : preset === '30d' ? 'last_30_days' : 'last_7_days',
   };
 }
 
 function normalizePreset(preset?: string): AnalyticsRangePreset {
-  if (preset === 'today' || preset === '7d' || preset === '30d' || preset === 'custom') {
+  if (preset === 'today' || preset === '7d' || preset === '30d' || preset === '90d' || preset === 'custom') {
     return preset;
   }
   return '7d';

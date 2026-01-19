@@ -12,6 +12,10 @@ export interface AppointmentProps {
   timezone: string;
   format: ServiceFormat;
   status: AppointmentStatus;
+  outcome?: string | null;
+  outcomeReasonCategory?: string | null;
+  outcomeRecordedAt?: Date | null;
+  outcomeRecordedByRole?: string | null;
   slotId?: string | null;
   externalCalendarEventId?: string | null;
   createdAt: Date;
@@ -31,6 +35,10 @@ export class Appointment {
   get timezone(): string { return this.props.timezone; }
   get format(): ServiceFormat { return this.props.format; }
   get status(): AppointmentStatus { return this.props.status; }
+  get outcome(): string | null | undefined { return this.props.outcome; }
+  get outcomeReasonCategory(): string | null | undefined { return this.props.outcomeReasonCategory; }
+  get outcomeRecordedAt(): Date | null | undefined { return this.props.outcomeRecordedAt; }
+  get outcomeRecordedByRole(): string | null | undefined { return this.props.outcomeRecordedByRole; }
   get slotId(): string | null | undefined { return this.props.slotId; }
   get externalCalendarEventId(): string | null | undefined { return this.props.externalCalendarEventId; }
   get createdAt(): Date { return this.props.createdAt; }
@@ -42,6 +50,14 @@ export class Appointment {
 
   updateStatus(status: AppointmentStatus): void {
     this.props.status = status;
+    this.props.updatedAt = new Date();
+  }
+
+  recordOutcome(outcome: string, reasonCategory: string | null, recordedByRole: string): void {
+    this.props.outcome = outcome;
+    this.props.outcomeReasonCategory = reasonCategory ?? null;
+    this.props.outcomeRecordedAt = new Date();
+    this.props.outcomeRecordedByRole = recordedByRole;
     this.props.updatedAt = new Date();
   }
 }

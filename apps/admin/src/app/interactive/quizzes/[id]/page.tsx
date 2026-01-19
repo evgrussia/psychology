@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { AdminAuthGuard } from '@/components/admin-auth-guard';
+import { useAdminAuth } from '@/components/admin-auth-context';
 
 interface QuizQuestion {
   id: string;
@@ -50,6 +52,8 @@ interface QuizDefinition {
 export default function EditQuizPage() {
   const params = useParams();
   const id = params.id as string;
+  const { user } = useAdminAuth();
+  const canEdit = Boolean(user?.roles.some((role) => role === 'owner' || role === 'editor'));
 
   const [quiz, setQuiz] = useState<QuizDefinition | null>(null);
   const [loading, setLoading] = useState(true);
@@ -95,6 +99,9 @@ export default function EditQuizPage() {
 
   const handleSave = async () => {
     if (!quiz) return;
+    if (!canEdit) {
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
@@ -124,6 +131,9 @@ export default function EditQuizPage() {
 
   const handlePublish = async () => {
     if (!quiz) return;
+    if (!canEdit) {
+      return;
+    }
     setPublishing(true);
     setError(null);
     try {
@@ -207,27 +217,31 @@ export default function EditQuizPage() {
     setQuiz({ ...quiz, config: { ...quiz.config, results: newResults } });
   };
 
-  if (loading) return <div className="p-8">Загрузка...</div>;
-  if (error && !quiz) return <div className="p-8 text-red-500">Ошибка: {error}</div>;
-  if (!quiz) return <div className="p-8">Квиз не найден</div>;
-
   return (
-    <div className="p-8">
-      <div style={{ marginBottom: '20px' }}>
-        <Link href="/admin/interactive/quizzes" style={{ color: '#3498db' }}>← Назад к списку</Link>
-        <h1 className="text-2xl font-bold mt-4">Редактирование: {quiz.title}</h1>
-        {error && <div className="mt-2 text-red-500">{error}</div>}
-      </div>
+    <AdminAuthGuard allowedRoles={['owner', 'assistant', 'editor']}>
+      {loading ? (
+        <div className="p-8">Загрузка...</div>
+      ) : error && !quiz ? (
+        <div className="p-8 text-red-500">Ошибка: {error}</div>
+      ) : !quiz ? (
+        <div className="p-8">Квиз не найден</div>
+      ) : (
+        <div className="p-8">
+          <div style={{ marginBottom: '20px' }}>
+            <Link href="/interactive/quizzes" style={{ color: '#3498db' }}>← Назад к списку</Link>
+            <h1 className="text-2xl font-bold mt-4">Редактирование: {quiz.title}</h1>
+            {error && <div className="mt-2 text-red-500">{error}</div>}
+          </div>
 
       <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
         <button
           onClick={handleSave}
-          disabled={saving}
+          disabled={!canEdit || saving}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
         >
           {saving ? 'Сохранение...' : 'Сохранить'}
         </button>
-        {quiz.status !== 'published' && (
+        {canEdit && quiz.status !== 'published' && (
           <button
             onClick={handlePublish}
             disabled={publishing}
@@ -472,6 +486,8 @@ export default function EditQuizPage() {
           </>
         )}
       </div>
-    </div>
+        </div>
+      )}
+    </AdminAuthGuard>
   );
 }

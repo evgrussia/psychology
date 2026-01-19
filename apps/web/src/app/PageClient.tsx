@@ -10,10 +10,12 @@ import {
   Button,
   Disclaimer,
   Container,
-  Section
+  Section,
+  Card
 } from '@psychology/design-system';
 import { track } from '../lib/tracking';
 import { useFeatureFlag } from '../lib/feature-flags';
+import { createTelegramDeepLink } from '../lib/telegram';
 
 interface PageClientProps {
   slug: string;
@@ -21,6 +23,12 @@ interface PageClientProps {
     id: string;
     title: string;
     body_markdown: string;
+    type?: string;
+    time_to_benefit?: string;
+    format?: string;
+    support_level?: string;
+    excerpt?: string;
+    practical_block?: PracticalBlockInput | null;
   };
 }
 
@@ -33,8 +41,22 @@ export default function PageClient({ slug, data }: PageClientProps) {
   };
 
   const handleTGClick = (ctaId: string) => {
-    track('cta_click', { cta_id: ctaId, cta_target: 'telegram' });
-    window.location.href = 'https://t.me/emotional_balance_bot';
+    void (async () => {
+      const { deepLinkId, url } = await createTelegramDeepLink({
+        flow: 'concierge',
+        tgTarget: 'bot',
+        source: `/${slug}`,
+        utmMedium: 'bot',
+        utmContent: ctaId,
+      });
+      track('cta_tg_click', {
+        tg_target: 'bot',
+        tg_flow: 'concierge',
+        deep_link_id: deepLinkId,
+        cta_id: ctaId,
+      });
+      window.location.href = url;
+    })();
   };
 
   const handleFAQToggle = (faqId: string, isOpen: boolean) => {
@@ -47,7 +69,7 @@ export default function PageClient({ slug, data }: PageClientProps) {
     track('page_view', { 
       page_path: `/${slug}`, 
       page_title: data.title,
-      content_type: 'page',
+      content_type: data.type ?? 'page',
       content_slug: slug
     });
 
@@ -88,6 +110,7 @@ export default function PageClient({ slug, data }: PageClientProps) {
   };
 
   const graphics = getPageGraphics();
+  const practicalBlock = getPracticalBlockModel(slug, data);
 
   return (
     <>
@@ -124,6 +147,45 @@ export default function PageClient({ slug, data }: PageClientProps) {
           </div>
         </Container>
       </Section>
+
+      {practicalBlock && (
+        <Section className="bg-muted">
+          <Container className="max-w-4xl">
+            <Card className="p-8 md:p-10 flex flex-col gap-6">
+              <div className="space-y-3">
+                <h2 className="text-3xl font-bold text-foreground">{practicalBlock.title}</h2>
+                <p className="text-muted-foreground text-lg">{practicalBlock.description}</p>
+                {practicalBlock.meta.length > 0 && (
+                  <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
+                    {practicalBlock.meta.map((item) => (
+                      <span key={item} className="rounded-full border border-border px-3 py-1 bg-background">
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-4">
+                <Button
+                  size="lg"
+                  onClick={() => handlePracticalClick(practicalBlock.primaryCta)}
+                >
+                  {practicalBlock.primaryCta.label}
+                </Button>
+                {practicalBlock.secondaryCta && (
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={() => handlePracticalClick(practicalBlock.secondaryCta)}
+                  >
+                    {practicalBlock.secondaryCta.label}
+                  </Button>
+                )}
+              </div>
+            </Card>
+          </Container>
+        </Section>
+      )}
 
       {trustPagesEnabled && slug === 'about' && (
         <Section className="bg-muted">
@@ -247,4 +309,212 @@ export default function PageClient({ slug, data }: PageClientProps) {
       </Section>
     </>
   );
+}
+
+type PracticalBlockModel = {
+  title: string;
+  description: string;
+  meta: string[];
+  primaryCta: PracticalCta;
+  secondaryCta?: PracticalCta;
+};
+
+type PracticalTarget = 'practice' | 'thermometer' | 'rituals' | 'consultation-prep';
+
+type PracticalCta = {
+  id: string;
+  label: string;
+  href: string;
+  trackingTarget: string;
+};
+
+type PracticalCtaInput = {
+  id?: string;
+  label?: string;
+  href?: string;
+  target?: PracticalTarget;
+  tracking_target?: string;
+};
+
+type PracticalBlockInput = {
+  enabled?: boolean;
+  title?: string;
+  description?: string;
+  meta?: string[];
+  primary_cta?: PracticalCtaInput;
+  secondary_cta?: PracticalCtaInput;
+};
+
+const PRACTICAL_CONTENT_TYPES = new Set(['article', 'resource', 'note']);
+const PRACTICAL_EXCLUDED_SLUGS = new Set(['about', 'how-it-works', 'emergency']);
+
+function getPracticalBlockModel(slug: string, data: PageClientProps['data']): PracticalBlockModel | null {
+  if (slug.startsWith('legal/')) {
+    return null;
+  }
+  if (PRACTICAL_EXCLUDED_SLUGS.has(slug)) {
+    return null;
+  }
+  if (data.practical_block?.enabled === false) {
+    return null;
+  }
+  const isAllowedType = data.type ? PRACTICAL_CONTENT_TYPES.has(data.type) : Boolean(data.practical_block);
+  if (!isAllowedType) {
+    return null;
+  }
+
+  const timeLabel = resolveTimeToBenefitLabel(data.time_to_benefit);
+  const formatLabel = resolveFormatLabel(data.format);
+  const supportHint = resolveSupportHint(data.support_level);
+
+  const derivedMeta = [timeLabel && `Время: ${timeLabel}`, formatLabel && `Формат: ${formatLabel}`].filter(Boolean) as string[];
+
+  const title = data.practical_block?.title
+    ?? (data.type === 'resource' ? 'Практический шаг' : 'Попробовать сейчас');
+  const descriptionParts = data.practical_block?.description
+    ? [data.practical_block.description]
+    : [
+        timeLabel ? `Займет ${timeLabel}.` : 'Короткий шаг помогает лучше почувствовать результат.',
+        supportHint,
+      ].filter(Boolean);
+  const meta = data.practical_block?.meta ?? derivedMeta;
+  const defaultCtas = resolveDefaultPracticalCtas(data.format);
+  const primaryCta = resolvePracticalCta(
+    data.practical_block?.primary_cta,
+    defaultCtas.primary,
+    `${slug}_practical_primary`,
+  );
+  const secondaryCta = resolvePracticalCta(
+    data.practical_block?.secondary_cta,
+    defaultCtas.secondary,
+    `${slug}_practical_secondary`,
+  );
+
+  return {
+    title,
+    description: descriptionParts.join(' '),
+    meta,
+    primaryCta,
+    secondaryCta,
+  };
+}
+
+function resolveTimeToBenefitLabel(value?: string): string | null {
+  switch (value) {
+    case 'min_1_3':
+      return '1–3 минуты';
+    case 'min_7_10':
+      return '7–10 минут';
+    case 'min_20_30':
+      return '20–30 минут';
+    case 'series':
+      return 'серия шагов';
+    default:
+      return null;
+  }
+}
+
+function resolveFormatLabel(value?: string): string | null {
+  switch (value) {
+    case 'audio':
+      return 'аудио';
+    case 'checklist':
+      return 'чек-лист';
+    case 'resource':
+      return 'ресурс';
+    case 'article':
+      return 'статья';
+    case 'note':
+      return 'заметка';
+    default:
+      return null;
+  }
+}
+
+function resolveSupportHint(value?: string): string | null {
+  switch (value) {
+    case 'self_help':
+      return 'Самостоятельная практика без обязательного контакта.';
+    case 'micro_support':
+      return 'Мягкий шаг поддержки, который можно сделать сейчас.';
+    case 'consultation':
+      return 'Если нужно глубже, можно перейти к записи.';
+    default:
+      return null;
+  }
+}
+
+function resolveDefaultPracticalCtas(format?: string): { primary: PracticalCta; secondary?: PracticalCta } {
+  const primaryTarget = resolvePrimaryTargetByFormat(format);
+  const secondaryTarget = primaryTarget === 'thermometer' ? 'practice' : 'thermometer';
+  const primary = buildCta(primaryTarget, 'content_practice_primary');
+  const secondary = buildCta(secondaryTarget, 'content_practice_secondary');
+  return { primary, secondary };
+}
+
+function resolvePrimaryTargetByFormat(format?: string): PracticalTarget {
+  switch (format) {
+    case 'audio':
+      return 'rituals';
+    case 'checklist':
+      return 'consultation-prep';
+    case 'resource':
+      return 'thermometer';
+    default:
+      return 'practice';
+  }
+}
+
+function buildCta(target: PracticalTarget, fallbackId: string): PracticalCta {
+  return {
+    id: fallbackId,
+    label: resolveTargetLabel(target),
+    href: resolveTargetHref(target),
+    trackingTarget: target,
+  };
+}
+
+function resolveTargetLabel(target: PracticalTarget): string {
+  switch (target) {
+    case 'thermometer':
+      return 'Термометр ресурса';
+    case 'rituals':
+      return 'Послушать практику';
+    case 'consultation-prep':
+      return 'Подготовка к консультации';
+    default:
+      return 'Подобрать практику';
+  }
+}
+
+function resolveTargetHref(target: PracticalTarget): string {
+  switch (target) {
+    case 'thermometer':
+      return '/start/resource-thermometer';
+    case 'rituals':
+      return '/start/rituals';
+    case 'consultation-prep':
+      return '/start/consultation-prep';
+    default:
+      return '/start';
+  }
+}
+
+function resolvePracticalCta(input: PracticalCtaInput | undefined, fallback: PracticalCta | undefined, fallbackId: string): PracticalCta {
+  if (!input && fallback) {
+    return { ...fallback, id: fallbackId };
+  }
+  const target = input?.target ?? fallback?.trackingTarget ?? 'practice';
+  const href = input?.href ?? resolveTargetHref(target as PracticalTarget);
+  return {
+    id: input?.id ?? fallback?.id ?? fallbackId,
+    label: input?.label ?? fallback?.label ?? resolveTargetLabel(target as PracticalTarget),
+    href,
+    trackingTarget: input?.tracking_target ?? input?.target ?? fallback?.trackingTarget ?? 'practice',
+  };
+}
+
+function handlePracticalClick(cta: PracticalCta) {
+  track('cta_click', { cta_id: cta.id, cta_target: cta.trackingTarget });
+  window.location.href = cta.href;
 }

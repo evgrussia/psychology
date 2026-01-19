@@ -30,6 +30,22 @@ export default function StartHubPage() {
       time: '3 мин',
     },
     {
+      id: 'thermometer',
+      title: 'Термометр ресурса',
+      description: 'Быстрая проверка вашего энергобюджета на сегодня.',
+      href: '/start/resource-thermometer',
+      topic: 'energy',
+      time: '1 мин',
+    },
+    {
+      id: 'prep',
+      title: 'Подготовка к первой консультации',
+      description: 'Короткий мастер, чтобы мягко сформулировать запрос и подготовиться к встрече.',
+      href: '/start/consultation-prep',
+      topic: 'any',
+      time: '3–5 мин',
+    },
+    {
       id: 'ai-next-step',
       title: 'Навигатор следующего шага',
       description: 'Соберём безопасный план действий без хранения текста.',
@@ -44,14 +60,6 @@ export default function StartHubPage() {
       href: '/ai/concierge',
       topic: 'support',
       time: '2 мин',
-    },
-    {
-      id: 'thermometer',
-      title: 'Термометр ресурса',
-      description: 'Быстрая проверка вашего энергобюджета на сегодня.',
-      href: '/start/resource-thermometer',
-      topic: 'energy',
-      time: '1 мин',
     },
     {
       id: 'rituals',

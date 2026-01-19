@@ -3,6 +3,8 @@ import { BcryptHasher } from '../../infrastructure/auth/bcrypt-hasher';
 import { PrismaUserRepository } from '../../infrastructure/persistence/prisma/identity/prisma-user.repository';
 import { PrismaSessionRepository } from '../../infrastructure/persistence/prisma/identity/prisma-session.repository';
 import { PrismaAdminInviteRepository } from '../../infrastructure/persistence/prisma/identity/prisma-admin-invite.repository';
+import { PrismaAdminUserRepository } from '../../infrastructure/persistence/prisma/identity/prisma-admin-user.repository';
+import { PrismaUserProfileRepository } from '../../infrastructure/persistence/prisma/identity/prisma-user-profile.repository';
 import { AdminLoginUseCase } from '../../application/identity/use-cases/AdminLoginUseCase';
 import { ClientLoginUseCase } from '../../application/identity/use-cases/ClientLoginUseCase';
 import { CreateAdminUserInviteUseCase } from '../../application/identity/use-cases/CreateAdminUserInviteUseCase';
@@ -31,6 +33,14 @@ import { AuditModule } from '../audit/audit.module';
       useClass: PrismaAdminInviteRepository,
     },
     {
+      provide: 'IAdminUserRepository',
+      useClass: PrismaAdminUserRepository,
+    },
+    {
+      provide: 'IUserProfileRepository',
+      useClass: PrismaUserProfileRepository,
+    },
+    {
       provide: 'IPasswordHasher',
       useClass: BcryptHasher,
     },
@@ -39,6 +49,8 @@ import { AuditModule } from '../audit/audit.module';
     PrismaUserRepository,
     PrismaSessionRepository,
     PrismaAdminInviteRepository,
+    PrismaAdminUserRepository,
+    PrismaUserProfileRepository,
     BcryptHasher,
     AdminLoginUseCase,
     ClientLoginUseCase,
@@ -51,6 +63,8 @@ import { AuditModule } from '../audit/audit.module';
     { provide: 'IUserRepository', useExisting: PrismaUserRepository },
     { provide: 'ISessionRepository', useExisting: PrismaSessionRepository },
     { provide: 'IAdminInviteRepository', useExisting: PrismaAdminInviteRepository },
+    { provide: 'IAdminUserRepository', useExisting: PrismaAdminUserRepository },
+    { provide: 'IUserProfileRepository', useExisting: PrismaUserProfileRepository },
     { provide: 'IPasswordHasher', useExisting: BcryptHasher },
   ],
   exports: [
@@ -64,6 +78,8 @@ import { AuditModule } from '../audit/audit.module';
     'IUserRepository',
     'ISessionRepository',
     'IAdminInviteRepository',
+    'IAdminUserRepository',
+    'IUserProfileRepository',
     'IPasswordHasher',
   ],
 })

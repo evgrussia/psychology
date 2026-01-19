@@ -14,6 +14,7 @@ export interface ContentItemProps {
   timeToBenefit?: TimeToBenefit;
   format?: ContentFormat;
   supportLevel?: SupportLevel;
+  practicalBlock?: Record<string, unknown> | null;
   seoTitle?: string;
   seoDescription?: string;
   seoKeywords?: string;
@@ -39,6 +40,7 @@ export class ContentItem {
   get timeToBenefit(): TimeToBenefit | undefined { return this.props.timeToBenefit; }
   get format(): ContentFormat | undefined { return this.props.format; }
   get supportLevel(): SupportLevel | undefined { return this.props.supportLevel; }
+  get practicalBlock(): Record<string, unknown> | null | undefined { return this.props.practicalBlock; }
   get seoTitle(): string | undefined { return this.props.seoTitle; }
   get seoDescription(): string | undefined { return this.props.seoDescription; }
   get seoKeywords(): string | undefined { return this.props.seoKeywords; }

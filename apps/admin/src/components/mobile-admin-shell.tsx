@@ -7,7 +7,7 @@ import { Bell, LayoutDashboard, ShieldCheck, LogOut } from 'lucide-react';
 import { useAdminAuth } from './admin-auth-context';
 
 const navItems = [
-  { title: 'Дашборд', href: '/', icon: LayoutDashboard, roles: ['owner', 'assistant'] },
+  { title: 'Дашборд', href: '/', icon: LayoutDashboard, roles: ['owner'] },
   { title: 'Модерация', href: '/moderation', icon: ShieldCheck, roles: ['owner', 'assistant'] },
   { title: 'Уведомления', href: '/notifications', icon: Bell, roles: ['owner', 'assistant'] },
 ];

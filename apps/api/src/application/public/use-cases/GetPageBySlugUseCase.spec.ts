@@ -39,12 +39,15 @@ describe('GetPageBySlugUseCase', () => {
     const result = await useCase.execute({ slug: 'about' });
 
     expect(contentItemRepository.findBySlug).toHaveBeenCalledWith(ContentType.page, 'about');
-    expect(result).toEqual({
+    expect(result).toEqual(expect.objectContaining({
       id: 'page-1',
+      type: ContentType.page,
+      slug: 'about',
       title: 'Обо мне',
       body_markdown: '# Обо мне\n\nЯ психолог...',
       published_at: publishedAt,
-    });
+      practical_block: null,
+    }));
   });
 
   it('should throw NotFoundException when page does not exist', async () => {
@@ -141,12 +144,15 @@ describe('GetPageBySlugUseCase', () => {
 
     const result = await useCase.execute({ slug: 'how-it-works' });
 
-    expect(result).toEqual({
+    expect(result).toEqual(expect.objectContaining({
       id: 'page-1',
+      type: ContentType.page,
+      slug: 'how-it-works',
       title: 'Как проходит работа',
       body_markdown: '# Как проходит работа\n\nПроцесс...',
       published_at: undefined,
-    });
+      practical_block: null,
+    }));
   });
 
   it('should handle different page slugs correctly', async () => {

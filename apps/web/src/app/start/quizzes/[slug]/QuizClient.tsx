@@ -3,6 +3,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ProgressBar, ResultCard, CrisisBanner, Button, Section, Container, Card } from '@psychology/design-system';
 import { InteractivePlatform, ResultLevel } from '@/lib/interactive';
+import { createTelegramDeepLink } from '@/lib/telegram';
+import { track } from '@/lib/tracking';
 
 interface QuizClientProps {
   quiz: {
@@ -47,7 +49,7 @@ export const QuizClient: React.FC<QuizClientProps> = ({ quiz }) => {
   const [runId, setRunId] = useState<string | null>(null);
   const [startTime, setStartTime] = useState<number>(0);
   const [resultLevel, setResultLevel] = useState<ResultLevel | null>(null);
-  const [isCrisisVisible, setIsCrisisVisible] = useState(true);
+  const [isCrisisVisible] = useState(true);
   const hasCompletedRef = useRef(false);
   const hasAbandonedRef = useRef(false);
   const runIdRef = useRef<string | null>(null);
@@ -129,13 +131,19 @@ export const QuizClient: React.FC<QuizClientProps> = ({ quiz }) => {
       }
     }
 
+    const crisisTriggerType = crisisTriggered
+      ? (quiz.slug.includes('anxiety') || quiz.slug.includes('panic')
+          ? 'panic_like'
+          : 'minor_risk')
+      : undefined;
+
     if (runId) {
       await InteractivePlatform.completeRun({
         runId,
         resultLevel: finalResultLevel,
         durationMs,
         crisisTriggered,
-        crisisTriggerType: crisisTriggered ? 'high_score' : undefined,
+        crisisTriggerType,
       });
     }
 
@@ -146,12 +154,29 @@ export const QuizClient: React.FC<QuizClientProps> = ({ quiz }) => {
       run_id: runId ?? undefined,
     });
 
-    if (crisisTriggered) {
-      InteractivePlatform.trackCrisisTriggered('high_score', 'quiz_result');
+    if (crisisTriggered && crisisTriggerType) {
+      InteractivePlatform.trackCrisisTriggered(crisisTriggerType, 'quiz');
     }
 
     hasCompletedRef.current = true;
     setStep('result');
+  };
+
+  const handleTelegram = async () => {
+    const { deepLinkId, url } = await createTelegramDeepLink({
+      flow: 'plan_7d',
+      tgTarget: 'bot',
+      source: `/start/quizzes/${quiz.slug}`,
+      utmMedium: 'bot',
+      utmContent: `quiz_${quiz.slug}_result`,
+    });
+    track('cta_tg_click', {
+      tg_target: 'bot',
+      tg_flow: 'plan_7d',
+      deep_link_id: deepLinkId,
+      cta_id: `quiz_${quiz.slug}_result`,
+    });
+    window.location.href = url;
   };
 
   if (step === 'start') {
@@ -233,14 +258,18 @@ export const QuizClient: React.FC<QuizClientProps> = ({ quiz }) => {
           
           <ResultCard
             title={resultData.title}
-            level={isHighRisk ? 'high' : 'low'}
+            level={
+              resultLevel === ResultLevel.HIGH
+                ? 'high'
+                : resultLevel === ResultLevel.MODERATE
+                  ? 'medium'
+                  : 'low'
+            }
             description={resultData.description}
             steps={steps}
           >
             <div className="mt-8 flex flex-wrap gap-4 justify-center">
-              <Button 
-                onClick={() => window.location.href = 'https://t.me/psy_balance_bot'}
-              >
+              <Button onClick={() => void handleTelegram()}>
                 {resultData.ctaText || 'Получить план в Telegram'}
               </Button>
               <Button 

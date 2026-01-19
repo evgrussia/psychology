@@ -10,6 +10,7 @@ import { ListInteractiveDefinitionsUseCase } from '../../application/admin/use-c
 import { PublishInteractiveDefinitionUseCase } from '../../application/admin/use-cases/interactive/PublishInteractiveDefinitionUseCase';
 import { ListInteractiveDefinitionVersionsUseCase } from '../../application/admin/use-cases/interactive/ListInteractiveDefinitionVersionsUseCase';
 import { GetInteractiveDefinitionVersionUseCase } from '../../application/admin/use-cases/interactive/GetInteractiveDefinitionVersionUseCase';
+import { GetInteractiveOverviewUseCase } from '../../application/admin/use-cases/interactive/GetInteractiveOverviewUseCase';
 import { InteractiveConfig } from '../../domain/interactive/types/InteractiveConfig';
 import { InteractiveStatus } from '../../domain/interactive/value-objects/InteractiveStatus';
 import { InteractiveType } from '../../domain/interactive/value-objects/InteractiveType';
@@ -30,6 +31,7 @@ export class AdminInteractiveController {
     private readonly listVersionsUseCase: ListInteractiveDefinitionVersionsUseCase,
     private readonly getVersionUseCase: GetInteractiveDefinitionVersionUseCase,
     private readonly validateNavigatorUseCase: ValidateNavigatorDefinitionUseCase,
+    private readonly overviewUseCase: GetInteractiveOverviewUseCase,
   ) {}
 
   @Get('definitions')
@@ -41,6 +43,13 @@ export class AdminInteractiveController {
     @Query('status') status?: InteractiveStatus,
   ) {
     return await this.listUseCase.execute({ type, status });
+  }
+
+  @Get('overview')
+  @Roles(...AdminPermissions.interactive.list)
+  @ApiOperation({ summary: 'List interactive overview stats (30d)' })
+  async getOverview() {
+    return this.overviewUseCase.execute();
   }
 
   @Get('definitions/:id')

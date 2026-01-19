@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Delete,
+  Put,
   Param,
   Body,
   UseGuards,
@@ -21,7 +22,8 @@ import { AdminPermissions } from '../permissions/admin-permissions';
 import { UploadMediaAssetUseCase } from '../../application/media/use-cases/UploadMediaAssetUseCase';
 import { DeleteMediaAssetUseCase } from '../../application/media/use-cases/DeleteMediaAssetUseCase';
 import { ListMediaAssetsUseCase } from '../../application/media/use-cases/ListMediaAssetsUseCase';
-import { MediaAssetResponseDto, UploadMediaDto } from '../../application/media/dto/media-asset.dto';
+import { UpdateMediaAssetUseCase } from '../../application/media/use-cases/UpdateMediaAssetUseCase';
+import { MediaAssetResponseDto, UploadMediaDto, UpdateMediaDto } from '../../application/media/dto/media-asset.dto';
 
 @ApiTags('admin-media')
 @Controller('admin/media')
@@ -31,6 +33,7 @@ export class AdminMediaController {
     private readonly uploadMediaUseCase: UploadMediaAssetUseCase,
     private readonly deleteMediaUseCase: DeleteMediaAssetUseCase,
     private readonly listMediaUseCase: ListMediaAssetsUseCase,
+    private readonly updateMediaUseCase: UpdateMediaAssetUseCase,
     private readonly configService: ConfigService,
   ) {}
 
@@ -74,6 +77,17 @@ export class AdminMediaController {
   @ApiResponse({ status: 200, description: 'Return list of media assets' })
   async listMedia(): Promise<MediaAssetResponseDto[]> {
     return this.listMediaUseCase.execute();
+  }
+
+  @Put(':id')
+  @Roles(...AdminPermissions.media.update)
+  @ApiOperation({ summary: 'Update media metadata' })
+  @ApiResponse({ status: 200, description: 'Media updated successfully' })
+  async updateMedia(
+    @Param('id') id: string,
+    @Body() dto: UpdateMediaDto,
+  ): Promise<MediaAssetResponseDto> {
+    return this.updateMediaUseCase.execute(id, dto);
   }
 
   @Delete(':id')

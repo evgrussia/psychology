@@ -26,6 +26,9 @@ export class CreateContentItemDto {
   @ApiPropertyOptional({ enum: SupportLevel })
   supportLevel?: SupportLevel;
 
+  @ApiPropertyOptional({ type: 'object' })
+  practicalBlock?: Record<string, unknown>;
+
   @ApiPropertyOptional()
   seoTitle?: string;
 
@@ -69,6 +72,9 @@ export class UpdateContentItemDto {
 
   @ApiPropertyOptional({ enum: SupportLevel })
   supportLevel?: SupportLevel;
+
+  @ApiPropertyOptional({ type: 'object' })
+  practicalBlock?: Record<string, unknown>;
 
   @ApiPropertyOptional()
   seoTitle?: string;
@@ -125,6 +131,9 @@ export class ContentItemResponseDto {
 
   @ApiPropertyOptional({ enum: SupportLevel })
   supportLevel?: SupportLevel;
+
+  @ApiPropertyOptional({ type: 'object' })
+  practicalBlock?: Record<string, unknown>;
 
   @ApiPropertyOptional()
   seoTitle?: string;

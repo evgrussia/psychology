@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { AdminAuthGuard } from '@/components/admin-auth-guard';
+import { useAdminAuth } from '@/components/admin-auth-context';
 
 interface RitualStep {
   id: string;
@@ -37,6 +39,8 @@ const createId = () => {
 export default function EditRitualPage() {
   const params = useParams();
   const id = params.id as string;
+  const { user } = useAdminAuth();
+  const canEdit = Boolean(user?.roles.some((role) => role === 'owner' || role === 'editor'));
 
   const [definition, setDefinition] = useState<RitualDefinition | null>(null);
   const [loading, setLoading] = useState(true);
@@ -104,6 +108,9 @@ export default function EditRitualPage() {
 
   const handleSave = async () => {
     if (!definition) return;
+    if (!canEdit) {
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
@@ -131,6 +138,9 @@ export default function EditRitualPage() {
 
   const handlePublish = async () => {
     if (!definition) return;
+    if (!canEdit) {
+      return;
+    }
     setPublishing(true);
     setError(null);
     try {
@@ -170,27 +180,31 @@ export default function EditRitualPage() {
     setDefinition({ ...definition, config: { ...definition.config, steps } });
   };
 
-  if (loading) return <div className="p-8">Загрузка...</div>;
-  if (error && !definition) return <div className="p-8 text-red-500">Ошибка: {error}</div>;
-  if (!definition) return <div className="p-8">Ритуал не найден</div>;
-
   return (
-    <div className="p-8">
-      <div className="mb-6">
-        <Link href="/interactive/rituals" className="text-blue-600">← Назад к списку</Link>
-        <h1 className="text-2xl font-bold mt-4">Редактирование: {definition.title}</h1>
-        {error && <div className="mt-2 text-red-500">{error}</div>}
-      </div>
+    <AdminAuthGuard allowedRoles={['owner', 'assistant', 'editor']}>
+      {loading ? (
+        <div className="p-8">Загрузка...</div>
+      ) : error && !definition ? (
+        <div className="p-8 text-red-500">Ошибка: {error}</div>
+      ) : !definition ? (
+        <div className="p-8">Ритуал не найден</div>
+      ) : (
+        <div className="p-8">
+          <div className="mb-6">
+            <Link href="/interactive/rituals" className="text-blue-600">← Назад к списку</Link>
+            <h1 className="text-2xl font-bold mt-4">Редактирование: {definition.title}</h1>
+            {error && <div className="mt-2 text-red-500">{error}</div>}
+          </div>
 
       <div className="flex flex-wrap gap-3 mb-6">
         <button
           onClick={handleSave}
-          disabled={saving}
+          disabled={!canEdit || saving}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
         >
           {saving ? 'Сохранение...' : 'Сохранить'}
         </button>
-        {definition.status !== 'published' && (
+        {canEdit && definition.status !== 'published' && (
           <button
             onClick={handlePublish}
             disabled={publishing}
@@ -376,6 +390,8 @@ export default function EditRitualPage() {
           </>
         )}
       </div>
-    </div>
+        </div>
+      )}
+    </AdminAuthGuard>
   );
 }

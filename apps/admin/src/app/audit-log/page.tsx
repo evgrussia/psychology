@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 interface AuditLogEntry {
   id: string;
@@ -28,15 +28,29 @@ export default function AuditLogPage() {
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState({
+    actorUserId: '',
+    action: '',
+    entityType: '',
+    entityId: '',
+    fromDate: '',
+    toDate: '',
+  });
 
-  useEffect(() => {
-    fetchAuditLogs();
-  }, []);
-
-  const fetchAuditLogs = async (page = 1) => {
+  const fetchAuditLogs = useCallback(async (page = 1) => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/admin/audit-log?page=${page}`, {
+      const params = new URLSearchParams();
+      params.set('page', String(page));
+      if (filters.actorUserId) params.set('actorUserId', filters.actorUserId);
+      if (filters.action) params.set('action', filters.action);
+      if (filters.entityType) params.set('entityType', filters.entityType);
+      if (filters.entityId) params.set('entityId', filters.entityId);
+      if (filters.fromDate) params.set('fromDate', filters.fromDate);
+      if (filters.toDate) params.set('toDate', filters.toDate);
+
+      const response = await fetch(`/api/admin/audit-log?${params.toString()}`, {
         credentials: 'include',
       });
       if (!response.ok) {
@@ -50,6 +64,25 @@ export default function AuditLogPage() {
     } finally {
       setLoading(false);
     }
+  }, [filters]);
+
+  useEffect(() => {
+    fetchAuditLogs(page);
+  }, [page, fetchAuditLogs]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [filters]);
+
+  const exportQuery = () => {
+    const params = new URLSearchParams();
+    if (filters.actorUserId) params.set('actorUserId', filters.actorUserId);
+    if (filters.action) params.set('action', filters.action);
+    if (filters.entityType) params.set('entityType', filters.entityType);
+    if (filters.entityId) params.set('entityId', filters.entityId);
+    if (filters.fromDate) params.set('fromDate', filters.fromDate);
+    if (filters.toDate) params.set('toDate', filters.toDate);
+    return params.toString();
   };
 
   if (loading && entries.length === 0) return <div className="p-8">Загрузка...</div>;
@@ -58,6 +91,74 @@ export default function AuditLogPage() {
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-6">Журнал аудита</h1>
+
+      <div className="mb-6 grid gap-3 md:grid-cols-3">
+        <label className="text-sm text-muted-foreground">
+          Actor User ID
+          <input
+            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
+            value={filters.actorUserId}
+            onChange={(event) => setFilters({ ...filters, actorUserId: event.target.value })}
+          />
+        </label>
+        <label className="text-sm text-muted-foreground">
+          Action
+          <input
+            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
+            value={filters.action}
+            onChange={(event) => setFilters({ ...filters, action: event.target.value })}
+          />
+        </label>
+        <label className="text-sm text-muted-foreground">
+          Entity Type
+          <input
+            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
+            value={filters.entityType}
+            onChange={(event) => setFilters({ ...filters, entityType: event.target.value })}
+          />
+        </label>
+        <label className="text-sm text-muted-foreground">
+          Entity ID
+          <input
+            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
+            value={filters.entityId}
+            onChange={(event) => setFilters({ ...filters, entityId: event.target.value })}
+          />
+        </label>
+        <label className="text-sm text-muted-foreground">
+          From
+          <input
+            type="date"
+            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
+            value={filters.fromDate}
+            onChange={(event) => setFilters({ ...filters, fromDate: event.target.value })}
+          />
+        </label>
+        <label className="text-sm text-muted-foreground">
+          To
+          <input
+            type="date"
+            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
+            value={filters.toDate}
+            onChange={(event) => setFilters({ ...filters, toDate: event.target.value })}
+          />
+        </label>
+      </div>
+
+      <div className="mb-6 flex flex-wrap gap-2">
+        <a
+          className="rounded-md border px-3 py-2 text-sm"
+          href={`/api/admin/audit-log/export?format=csv&${exportQuery()}`}
+        >
+          Экспорт CSV
+        </a>
+        <a
+          className="rounded-md border px-3 py-2 text-sm"
+          href={`/api/admin/audit-log/export?format=json&${exportQuery()}`}
+        >
+          Экспорт JSON
+        </a>
+      </div>
       
       <div className="bg-white shadow-md rounded-lg overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
@@ -105,14 +206,14 @@ export default function AuditLogPage() {
           </div>
           <div className="flex space-x-2">
             <button
-              onClick={() => fetchAuditLogs(pagination.page - 1)}
+              onClick={() => setPage(pagination.page - 1)}
               disabled={pagination.page <= 1}
               className="px-4 py-2 border rounded-md disabled:opacity-50"
             >
               Назад
             </button>
             <button
-              onClick={() => fetchAuditLogs(pagination.page + 1)}
+              onClick={() => setPage(pagination.page + 1)}
               disabled={pagination.page >= pagination.totalPages}
               className="px-4 py-2 border rounded-md disabled:opacity-50"
             >

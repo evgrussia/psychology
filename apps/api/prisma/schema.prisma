@@ -14,11 +14,15 @@ model User {
   telegram_user_id  String?                    @unique
   telegram_username String?
   display_name      String?
+  timezone          String?
+  bio_markdown      String?
+  avatar_media_asset_id String?                @db.Uuid
   status            UserStatus                 @default(active)
   created_at        DateTime                   @default(now())
   updated_at        DateTime                   @updatedAt
   deleted_at        DateTime?
   password_hash     String?
+  avatar_media_asset MediaAsset?               @relation("UserAvatar", fields: [avatar_media_asset_id], references: [id])
   ugc_questions     AnonymousQuestion[]
   appointments      Appointment[]
   audit_logs        AuditLogEntry[]
@@ -29,7 +33,7 @@ model User {
   diary_entries     DiaryEntry[]
   interactive_runs  InteractiveRun[]
   leads             LeadIdentity[]
-  uploaded_media    MediaAsset[]
+  uploaded_media    MediaAsset[]               @relation("UserUploads")
   template_updates  MessageTemplateVersion[]
   interactive_definition_versions InteractiveDefinitionVersion[]
   ugc_answers       QuestionAnswer[]
@@ -41,6 +45,7 @@ model User {
   waitlist_requests WaitlistRequest[]
   google_calendar_integrations GoogleCalendarIntegration[]
   lead_notes        LeadNote[]
+  event_registrations EventRegistration[]
 
   @@map("users")
 }
@@ -118,6 +123,7 @@ model ContentItem {
   time_to_benefit TimeToBenefit?
   format          ContentFormat?
   support_level   SupportLevel?
+  practical_block Json?
   created_at      DateTime           @default(now())
   updated_at      DateTime           @updatedAt
   canonical_url   String?
@@ -207,7 +213,8 @@ model MediaAsset {
   created_at          DateTime             @default(now())
   usages              ContentMedia[]
   appointment_materials AppointmentMaterial[]
-  uploaded_by         User                 @relation(fields: [uploaded_by_user_id], references: [id])
+  uploaded_by         User                 @relation("UserUploads", fields: [uploaded_by_user_id], references: [id])
+  avatar_for          User[]               @relation("UserAvatar")
 
   @@map("media_assets")
 }
@@ -371,6 +378,43 @@ model Service {
   @@map("services")
 }
 
+model Event {
+  id                   String       @id @default(uuid()) @db.Uuid
+  slug                 String       @unique
+  title                String
+  description_markdown String
+  starts_at            DateTime
+  ends_at              DateTime?
+  format               EventFormat  @default(online)
+  location_text        String?
+  status               EventStatus  @default(draft)
+  capacity             Int?
+  registration_open    Boolean      @default(true)
+  published_at         DateTime?
+  created_at           DateTime     @default(now())
+  updated_at           DateTime     @updatedAt
+  registrations        EventRegistration[]
+
+  @@index([status, starts_at])
+  @@map("events")
+}
+
+model EventRegistration {
+  id                      String   @id @default(uuid()) @db.Uuid
+  event_id                String   @db.Uuid
+  user_id                 String?  @db.Uuid
+  preferred_contact       String
+  contact_value_encrypted String
+  consent_personal_data   Boolean  @default(false)
+  consent_communications  Boolean  @default(false)
+  submitted_at            DateTime @default(now())
+  event                   Event    @relation(fields: [event_id], references: [id])
+  user                    User?    @relation(fields: [user_id], references: [id])
+
+  @@index([event_id, submitted_at])
+  @@map("event_registrations")
+}
+
 model AvailabilitySlot {
   id                String       @id @default(uuid()) @db.Uuid
   service_id        String?      @db.Uuid
@@ -401,6 +445,17 @@ model ScheduleSettings {
   @@map("schedule_settings")
 }
 
+model SystemSettings {
+  id                     String   @id @default(uuid()) @db.Uuid
+  maintenance_mode       Boolean  @default(false)
+  registration_enabled   Boolean  @default(true)
+  google_calendar_sync_mode String @default("auto")
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
 model Appointment {
   id                         String            @id @default(uuid()) @db.Uuid
   service_id                 String            @db.Uuid
@@ -412,6 +467,10 @@ model Appointment {
   timezone                   String
   format                     ServiceFormat
   status                     AppointmentStatus @default(pending_payment)
+  outcome                    String?
+  outcome_reason_category    String?
+  outcome_recorded_at        DateTime?
+  outcome_recorded_by_role   String?
   meeting_url                String?
   location_text              String?
   slot_id                    String?           @unique @db.Uuid
@@ -805,13 +864,17 @@ model AuditLogEntry {
 }
 
 model MessageTemplate {
-  id         String                   @id @default(uuid()) @db.Uuid
-  channel    MessageChannel
-  category   MessageCategory
-  name       String
-  status     String                   @default("draft")
-  created_at DateTime                 @default(now())
-  versions   MessageTemplateVersion[]
+  id                String                   @id @default(uuid()) @db.Uuid
+  channel           MessageChannel
+  category          MessageCategory
+  name              String
+  status            String                   @default("draft")
+  language          String                   @default("ru")
+  active_version_id String?                  @unique @db.Uuid
+  activated_at      DateTime?
+  created_at        DateTime                 @default(now())
+  versions          MessageTemplateVersion[] @relation("MessageTemplateVersions")
+  active_version    MessageTemplateVersion?  @relation("MessageTemplateActiveVersion", fields: [active_version_id], references: [id])
 
   @@map("message_templates")
 }
@@ -824,7 +887,8 @@ model MessageTemplateVersion {
   body_markdown      String
   updated_by_user_id String          @db.Uuid
   created_at         DateTime        @default(now())
-  template           MessageTemplate @relation(fields: [template_id], references: [id])
+  template           MessageTemplate @relation("MessageTemplateVersions", fields: [template_id], references: [id])
+  active_for         MessageTemplate? @relation("MessageTemplateActiveVersion")
   updated_by         User            @relation(fields: [updated_by_user_id], references: [id])
 
   @@map("message_template_versions")
@@ -956,6 +1020,18 @@ enum ServiceStatus {
   draft
   published
   archived
+}
+
+enum EventStatus {
+  draft
+  published
+  archived
+}
+
+enum EventFormat {
+  online
+  offline
+  hybrid
 }
 
 enum SlotStatus {

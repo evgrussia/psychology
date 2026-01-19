@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import MarkdownEditor from '../../../components/MarkdownEditor';
+import { AdminAuthGuard } from '@/components/admin-auth-guard';
 
 export default function NewGlossaryTermPage() {
   const router = useRouter();
@@ -22,7 +23,7 @@ export default function NewGlossaryTermPage() {
   });
 
   useEffect(() => {
-    fetch(`http://127.0.0.1:3001/api/admin/content`)
+    fetch(`/api/admin/content`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => setContentItems(data))
       .catch(err => console.error(err));
@@ -44,12 +45,12 @@ export default function NewGlossaryTermPage() {
         status: 'draft',
       };
 
-      const res = await fetch('http://127.0.0.1:3001/api/admin/glossary', {
+      const res = await fetch('/api/admin/glossary', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer test-token', 
         },
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
 
@@ -68,11 +69,12 @@ export default function NewGlossaryTermPage() {
   };
 
   return (
-    <div className="editor-page">
-      <div style={{ marginBottom: '20px' }}>
-        <Link href="/glossary" style={{ color: '#3498db' }}>← Назад к списку</Link>
-        <h1>Новый термин словаря</h1>
-      </div>
+    <AdminAuthGuard allowedRoles={['owner', 'editor']}>
+      <div className="editor-page">
+        <div style={{ marginBottom: '20px' }}>
+          <Link href="/glossary" style={{ color: '#3498db' }}>← Назад к списку</Link>
+          <h1>Новый термин словаря</h1>
+        </div>
 
       <form onSubmit={handleSubmit} className="editor-form">
         <div className="editor-sidebar">
@@ -241,6 +243,7 @@ export default function NewGlossaryTermPage() {
           background-color: #bdc3c7;
         }
       `}</style>
-    </div>
+      </div>
+    </AdminAuthGuard>
   );
 }

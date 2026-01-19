@@ -5,6 +5,7 @@ import { IGoogleCalendarService } from '@domain/integrations/services/IGoogleCal
 import { IEncryptionService } from '@domain/security/services/IEncryptionService';
 import { GoogleCalendarIntegration } from '@domain/integrations/entities/GoogleCalendarIntegration';
 import { GoogleCalendarIntegrationStatus } from '@domain/integrations/value-objects/GoogleCalendarIntegrationStatus';
+import { ISystemSettingsRepository } from '@domain/settings/repositories/ISystemSettingsRepository';
 
 describe('ConnectGoogleCalendarUseCase', () => {
   let useCase: ConnectGoogleCalendarUseCase;
@@ -12,6 +13,7 @@ describe('ConnectGoogleCalendarUseCase', () => {
   let oauthService: jest.Mocked<IGoogleCalendarOAuthService>;
   let googleCalendarService: jest.Mocked<IGoogleCalendarService>;
   let encryptionService: jest.Mocked<IEncryptionService>;
+  let settingsRepo: jest.Mocked<ISystemSettingsRepository>;
   const auditLogHelper = { logAction: jest.fn() };
 
   beforeEach(() => {
@@ -34,11 +36,16 @@ describe('ConnectGoogleCalendarUseCase', () => {
       encrypt: jest.fn(),
       decrypt: jest.fn(),
     };
+    settingsRepo = {
+      get: jest.fn(),
+      save: jest.fn(),
+    } as any;
     useCase = new ConnectGoogleCalendarUseCase(
       integrationRepo,
       oauthService,
       googleCalendarService,
       encryptionService,
+      settingsRepo,
       auditLogHelper as any,
     );
   });

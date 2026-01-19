@@ -8,9 +8,20 @@ export interface GetPageBySlugRequest {
 
 export interface GetPageBySlugResponse {
   id: string;
+  type: ContentType;
+  slug: string;
   title: string;
+  excerpt?: string;
   body_markdown: string;
   published_at?: Date;
+  time_to_benefit?: string;
+  format?: string;
+  support_level?: string;
+  practical_block?: Record<string, unknown> | null;
+  seo_title?: string;
+  seo_description?: string;
+  seo_keywords?: string;
+  canonical_url?: string;
 }
 
 @Injectable()
@@ -27,11 +38,24 @@ export class GetPageBySlugUseCase {
       throw new NotFoundException(`Page with slug "${request.slug}" not found`);
     }
 
+    const obj = page.toObject();
+
     return {
-      id: page.id,
-      title: page.title,
-      body_markdown: page.bodyMarkdown,
-      published_at: page.publishedAt,
+      id: obj.id,
+      type: obj.contentType,
+      slug: obj.slug,
+      title: obj.title,
+      excerpt: obj.excerpt,
+      body_markdown: obj.bodyMarkdown,
+      published_at: obj.publishedAt,
+      time_to_benefit: obj.timeToBenefit,
+      format: obj.format,
+      support_level: obj.supportLevel,
+      practical_block: obj.practicalBlock ?? null,
+      seo_title: obj.seoTitle,
+      seo_description: obj.seoDescription,
+      seo_keywords: obj.seoKeywords,
+      canonical_url: obj.canonicalUrl,
     };
   }
 }
