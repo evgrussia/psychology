@@ -5,6 +5,22 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { AdminAuthGuard } from '@/components/admin-auth-guard';
 import { useAdminAuth } from '@/components/admin-auth-context';
+import {
+  Alert,
+  AlertDescription,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@psychology/design-system';
 
 interface ItemOption {
   id: string;
@@ -202,179 +218,221 @@ export default function EditCuratedCollectionPage() {
   return (
     <AdminAuthGuard allowedRoles={['owner', 'assistant', 'editor']}>
       {loading ? (
-        <div className="p-8">Загрузка...</div>
+        <Card>
+          <CardContent className="p-8 text-sm text-muted-foreground">Загрузка...</CardContent>
+        </Card>
       ) : (
-        <div className="p-8 space-y-6">
+        <div className="space-y-6">
           <div>
-            <Link href="/curated" className="text-indigo-600 hover:text-indigo-900">
-              ← Назад к списку
-            </Link>
-            <h1 className="text-2xl font-bold mt-4">Редактирование подборки</h1>
-            {error && <div className="mt-2 text-red-500">{error}</div>}
+            <Button asChild variant="link" className="px-0">
+              <Link href="/curated">← Назад к списку</Link>
+            </Button>
+            <h1 className="text-2xl font-semibold text-foreground mt-4">Редактирование подборки</h1>
+            {error && (
+              <Alert variant="destructive" className="mt-2">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
           </div>
 
-      <div className="flex flex-wrap gap-3">
-        <button
-          onClick={() => void save()}
-          disabled={!canEdit || saving}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-        >
-          {saving ? 'Сохранение...' : 'Сохранить'}
-        </button>
-        {canEdit && formData.status !== 'published' && (
-          <button
-            onClick={() => void publish()}
-            disabled={publishing}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-          >
-            {publishing ? 'Публикация...' : 'Опубликовать'}
-          </button>
-        )}
-      </div>
+          <div className="flex flex-wrap gap-3">
+            <Button onClick={() => void save()} disabled={!canEdit || saving}>
+              {saving ? 'Сохранение...' : 'Сохранить'}
+            </Button>
+            {canEdit && formData.status !== 'published' && (
+              <Button onClick={() => void publish()} disabled={publishing} variant="outline">
+                {publishing ? 'Публикация...' : 'Опубликовать'}
+              </Button>
+            )}
+          </div>
 
-      <div className="bg-white rounded-lg shadow p-6 space-y-6">
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="block text-sm font-medium mb-2">Заголовок</label>
-            <input
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Slug</label>
-            <input
-              value={formData.slug}
-              onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-        </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Параметры</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Заголовок</Label>
+                  <Input
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Slug</Label>
+                  <Input
+                    value={formData.slug}
+                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                  />
+                </div>
+              </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <div>
-            <label className="block text-sm font-medium mb-2">Тип</label>
-            <select
-              value={formData.collectionType}
-              onChange={(e) => setFormData({ ...formData, collectionType: e.target.value })}
-              className="w-full px-3 py-2 border rounded"
-            >
-              <option value="problem">problem</option>
-              <option value="format">format</option>
-              <option value="goal">goal</option>
-              <option value="context">context</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Статус</label>
-            <select
-              value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-              className="w-full px-3 py-2 border rounded"
-            >
-              <option value="draft">draft</option>
-              <option value="published">published</option>
-              <option value="archived">archived</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Тема</label>
-            <select
-              value={formData.topicCode}
-              onChange={(e) => setFormData({ ...formData, topicCode: e.target.value })}
-              className="w-full px-3 py-2 border rounded"
-            >
-              <option value="">—</option>
-              {topics.map((t) => (
-                <option key={t.code} value={t.code}>
-                  {t.title}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="space-y-2">
+                  <Label>Тип</Label>
+                  <Select
+                    value={formData.collectionType}
+                    onValueChange={(value) => setFormData({ ...formData, collectionType: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="problem">problem</SelectItem>
+                      <SelectItem value="format">format</SelectItem>
+                      <SelectItem value="goal">goal</SelectItem>
+                      <SelectItem value="context">context</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Статус</Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value) => setFormData({ ...formData, status: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">draft</SelectItem>
+                      <SelectItem value="published">published</SelectItem>
+                      <SelectItem value="archived">archived</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Тема</Label>
+                  <Select
+                    value={formData.topicCode}
+                    onValueChange={(value) => setFormData({ ...formData, topicCode: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">—</SelectItem>
+                      {topics.map((t) => (
+                        <SelectItem key={t.code} value={t.code}>
+                          {t.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-      <div className="bg-white rounded-lg shadow p-6 space-y-4">
-        <h2 className="text-lg font-bold">Элементы ({formData.items.length})</h2>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Элементы ({formData.items.length})</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {formData.items.length === 0 ? (
+                <div className="text-sm text-muted-foreground">Добавьте элементы из списков ниже</div>
+              ) : (
+                <div className="space-y-2">
+                  {formData.items
+                    .slice()
+                    .sort((a, b) => a.position - b.position)
+                    .map((item, index) => (
+                      <div
+                        key={`${item.itemType}:${item.id ?? index}`}
+                        className="flex items-center gap-3 border border-border rounded p-3"
+                      >
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-foreground">{item._title || '—'}</div>
+                          <div className="text-xs text-muted-foreground">{item.itemType}</div>
+                          <Input
+                            className="mt-2"
+                            value={item.note || ''}
+                            placeholder="Заметка (опционально)"
+                            disabled={!canEdit}
+                            onChange={(e) => {
+                              const copy = [...formData.items];
+                              copy[index] = { ...copy[index], note: e.target.value };
+                              setFormData({ ...formData, items: copy });
+                            }}
+                          />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            disabled={!canEdit}
+                            onClick={() => moveItem(index, index - 1)}
+                          >
+                            ↑
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            disabled={!canEdit}
+                            onClick={() => moveItem(index, index + 1)}
+                          >
+                            ↓
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive"
+                            disabled={!canEdit}
+                            onClick={() => removeItem(index)}
+                          >
+                            удалить
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
 
-        {formData.items.length === 0 ? (
-          <div className="text-sm text-gray-500">Добавьте элементы из списков ниже</div>
-        ) : (
-          <div className="space-y-2">
-            {formData.items
-              .slice()
-              .sort((a, b) => a.position - b.position)
-              .map((item, index) => (
-                <div key={`${item.itemType}:${item.id ?? index}`} className="flex items-center gap-3 border rounded p-3">
-                  <div className="flex-1">
-                    <div className="text-sm font-medium">{item._title || '—'}</div>
-                    <div className="text-xs text-gray-500">{item.itemType}</div>
-                    <input
-                      className="mt-2 w-full px-2 py-1 border rounded text-sm"
-                      value={item.note || ''}
-                      placeholder="Заметка (опционально)"
-                      disabled={!canEdit}
-                      onChange={(e) => {
-                        const copy = [...formData.items];
-                        copy[index] = { ...copy[index], note: e.target.value };
-                        setFormData({ ...formData, items: copy });
-                      }}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <button type="button" className="text-sm text-gray-700" disabled={!canEdit} onClick={() => moveItem(index, index - 1)}>
-                      ↑
-                    </button>
-                    <button type="button" className="text-sm text-gray-700" disabled={!canEdit} onClick={() => moveItem(index, index + 1)}>
-                      ↓
-                    </button>
-                    <button type="button" className="text-sm text-red-600" disabled={!canEdit} onClick={() => removeItem(index)}>
-                      удалить
-                    </button>
+              <div className="grid gap-6 md:grid-cols-2 pt-4">
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-foreground">Добавить контент</h3>
+                  <div className="max-h-64 overflow-auto border border-border rounded p-2 space-y-2">
+                    {availableContent.map((item) => (
+                      <Button
+                        key={item.id}
+                        type="button"
+                        variant="outline"
+                        disabled={!canEdit}
+                        onClick={() => addItem(item)}
+                        className="w-full justify-start"
+                      >
+                        {item.title}
+                      </Button>
+                    ))}
                   </div>
                 </div>
-              ))}
-          </div>
-        )}
-
-        <div className="grid gap-6 md:grid-cols-2 pt-4">
-          <div>
-            <h3 className="font-semibold mb-2">Добавить контент</h3>
-            <div className="max-h-64 overflow-auto border rounded p-2 space-y-2">
-              {availableContent.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  disabled={!canEdit}
-                  onClick={() => addItem(item)}
-                  className="w-full text-left text-sm px-2 py-2 border rounded hover:bg-gray-50"
-                >
-                  {item.title}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h3 className="font-semibold mb-2">Добавить интерактив</h3>
-            <div className="max-h-64 overflow-auto border rounded p-2 space-y-2">
-              {availableInteractives.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  disabled={!canEdit}
-                  onClick={() => addItem(item)}
-                  className="w-full text-left text-sm px-2 py-2 border rounded hover:bg-gray-50"
-                >
-                  {item.title}
-                </button>
-              ))}
-              {availableInteractives.length === 0 && <div className="text-sm text-gray-500">Интерактивов нет</div>}
-            </div>
-          </div>
-        </div>
-      </div>
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-foreground">Добавить интерактив</h3>
+                  <div className="max-h-64 overflow-auto border border-border rounded p-2 space-y-2">
+                    {availableInteractives.map((item) => (
+                      <Button
+                        key={item.id}
+                        type="button"
+                        variant="outline"
+                        disabled={!canEdit}
+                        onClick={() => addItem(item)}
+                        className="w-full justify-start"
+                      >
+                        {item.title}
+                      </Button>
+                    ))}
+                    {availableInteractives.length === 0 && (
+                      <div className="text-sm text-muted-foreground">Интерактивов нет</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
     </AdminAuthGuard>

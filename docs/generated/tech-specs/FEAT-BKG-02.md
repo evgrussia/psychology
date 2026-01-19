@@ -1,30 +1,26 @@
 # Техническая спецификация фичи (Tech Spec)
 
 **Проект:** «Эмоциональный баланс»  
-**Версия спеки:** v0.1 (draft)  
+**Версия спеки:** v0.2  
 **Автор:** Cursor Agent  
-**Дата:** 2026-01-07  
-**Статус:** draft  
+**Дата:** 2026-01-19  
+**Статус:** implemented  
 
-**Feature ID:** `FEAT-BKG-02`  
+**Feature ID:** `FEAT-BKG-02` (revised, no GCal)  
 **Epic:** `EPIC-04`  
 **Приоритет:** P0  
 **Трекер:** —  
-
-**Оценка реализации агентом Cursor:** ~260k токенов (≤ 270k, близко к лимиту → см. slices)
 
 ---
 
 ## 1) Summary
 
 ### 1.1 Что делаем
-Реализуем расписание/слоты на базе Google Calendar: двусторонняя синхронизация (import busy → блок слотов; export bookings → события в календарь), работа с таймзонами и защита от конфликтов.
+Реализуем внутреннюю доступность записи: слоты/блокировки/бронь хранятся в БД, публичная запись и админ‑расписание не зависят от внешних календарей. Google Calendar не используется.
 
 ### 1.3 Ссылки
 - PRD: `docs/PRD.md` (FR-BKG-6, FR-BKG-7)
-- Technical decisions: `docs/Technical-Decisions.md` (двусторонняя sync)
-- Архитектура: `docs/Архитектурный-обзор.md` (ACL для GCal)
-- Admin spec: `docs/Admin-Panel-Specification.md` (4.2 расписание)
+- `docs/tech-specs/Remove-Google-Calendar-Integration-Spec.md`
 - Tracking: `docs/Tracking-Plan.md` (booking_slot_selected, booking_conflict)
 
 ---
@@ -32,72 +28,60 @@
 ## 2) Goals / Non-goals
 
 ### 2.1 Goals
-- **G1:** Подключение Google Calendar (OAuth) из админки.
-- **G2:** Чтение занятости/событий → блокировка соответствующих слотов в продукте.
-- **G3:** Создание события в календаре при подтверждённой записи (export).
-- **G4:** Периодическая синхронизация (каждые ~15 минут) + обработка изменений (webhook, если применимо).
-- **G5:** Конфликт‑резолюция: продукт — источник истины для брони, календарь — источник занятости (см. Tech decisions 4.1).
+- **G1:** Выдача слотов основана на внутренних данных, без `calendar_unavailable`.
+- **G2:** Конфликты времени исключаются через резерв/занятость.
+- **G3:** Админ‑расписание управляет внутренними слотами и блокировками.
 
 ### 2.2 Non-goals
-- Сложные правила “несколько календарей” и “комнаты” (для релиза 1 один владелец).
+- Любые внешние календарные интеграции.
+- Полная переделка расписания.
 
 ---
 
 ## 3) Scope / AC
-- [ ] AC-1 Админ подключает календарь и видит статус интеграции.
-- [ ] AC-2 UI выбора слота показывает доступные интервалы в таймзоне пользователя.
-- [ ] AC-3 При подтверждении записи создаётся событие в GCal.
-- [ ] AC-4 В случае конфликта запись не подтверждается, пользователь получает альтернативы.
+- [x] AC-1 Публичные слоты/альтернативы не возвращают `calendar_unavailable`.
+- [x] AC-2 UI выбора слота показывает доступные интервалы в таймзоне пользователя.
+- [x] AC-3 Конфликты возвращают `409 { code: "slot_conflict" }`.
+- [x] AC-4 Админ‑расписание работает без Google Calendar.
 
 Негативные:
-- GCal недоступен → деградация: слоты временно не показываем или показываем “проверьте позже” + waitlist.
+- Нет доступных слотов → empty‑state + waitlist.
 
 ---
 
 ## 4) UX / UI
-- admin: `/admin/settings/integrations` (или раздел интеграций), `/admin/schedule/`.
-- web: `/booking/slot/` показывает календарь слотов.
+- admin: `/admin/schedule/` (внутренние слоты/блокировки).
+- web: `/booking/slot/` показывает слоты в локальной таймзоне.
 
 ---
 
 ## 5) Архитектура (Clean Architecture)
 
 ### 5.1 Компоненты/модули
-- **Domain:** `TimeSlot`, `Availability`, `Appointment` (Booking context), `GoogleCalendarAccount` (integration config VO).
+- **Domain:** `TimeSlot`, `AvailabilitySlot`, `Appointment`.
 - **Application:**
-  - `ConnectGoogleCalendarUseCase`
-  - `SyncCalendarBusyTimesUseCase`
-  - `CreateCalendarEventForAppointmentUseCase`
   - `ListAvailableSlotsUseCase`
-- **Infrastructure:**
-  - `IGoogleCalendarService` интерфейс в домене,
-  - `GoogleCalendarAdapter` (ACL) + OAuth token store,
-  - background job runner (cron/queue).
+  - `GetBookingAlternativesUseCase`
+  - `StartBookingUseCase`
+  - `ReserveSlotForAppointmentUseCase`
+- **Infrastructure:** Prisma‑репозитории слотов/встреч, без внешних интеграций.
 
 ### 5.2 Доменные события
-- `AppointmentConfirmed` → consumer: calendar event creator.
+- Не добавляем.
 
 ---
 
 ## 6) Data model
-По `docs/Модель-данных.md` (или дополняем):
-- `integrations_google_calendar`:
-  - calendar_id, oauth tokens (encrypted), timezone, status
-- `calendar_busy_intervals` (опционально, кэш) **или** вычисление on-the-fly через freeBusy API
-- `slots`/`availability_rules` (если делаем генерацию слотов на стороне продукта)
-- `appointments` (confirmed/pending_payment)
-
-P2: oauth refresh/access tokens (шифровать).
+- `availability_slots` (status: available/reserved/blocked)
+- `appointments` (pending_payment/paid/confirmed)
+- `schedule_settings`
 
 ---
 
 ## 7) API
-Admin:
-- `POST /api/admin/integrations/google-calendar/connect` (OAuth start/callback)
-- `POST /api/admin/integrations/google-calendar/sync`
-
 Public:
 - `GET /api/public/booking/slots?service_slug=...&from=...&to=...&tz=...`
+- `GET /api/public/booking/alternatives?service_slug=...&tz=...`
 
 ---
 
@@ -109,39 +93,27 @@ Public:
 ---
 
 ## 9) Security/Privacy
-- OAuth tokens — P2: шифровать “в покое” (`FEAT-SEC-02`) и не логировать.
-- Webhook endpoints защищать (проверка source/секретов, где возможно).
+- PII не уходит в аналитику.
+- Доступ к admin‑расписанию ограничен ролями.
 
 ---
 
 ## 10) Надёжность, деградации
-- Retry/backoff на вызовы Google API.
-- Кэширование availability на 5–15 минут (Admin spec допускает кэш для тяжёлых запросов).
+- При отсутствии слотов — единый empty‑state без ошибок.
 
 ---
 
 ## 11) Rollout plan
-- `gcal_integration_enabled`: internal → stage → prod.
+- Реализовано без внешних интеграций.
 
 ---
 
 ## 12) Test plan
-- integration: mock GCal API (или sandbox), проверить:
-  - чтение busy интервалов,
-  - создание события,
-  - конфликт при busy.
+- unit/integration: расчёт доступности и резервации слота.
+- e2e: booking flow + no‑slots → waitlist.
 
 ---
 
 ## 13) Open questions / решения
-- [ ] Webhook vs polling: для релиза 1 допускаем polling каждые 15 минут; webhook — улучшение при возможности.
-
----
-
-## Appendix: Implementation slices (чтобы уложиться в контекст)
-
-1. **Slice A (~80k):** OAuth подключение + хранение токенов (encrypted) + health/status.
-2. **Slice B (~70k):** `freeBusy`/read events → вычисление доступных слотов (без UI) + API.
-3. **Slice C (~60k):** создание события в календаре при `booking_confirmed` + обработка ошибок.
-4. **Slice D (~50k):** background sync (polling) + кэширование + базовые алерты/логи.
+- Нужно ли учитывать `appointments` со статусом `rescheduled` как занятость?
 

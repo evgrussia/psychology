@@ -38,6 +38,12 @@ class InMemoryTelegramSessionRepository implements ITelegramSessionRepository {
   async update(session: TelegramSession): Promise<void> {
     this.records.set(session.id, session);
   }
+  async findDueScheduledSessions(now: Date, limit: number): Promise<TelegramSession[]> {
+    return Array.from(this.records.values())
+      .filter((session) => session.isActive && session.nextSendAt && session.nextSendAt <= now)
+      .sort((a, b) => (a.nextSendAt?.getTime() ?? 0) - (b.nextSendAt?.getTime() ?? 0))
+      .slice(0, limit);
+  }
   async deactivateSessions(telegramUserId: string): Promise<number> {
     let count = 0;
     for (const session of this.records.values()) {

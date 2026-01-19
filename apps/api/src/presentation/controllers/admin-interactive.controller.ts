@@ -1,9 +1,10 @@
-import { Controller, Put, Body, Param, UseGuards, Get, Query, Post, Req, NotFoundException, HttpCode } from '@nestjs/common';
+import { Controller, Put, Body, Param, UseGuards, Get, Query, Post, Req, NotFoundException, HttpCode, BadRequestException } from '@nestjs/common';
 import { AuthGuard } from '../guards/auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { Roles } from '../decorators/roles.decorator';
 import { AdminPermissions } from '../permissions/admin-permissions';
 import { UpdateInteractiveDefinitionUseCase } from '../../application/admin/use-cases/interactive/UpdateInteractiveDefinitionUseCase';
+import { CreateInteractiveDefinitionUseCase } from '../../application/admin/use-cases/interactive/CreateInteractiveDefinitionUseCase';
 import { GetInteractiveDefinitionByIdUseCase } from '../../application/admin/use-cases/interactive/GetInteractiveDefinitionByIdUseCase';
 import { GetPublishedInteractiveDefinitionByIdUseCase } from '../../application/admin/use-cases/interactive/GetPublishedInteractiveDefinitionByIdUseCase';
 import { ListInteractiveDefinitionsUseCase } from '../../application/admin/use-cases/interactive/ListInteractiveDefinitionsUseCase';
@@ -23,6 +24,7 @@ import { ValidateNavigatorDefinitionUseCase } from '../../application/interactiv
 @UseGuards(AuthGuard, RolesGuard)
 export class AdminInteractiveController {
   constructor(
+    private readonly createUseCase: CreateInteractiveDefinitionUseCase,
     private readonly updateUseCase: UpdateInteractiveDefinitionUseCase,
     private readonly getByIdUseCase: GetInteractiveDefinitionByIdUseCase,
     private readonly getPublishedByIdUseCase: GetPublishedInteractiveDefinitionByIdUseCase,
@@ -43,6 +45,29 @@ export class AdminInteractiveController {
     @Query('status') status?: InteractiveStatus,
   ) {
     return await this.listUseCase.execute({ type, status });
+  }
+
+  @Post('rituals')
+  @Roles(...AdminPermissions.interactive.create)
+  @ApiOperation({ summary: 'Create ritual definition (draft)' })
+  async createRitualDefinition(
+    @Body() dto: {
+      slug: string;
+      title: string;
+      topicCode?: string | null;
+      config?: InteractiveConfig;
+    },
+  ) {
+    if (!dto?.slug?.trim() || !dto?.title?.trim()) {
+      throw new BadRequestException('slug and title are required');
+    }
+    return await this.createUseCase.execute({
+      type: InteractiveType.RITUAL,
+      slug: dto.slug.trim(),
+      title: dto.title.trim(),
+      topicCode: dto.topicCode ?? null,
+      config: dto.config,
+    });
   }
 
   @Get('overview')
@@ -77,6 +102,22 @@ export class AdminInteractiveController {
   ) {
     const user = request.user;
     await this.updateUseCase.execute(id, dto, {
+      userId: user.id,
+      role: user.roles?.[0] || 'unknown',
+      ipAddress: AuditLogHelper.extractIpAddress(request),
+      userAgent: AuditLogHelper.extractUserAgent(request),
+    });
+  }
+
+  @Post('rituals/:id/archive')
+  @HttpCode(200)
+  @Roles(...AdminPermissions.interactive.archive)
+  @ApiOperation({ summary: 'Archive ritual definition' })
+  async archiveRitual(@Param('id') id: string, @Req() request: any) {
+    const user = request.user;
+    await this.updateUseCase.execute(id, {
+      status: InteractiveStatus.ARCHIVED,
+    }, {
       userId: user.id,
       role: user.roles?.[0] || 'unknown',
       ipAddress: AuditLogHelper.extractIpAddress(request),

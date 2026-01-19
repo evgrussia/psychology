@@ -6,6 +6,8 @@ import { PrismaService } from '../src/infrastructure/database/prisma.service';
 import { BcryptHasher } from '../src/infrastructure/auth/bcrypt-hasher';
 import * as cookieParser from 'cookie-parser';
 
+import { clearDatabase } from './test-utils';
+
 describe('Auth (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
@@ -26,17 +28,7 @@ describe('Auth (e2e)', () => {
     hasher = new BcryptHasher();
 
     // Clean up
-    await prisma.ugcModerationAction.deleteMany();
-    await prisma.questionAnswer.deleteMany();
-    await prisma.anonymousQuestion.deleteMany();
-    await prisma.contentRevision.deleteMany();
-    await prisma.contentItem.deleteMany();
-    await prisma.messageTemplateVersion.deleteMany();
-    await prisma.messageTemplate.deleteMany();
-    await prisma.session.deleteMany();
-    await prisma.userRole.deleteMany();
-    await prisma.user.deleteMany();
-    await prisma.role.deleteMany();
+    await clearDatabase(prisma);
 
     // Seed roles
     await prisma.role.createMany({
@@ -114,6 +106,119 @@ describe('Auth (e2e)', () => {
           password: password,
         })
         .expect(401);
+    });
+  });
+
+  describe('/api/auth/client/register (POST)', () => {
+    it('should register new client and return session cookie', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/api/auth/client/register')
+        .send({
+          email: 'new-client@example.com',
+          password: 'password123',
+        })
+        .expect(201);
+
+      expect(response.body.email).toBe('new-client@example.com');
+      expect(response.headers['set-cookie']).toBeDefined();
+      expect(response.headers['set-cookie'][0]).toContain('sessionId=');
+
+      const createdUser = await prisma.user.findUnique({
+        where: { email: 'new-client@example.com' },
+        include: { roles: true },
+      });
+      expect(createdUser).toBeTruthy();
+      expect(createdUser?.password_hash).toBeTruthy();
+      expect(createdUser?.roles.some((role) => role.role_code === 'client')).toBe(true);
+    });
+
+    it('should set password for existing client without password', async () => {
+      await prisma.user.create({
+        data: {
+          email: 'no-password@example.com',
+          password_hash: null,
+          status: 'active',
+          roles: {
+            create: { role_code: 'client' },
+          },
+        },
+      });
+
+      const response = await request(app.getHttpServer())
+        .post('/api/auth/client/register')
+        .send({
+          email: 'no-password@example.com',
+          password: 'password123',
+        })
+        .expect(201);
+
+      expect(response.body.email).toBe('no-password@example.com');
+      expect(response.headers['set-cookie']).toBeDefined();
+
+      const updatedUser = await prisma.user.findUnique({
+        where: { email: 'no-password@example.com' },
+      });
+      expect(updatedUser?.password_hash).toBeTruthy();
+      if (updatedUser?.password_hash) {
+        const isValid = await hasher.compare('password123', updatedUser.password_hash);
+        expect(isValid).toBe(true);
+      }
+    });
+
+    it('should reject when client already has password', async () => {
+      const passwordHash = await hasher.hash('password123');
+
+      await prisma.user.create({
+        data: {
+          email: 'registered@example.com',
+          password_hash: passwordHash,
+          status: 'active',
+          roles: {
+            create: { role_code: 'client' },
+          },
+        },
+      });
+
+      await request(app.getHttpServer())
+        .post('/api/auth/client/register')
+        .send({
+          email: 'registered@example.com',
+          password: 'password123',
+        })
+        .expect(409);
+    });
+
+    it('should reject when email belongs to admin user', async () => {
+      const passwordHash = await hasher.hash('password123');
+
+      await prisma.user.create({
+        data: {
+          email: 'admin-register@example.com',
+          password_hash: passwordHash,
+          status: 'active',
+          roles: {
+            create: { role_code: 'owner' },
+          },
+        },
+      });
+
+      await request(app.getHttpServer())
+        .post('/api/auth/client/register')
+        .send({
+          email: 'admin-register@example.com',
+          password: 'password123',
+        })
+        .expect(409);
+    });
+
+    it('should validate password length', async () => {
+      await request(app.getHttpServer())
+        .post('/api/auth/client/register')
+        .send({
+          email: 'short-pass@example.com',
+          password: 'short',
+        })
+        .expect(400);
     });
   });
 

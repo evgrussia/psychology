@@ -5,6 +5,30 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { AdminAuthGuard } from '@/components/admin-auth-guard';
 import { useAdminAuth } from '@/components/admin-auth-context';
+import {
+  Alert,
+  AlertDescription,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Checkbox,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Textarea,
+} from '@psychology/design-system';
 
 type EventFormat = 'online' | 'offline' | 'hybrid';
 type EventStatus = 'draft' | 'published' | 'archived';
@@ -146,194 +170,210 @@ export default function EditEventPage() {
   return (
     <AdminAuthGuard allowedRoles={['owner', 'editor']}>
       {loading ? (
-        <div className="p-8">Загрузка...</div>
+        <Card>
+          <CardContent className="p-8 text-sm text-muted-foreground">Загрузка...</CardContent>
+        </Card>
       ) : error && !event ? (
-        <div className="p-8 text-red-500">Ошибка: {error}</div>
+        <Alert variant="destructive">
+          <AlertDescription>Ошибка: {error}</AlertDescription>
+        </Alert>
       ) : !event ? (
-        <div className="p-8">Мероприятие не найдено</div>
+        <Card>
+          <CardContent className="p-8 text-sm text-muted-foreground">Мероприятие не найдено</CardContent>
+        </Card>
       ) : (
-        <div className="p-8 space-y-6">
+        <div className="space-y-6">
           <div>
-            <Link href="/events" className="text-indigo-600 hover:text-indigo-900">
-              ← Назад к списку
-            </Link>
-            <h1 className="text-2xl font-bold mt-4">Редактирование мероприятия</h1>
-            {error && <div className="mt-2 text-red-500">{error}</div>}
+            <Button asChild variant="link" className="px-0">
+              <Link href="/events">← Назад к списку</Link>
+            </Button>
+            <h1 className="text-2xl font-semibold text-foreground mt-4">Редактирование мероприятия</h1>
+            {error && (
+              <Alert variant="destructive" className="mt-2">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
           </div>
 
-      <div className="flex flex-wrap gap-3">
-        <button
-          onClick={() => void save()}
-          disabled={!canEdit || saving}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-        >
-          {saving ? 'Сохранение...' : 'Сохранить'}
-        </button>
-        {canEdit && event.status !== 'published' && (
-          <button
-            onClick={() => void publish()}
-            disabled={publishing}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-          >
-            {publishing ? 'Публикация...' : 'Опубликовать'}
-          </button>
-        )}
-        <a
-          href={`/events/${event.slug}`}
-          className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Публичная страница
-        </a>
-      </div>
+          <div className="flex flex-wrap gap-3">
+            <Button onClick={() => void save()} disabled={!canEdit || saving}>
+              {saving ? 'Сохранение...' : 'Сохранить'}
+            </Button>
+            {canEdit && event.status !== 'published' && (
+              <Button onClick={() => void publish()} disabled={publishing} variant="outline">
+                {publishing ? 'Публикация...' : 'Опубликовать'}
+              </Button>
+            )}
+            <Button asChild variant="secondary">
+              <a href={`/events/${event.slug}`} target="_blank" rel="noreferrer">
+                Публичная страница
+              </a>
+            </Button>
+          </div>
 
-      <div className="bg-white rounded-lg shadow p-6 space-y-6">
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="block text-sm font-medium mb-2">Slug</label>
-            <input
-              value={event.slug}
-              onChange={(e) => setEvent({ ...event, slug: e.target.value })}
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Название</label>
-            <input
-              value={event.title}
-              onChange={(e) => setEvent({ ...event, title: e.target.value })}
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-        </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Параметры</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Slug</Label>
+                  <Input
+                    value={event.slug}
+                    onChange={(e) => setEvent({ ...event, slug: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Название</Label>
+                  <Input
+                    value={event.title}
+                    onChange={(e) => setEvent({ ...event, title: e.target.value })}
+                  />
+                </div>
+              </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-2">Описание (Markdown)</label>
-          <textarea
-            value={event.description_markdown}
-            onChange={(e) => setEvent({ ...event, description_markdown: e.target.value })}
-            className="w-full px-3 py-2 border rounded"
-            rows={10}
-          />
-        </div>
+              <div className="space-y-2">
+                <Label>Описание (Markdown)</Label>
+                <Textarea
+                  value={event.description_markdown}
+                  onChange={(e) => setEvent({ ...event, description_markdown: e.target.value })}
+                  rows={10}
+                />
+              </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="block text-sm font-medium mb-2">Начало (ISO)</label>
-            <input
-              value={event.starts_at}
-              onChange={(e) => setEvent({ ...event, starts_at: e.target.value })}
-              className="w-full px-3 py-2 border rounded font-mono text-xs"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Окончание (ISO)</label>
-            <input
-              value={event.ends_at || ''}
-              onChange={(e) => setEvent({ ...event, ends_at: e.target.value || null })}
-              className="w-full px-3 py-2 border rounded font-mono text-xs"
-            />
-          </div>
-        </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Начало (ISO)</Label>
+                  <Input
+                    value={event.starts_at}
+                    onChange={(e) => setEvent({ ...event, starts_at: e.target.value })}
+                    className="font-mono text-xs"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Окончание (ISO)</Label>
+                  <Input
+                    value={event.ends_at || ''}
+                    onChange={(e) => setEvent({ ...event, ends_at: e.target.value || null })}
+                    className="font-mono text-xs"
+                  />
+                </div>
+              </div>
 
-        <div className="grid gap-4 md:grid-cols-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">Формат</label>
-            <select
-              value={event.format}
-              onChange={(e) => setEvent({ ...event, format: e.target.value as EventFormat })}
-              className="w-full px-3 py-2 border rounded"
-            >
-              <option value="online">online</option>
-              <option value="offline">offline</option>
-              <option value="hybrid">hybrid</option>
-            </select>
-          </div>
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium mb-2">Локация</label>
-            <input
-              value={event.location_text || ''}
-              onChange={(e) => setEvent({ ...event, location_text: e.target.value || null })}
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Статус</label>
-            <select
-              value={event.status}
-              onChange={(e) => setEvent({ ...event, status: e.target.value as EventStatus })}
-              className="w-full px-3 py-2 border rounded"
-            >
-              <option value="draft">draft</option>
-              <option value="published">published</option>
-              <option value="archived">archived</option>
-            </select>
-          </div>
-        </div>
+              <div className="grid gap-4 md:grid-cols-4">
+                <div className="space-y-2">
+                  <Label>Формат</Label>
+                  <Select
+                    value={event.format}
+                    onValueChange={(value) => setEvent({ ...event, format: value as EventFormat })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="online">online</SelectItem>
+                      <SelectItem value="offline">offline</SelectItem>
+                      <SelectItem value="hybrid">hybrid</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="md:col-span-2 space-y-2">
+                  <Label>Локация</Label>
+                  <Input
+                    value={event.location_text || ''}
+                    onChange={(e) => setEvent({ ...event, location_text: e.target.value || null })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Статус</Label>
+                  <Select
+                    value={event.status}
+                    onValueChange={(value) => setEvent({ ...event, status: value as EventStatus })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">draft</SelectItem>
+                      <SelectItem value="published">published</SelectItem>
+                      <SelectItem value="archived">archived</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <div>
-            <label className="block text-sm font-medium mb-2">Вместимость</label>
-            <input
-              type="number"
-              min={0}
-              value={event.capacity ?? ''}
-              onChange={(e) => setEvent({ ...event, capacity: e.target.value === '' ? null : Number(e.target.value) })}
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-          <div className="flex items-end">
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={event.registration_open}
-                onChange={(e) => setEvent({ ...event, registration_open: e.target.checked })}
-              />
-              Регистрация открыта
-            </label>
-          </div>
-        </div>
-      </div>
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="space-y-2">
+                  <Label>Вместимость</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={event.capacity ?? ''}
+                    onChange={(e) =>
+                      setEvent({ ...event, capacity: e.target.value === '' ? null : Number(e.target.value) })
+                    }
+                  />
+                </div>
+                <div className="flex items-end">
+                  <label className="flex items-center gap-2 text-sm">
+                    <Checkbox
+                      checked={event.registration_open}
+                      onCheckedChange={(checked) =>
+                        setEvent({ ...event, registration_open: Boolean(checked) })
+                      }
+                    />
+                    Регистрация открыта
+                  </label>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-      <div className="bg-white rounded-lg shadow p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold">Регистрации</h2>
-          <button onClick={() => void loadRegistrations()} className="text-sm text-indigo-600 hover:text-indigo-900">
-            Обновить
-          </button>
-        </div>
-        {registrationsLoading ? (
-          <div className="text-sm text-gray-500">Загрузка...</div>
-        ) : registrations.length === 0 ? (
-          <div className="text-sm text-gray-500">Пока нет регистраций</div>
-        ) : (
-          <div className="overflow-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Контакт</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дата</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Согласия</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {registrations.map((r) => (
-                  <tr key={r.id}>
-                    <td className="px-4 py-2 text-xs font-mono">{r.id}</td>
-                    <td className="px-4 py-2 text-sm text-gray-600">{r.preferred_contact}</td>
-                    <td className="px-4 py-2 text-sm text-gray-600">{new Date(r.submitted_at).toLocaleString('ru-RU')}</td>
-                    <td className="px-4 py-2 text-sm text-gray-600">
-                      PD: {r.consent_personal_data ? 'yes' : 'no'}, COM: {r.consent_communications ? 'yes' : 'no'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Регистрации</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Button onClick={() => void loadRegistrations()} variant="link" className="px-0">
+                  Обновить
+                </Button>
+              </div>
+              {registrationsLoading ? (
+                <div className="text-sm text-muted-foreground">Загрузка...</div>
+              ) : registrations.length === 0 ? (
+                <div className="text-sm text-muted-foreground">Пока нет регистраций</div>
+              ) : (
+                <div className="overflow-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/40 text-xs uppercase text-muted-foreground">
+                        <TableHead>ID</TableHead>
+                        <TableHead>Контакт</TableHead>
+                        <TableHead>Дата</TableHead>
+                        <TableHead>Согласия</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {registrations.map((r) => (
+                        <TableRow key={r.id}>
+                          <TableCell className="text-xs font-mono">{r.id}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{r.preferred_contact}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {new Date(r.submitted_at).toLocaleString('ru-RU')}
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            PD: {r.consent_personal_data ? 'yes' : 'no'}, COM: {r.consent_communications ? 'yes' : 'no'}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       )}
     </AdminAuthGuard>

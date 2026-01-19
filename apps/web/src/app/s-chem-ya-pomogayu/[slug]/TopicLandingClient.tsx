@@ -13,6 +13,7 @@ import {
 import SafeMarkdownRenderer from '../../../components/SafeMarkdownRenderer';
 import { track } from '../../../lib/tracking';
 import { createTelegramDeepLink } from '../../../lib/telegram';
+import { resolveContentHref } from '../../../lib/content-links';
 
 interface TopicLandingClientProps {
   data: {
@@ -25,7 +26,7 @@ interface TopicLandingClientProps {
 }
 
 export default function TopicLandingClient({ data }: TopicLandingClientProps) {
-  const { topic, landing, relatedContent, relatedInteractives } = data;
+  const { topic, landing, relatedContent, relatedInteractives, relatedServices } = data;
 
   const primaryInteractive = relatedInteractives[0];
 
@@ -66,6 +67,16 @@ export default function TopicLandingClient({ data }: TopicLandingClientProps) {
       topic: topic.code,
     });
     window.location.href = url;
+  };
+
+  const handleServiceClick = (service: { slug: string; title: string }, index: number) => {
+    track('cta_click', {
+      cta_id: `topic_service_${index + 1}`,
+      cta_target: 'service',
+      service_slug: service.slug,
+      topic: topic.code,
+    });
+    window.location.href = `/services/${service.slug}`;
   };
 
   // Парсинг markdown для извлечения специальных секций
@@ -151,9 +162,7 @@ export default function TopicLandingClient({ data }: TopicLandingClientProps) {
             <h2 className="text-3xl font-bold mb-6 text-foreground">
               Признаки и симптомы
             </h2>
-            <div className="text-lg text-foreground leading-relaxed">
-              <SafeMarkdownRenderer content={signsContent} />
-            </div>
+            <SafeMarkdownRenderer content={signsContent} />
             <p className="text-sm text-muted-foreground mt-6 italic">
               Это не диагноз — скорее ориентиры, которые могут помочь понять, стоит ли обратить внимание на эту тему.
             </p>
@@ -165,9 +174,7 @@ export default function TopicLandingClient({ data }: TopicLandingClientProps) {
       <Section>
         <Container className="max-w-3xl">
           {landing?.bodyMarkdown ? (
-            <div className="prose prose-slate dark:prose-invert max-w-none">
-              <SafeMarkdownRenderer content={landing.bodyMarkdown} />
-            </div>
+            <SafeMarkdownRenderer content={landing.bodyMarkdown} />
           ) : (
             <div className="text-center text-muted-foreground">
               <p>Здесь скоро появится подробное описание работы с этой темой.</p>
@@ -183,9 +190,7 @@ export default function TopicLandingClient({ data }: TopicLandingClientProps) {
             <h2 className="text-3xl font-bold mb-6 text-foreground">
               Как я работаю с этим
             </h2>
-            <div className="text-lg text-foreground leading-relaxed">
-              <SafeMarkdownRenderer content={howIWorkContent} />
-            </div>
+            <SafeMarkdownRenderer content={howIWorkContent} />
           </Container>
         </Section>
       )}
@@ -237,9 +242,49 @@ export default function TopicLandingClient({ data }: TopicLandingClientProps) {
                     <Button 
                       variant="outline"
                       className="w-full"
-                      onClick={() => window.location.href = `/blog/${content.slug}`}
+                      onClick={() => window.location.href = resolveContentHref(content.contentType, content.slug)}
                     >
                       Читать далее
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </Container>
+        </Section>
+      )}
+
+      {relatedServices.length > 0 && (
+        <Section>
+          <Container>
+            <h2 className="text-3xl font-bold mb-12 text-center text-foreground">
+              Услуги по теме {topic.title}
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {relatedServices.map((service, index) => (
+                <Card key={service.id} className="h-full flex flex-col">
+                  <div className="p-6 flex-1">
+                    <h3 className="text-xl font-bold mb-3 text-foreground">{service.title}</h3>
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      {service.format && (
+                        <div>Формат: {resolveServiceFormat(service.format)}</div>
+                      )}
+                      {service.duration_minutes && (
+                        <div>Длительность: {service.duration_minutes} мин</div>
+                      )}
+                      {service.price_amount && (
+                        <div>Стоимость: {service.price_amount} ₽</div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="p-6 pt-0 mt-auto">
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => handleServiceClick(service, index)}
+                    >
+                      Подробнее
                     </Button>
                   </div>
                 </Card>
@@ -273,4 +318,17 @@ export default function TopicLandingClient({ data }: TopicLandingClientProps) {
       />
     </>
   );
+}
+
+function resolveServiceFormat(format: string): string {
+  switch (format) {
+    case 'online':
+      return 'Онлайн';
+    case 'offline':
+      return 'Очно';
+    case 'hybrid':
+      return 'Гибрид';
+    default:
+      return format;
+  }
 }

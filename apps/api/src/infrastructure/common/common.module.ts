@@ -7,6 +7,8 @@ import { AesGcmEncryptionService } from '../security/encryption.service';
 import { HttpClientConfig } from '../config/http-client.config';
 import { AnalyticsCacheService } from './analytics-cache.service';
 import { AlertService } from '../observability/alert.service';
+import { SentryErrorReporter } from '../observability/sentry-error-reporter.service';
+import { ErrorRateMonitor } from '../observability/error-rate-monitor.service';
 
 @Global()
 @Module({
@@ -19,6 +21,10 @@ import { AlertService } from '../observability/alert.service';
     {
       provide: 'IAlertService',
       useClass: AlertService,
+    },
+    {
+      provide: 'IErrorReporter',
+      useClass: SentryErrorReporter,
     },
     {
       provide: 'IPaymentService',
@@ -34,15 +40,18 @@ import { AlertService } from '../observability/alert.service';
     },
     HttpClientConfig,
     AnalyticsCacheService,
+    ErrorRateMonitor,
   ],
   exports: [
     'IEmailService',
     'IAlertService',
+    'IErrorReporter',
     'IPaymentService',
     'IPaymentRepository',
     'IEncryptionService',
     HttpClientConfig,
     AnalyticsCacheService,
+    ErrorRateMonitor,
   ],
 })
 export class CommonModule {}

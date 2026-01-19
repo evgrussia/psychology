@@ -4,6 +4,23 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 import Link from 'next/link';
 import { AdminAuthGuard } from '@/components/admin-auth-guard';
+import {
+  Alert,
+  AlertDescription,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Textarea,
+} from '@psychology/design-system';
 
 type ServiceFormat = 'online' | 'offline' | 'hybrid';
 type ServiceStatus = 'draft' | 'published' | 'archived';
@@ -68,181 +85,182 @@ export default function CreateServicePage() {
 
   return (
     <AdminAuthGuard allowedRoles={['owner']}>
-      <div className="p-8 space-y-6">
+      <div className="space-y-6">
         <div>
-          <Link href="/services" className="text-indigo-600 hover:text-indigo-900">
-            ← Назад к списку
-          </Link>
-          <h1 className="text-2xl font-bold mt-4">Создать услугу</h1>
-          {error && <div className="mt-2 text-red-500">{error}</div>}
+          <Button asChild variant="link" className="px-0">
+            <Link href="/services">← Назад к списку</Link>
+          </Button>
+          <h1 className="text-2xl font-semibold text-foreground mt-4">Создать услугу</h1>
+          {error && (
+            <Alert variant="destructive" className="mt-2">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
         </div>
 
-      <div className="bg-white rounded-lg shadow p-6 space-y-6">
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="block text-sm font-medium mb-2">Slug</label>
-            <input
-              value={form.slug}
-              onChange={(e) => setForm((p) => ({ ...p, slug: e.target.value }))}
-              className="w-full px-3 py-2 border rounded"
-              placeholder="primary_consultation"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Название</label>
-            <input
-              value={form.title}
-              onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
-              className="w-full px-3 py-2 border rounded"
-              placeholder="Первичная консультация"
-            />
-          </div>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Параметры</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Slug</Label>
+                <Input
+                  value={form.slug}
+                  onChange={(e) => setForm((p) => ({ ...p, slug: e.target.value }))}
+                  placeholder="primary_consultation"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Название</Label>
+                <Input
+                  value={form.title}
+                  onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
+                  placeholder="Первичная консультация"
+                />
+              </div>
+            </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-2">Описание (Markdown)</label>
-          <textarea
-            value={form.descriptionMarkdown}
-            onChange={(e) => setForm((p) => ({ ...p, descriptionMarkdown: e.target.value }))}
-            className="w-full px-3 py-2 border rounded"
-            rows={8}
-          />
-        </div>
+            <div className="space-y-2">
+              <Label>Описание (Markdown)</Label>
+              <Textarea
+                value={form.descriptionMarkdown}
+                onChange={(e) => setForm((p) => ({ ...p, descriptionMarkdown: e.target.value }))}
+                rows={8}
+              />
+            </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <div>
-            <label className="block text-sm font-medium mb-2">Формат</label>
-            <select
-              value={form.format}
-              onChange={(e) => setForm((p) => ({ ...p, format: e.target.value as ServiceFormat }))}
-              className="w-full px-3 py-2 border rounded"
-            >
-              <option value="online">online</option>
-              <option value="offline">offline</option>
-              <option value="hybrid">hybrid</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Длительность (мин)</label>
-            <input
-              type="number"
-              min={10}
-              value={form.durationMinutes}
-              onChange={(e) => setForm((p) => ({ ...p, durationMinutes: Number(e.target.value) }))}
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Статус</label>
-            <select
-              value={form.status}
-              onChange={(e) => setForm((p) => ({ ...p, status: e.target.value as ServiceStatus }))}
-              className="w-full px-3 py-2 border rounded"
-            >
-              <option value="draft">draft</option>
-              <option value="published">published</option>
-              <option value="archived">archived</option>
-            </select>
-          </div>
-        </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="space-y-2">
+                <Label>Формат</Label>
+                <Select
+                  value={form.format}
+                  onValueChange={(value) => setForm((p) => ({ ...p, format: value as ServiceFormat }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="online">online</SelectItem>
+                    <SelectItem value="offline">offline</SelectItem>
+                    <SelectItem value="hybrid">hybrid</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Длительность (мин)</Label>
+                <Input
+                  type="number"
+                  min={10}
+                  value={form.durationMinutes}
+                  onChange={(e) => setForm((p) => ({ ...p, durationMinutes: Number(e.target.value) }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Статус</Label>
+                <Select
+                  value={form.status}
+                  onValueChange={(value) => setForm((p) => ({ ...p, status: value as ServiceStatus }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">draft</SelectItem>
+                    <SelectItem value="published">published</SelectItem>
+                    <SelectItem value="archived">archived</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
 
-        {form.format === 'offline' && (
-          <div>
-            <label className="block text-sm font-medium mb-2">Адрес (для офлайн)</label>
-            <input
-              value={form.offlineAddress}
-              onChange={(e) => setForm((p) => ({ ...p, offlineAddress: e.target.value }))}
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-        )}
+            {form.format === 'offline' && (
+              <div className="space-y-2">
+                <Label>Адрес (для офлайн)</Label>
+                <Input
+                  value={form.offlineAddress}
+                  onChange={(e) => setForm((p) => ({ ...p, offlineAddress: e.target.value }))}
+                />
+              </div>
+            )}
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <div>
-            <label className="block text-sm font-medium mb-2">Цена (₽)</label>
-            <input
-              type="number"
-              min={0}
-              value={form.priceAmount}
-              onChange={(e) => setForm((p) => ({ ...p, priceAmount: Number(e.target.value) }))}
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Депозит (₽, опционально)</label>
-            <input
-              type="number"
-              min={0}
-              value={form.depositAmount}
-              onChange={(e) => setForm((p) => ({ ...p, depositAmount: e.target.value }))}
-              className="w-full px-3 py-2 border rounded"
-              placeholder="например 1000"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Тема (topicCode)</label>
-            <input
-              value={form.topicCode}
-              onChange={(e) => setForm((p) => ({ ...p, topicCode: e.target.value }))}
-              className="w-full px-3 py-2 border rounded"
-              placeholder="anxiety"
-            />
-          </div>
-        </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="space-y-2">
+                <Label>Цена (₽)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={form.priceAmount}
+                  onChange={(e) => setForm((p) => ({ ...p, priceAmount: Number(e.target.value) }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Депозит (₽, опционально)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={form.depositAmount}
+                  onChange={(e) => setForm((p) => ({ ...p, depositAmount: e.target.value }))}
+                  placeholder="например 1000"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Тема (topicCode)</Label>
+                <Input
+                  value={form.topicCode}
+                  onChange={(e) => setForm((p) => ({ ...p, topicCode: e.target.value }))}
+                  placeholder="anxiety"
+                />
+              </div>
+            </div>
 
-        <div className="grid gap-4 md:grid-cols-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">Отмена без штрафа (ч)</label>
-            <input
-              type="number"
-              min={0}
-              value={form.cancelFreeHours}
-              onChange={(e) => setForm((p) => ({ ...p, cancelFreeHours: e.target.value }))}
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Отмена с частичным штрафом (ч)</label>
-            <input
-              type="number"
-              min={0}
-              value={form.cancelPartialHours}
-              onChange={(e) => setForm((p) => ({ ...p, cancelPartialHours: e.target.value }))}
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Перенос минимум (ч)</label>
-            <input
-              type="number"
-              min={0}
-              value={form.rescheduleMinHours}
-              onChange={(e) => setForm((p) => ({ ...p, rescheduleMinHours: e.target.value }))}
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Перенос максимум (раз)</label>
-            <input
-              type="number"
-              min={0}
-              value={form.rescheduleMaxCount}
-              onChange={(e) => setForm((p) => ({ ...p, rescheduleMaxCount: e.target.value }))}
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-        </div>
+            <div className="grid gap-4 md:grid-cols-4">
+              <div className="space-y-2">
+                <Label>Отмена без штрафа (ч)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={form.cancelFreeHours}
+                  onChange={(e) => setForm((p) => ({ ...p, cancelFreeHours: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Отмена с частичным штрафом (ч)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={form.cancelPartialHours}
+                  onChange={(e) => setForm((p) => ({ ...p, cancelPartialHours: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Перенос минимум (ч)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={form.rescheduleMinHours}
+                  onChange={(e) => setForm((p) => ({ ...p, rescheduleMinHours: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Перенос максимум (раз)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={form.rescheduleMaxCount}
+                  onChange={(e) => setForm((p) => ({ ...p, rescheduleMaxCount: e.target.value }))}
+                />
+              </div>
+            </div>
 
-        <div className="flex gap-3">
-          <button
-            onClick={handleSubmit}
-            disabled={saving}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-          >
-            {saving ? 'Создаём...' : 'Создать'}
-          </button>
-        </div>
-      </div>
+            <div className="flex gap-3">
+              <Button onClick={handleSubmit} disabled={saving}>
+                {saving ? 'Создаём...' : 'Создать'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </AdminAuthGuard>
   );

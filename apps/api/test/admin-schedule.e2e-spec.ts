@@ -6,6 +6,8 @@ import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/infrastructure/database/prisma.service';
 import { BcryptHasher } from '../src/infrastructure/auth/bcrypt-hasher';
 
+import { clearDatabase } from './test-utils';
+
 describe('Admin Schedule (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
@@ -27,20 +29,7 @@ describe('Admin Schedule (e2e)', () => {
     prisma = app.get<PrismaService>(PrismaService);
     const hasher = new BcryptHasher();
 
-    await prisma.ugcModerationAction.deleteMany();
-    await prisma.questionAnswer.deleteMany();
-    await prisma.anonymousQuestion.deleteMany();
-    await prisma.availabilitySlot.deleteMany();
-    await prisma.appointment.deleteMany();
-    await prisma.service.deleteMany();
-    await (prisma as any).googleCalendarIntegration.deleteMany();
-    await prisma.messageTemplateVersion.deleteMany();
-    await prisma.messageTemplate.deleteMany();
-    await prisma.session.deleteMany();
-    await prisma.userRole.deleteMany();
-    await prisma.contentItem.deleteMany();
-    await prisma.user.deleteMany();
-    await prisma.role.deleteMany();
+    await clearDatabase(prisma);
 
     await prisma.role.createMany({
       data: [
@@ -85,24 +74,6 @@ describe('Admin Schedule (e2e)', () => {
     serviceSlug = service.slug;
     serviceId = service.id;
 
-    const now = new Date();
-    const rangeStart = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const rangeEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-
-    await (prisma as any).googleCalendarIntegration.create({
-      data: {
-        status: 'connected',
-        calendar_id: 'primary',
-        timezone: 'Europe/Moscow',
-        encrypted_access_token: 'enc:token',
-        encrypted_refresh_token: 'enc:refresh',
-        token_expires_at: new Date(Date.now() + 60 * 60 * 1000),
-        scopes: [],
-        last_sync_at: new Date(),
-        last_sync_range_start_at: rangeStart,
-        last_sync_range_end_at: rangeEnd,
-      },
-    });
   });
 
   afterAll(async () => {

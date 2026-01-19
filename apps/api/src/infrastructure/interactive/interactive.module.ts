@@ -11,12 +11,13 @@ import { ValidateNavigatorDefinitionUseCase } from '../../application/interactiv
 import { PrismaInteractiveRunRepository } from '../persistence/prisma/interactive/prisma-interactive-run.repository';
 import { PrismaInteractiveDefinitionRepository } from '../persistence/prisma/interactive/prisma-interactive-definition.repository';
 import { InteractiveController } from '../../presentation/controllers/interactive.controller';
+import { PublicRitualsController } from '../../presentation/controllers/public-rituals.controller';
 import { DatabaseModule } from '../database/database.module';
 import { MediaModule } from '../media/media.module';
 
 @Module({
   imports: [DatabaseModule, MediaModule],
-  controllers: [InteractiveController],
+  controllers: [InteractiveController, PublicRitualsController],
   providers: [
     StartInteractiveRunUseCase,
     CompleteInteractiveRunUseCase,

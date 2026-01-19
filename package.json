@@ -11,10 +11,10 @@
     "test:api:e2e": "pnpm --filter @psychology/api test:e2e --runInBand",
     "test:web": "pnpm --filter @psychology/web test",
     "test:web:e2e": "pnpm --filter @psychology/web e2e",
-    "test:api:seed": "cd apps/api && npx prisma db seed",
+    "test:api:seed": "node scripts/run-test-seed.js",
     "test:infra:up": "docker compose -f docker-compose.test.yml up -d",
     "test:infra:down": "docker compose -f docker-compose.test.yml down",
-    "test:full": "pnpm test:infra:up && cd apps/api && npx prisma migrate deploy && cd ../.. && pnpm test:api && pnpm test:api:e2e && pnpm test:api:seed && pnpm test:web && pnpm test:web:e2e && pnpm test:infra:down",
+    "test:full": "pnpm test:infra:up && node scripts/run-test-migrate.js && pnpm --filter @psychology/api test --runInBand && pnpm test:api:e2e && pnpm test:api:seed && pnpm test:web && pnpm test:web:e2e && pnpm test:infra:down",
     "typecheck": "pnpm -r typecheck"
   },
   "devDependencies": {

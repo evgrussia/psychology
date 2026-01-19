@@ -5,6 +5,22 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AdminAuthGuard } from '@/components/admin-auth-guard';
 import MarkdownEditor from '@/components/MarkdownEditor';
+import {
+  Alert,
+  AlertDescription,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@psychology/design-system';
 
 export default function NewTemplatePage() {
   const router = useRouter();
@@ -53,86 +69,101 @@ export default function NewTemplatePage() {
     <AdminAuthGuard allowedRoles={['owner', 'assistant']}>
       <div className="space-y-6">
         <div>
-          <Link href="/templates" className="text-primary">
-            ← Назад к списку
-          </Link>
-          <h1 className="mt-3 text-2xl font-semibold">Новый шаблон</h1>
-          {error && <div className="mt-2 text-sm text-red-500">{error}</div>}
+          <Button asChild variant="link" className="px-0">
+            <Link href="/templates">← Назад к списку</Link>
+          </Button>
+          <h1 className="mt-3 text-2xl font-semibold text-foreground">Новый шаблон</h1>
+          {error && (
+            <Alert variant="destructive" className="mt-2">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-          <div className="space-y-4 rounded-lg border bg-white p-4">
-            <div>
-              <label className="text-sm text-muted-foreground">Название</label>
-              <input
-                value={form.name}
-                onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
-                className="mt-2 w-full rounded-md border px-3 py-2 text-sm"
-              />
-            </div>
-            <div>
-              <label className="text-sm text-muted-foreground">Канал</label>
-              <select
-                value={form.channel}
-                onChange={(event) => setForm((prev) => ({ ...prev, channel: event.target.value }))}
-                className="mt-2 w-full rounded-md border px-3 py-2 text-sm"
-              >
-                <option value="email">Email</option>
-                <option value="telegram">Telegram</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-sm text-muted-foreground">Категория</label>
-              <select
-                value={form.category}
-                onChange={(event) => setForm((prev) => ({ ...prev, category: event.target.value }))}
-                className="mt-2 w-full rounded-md border px-3 py-2 text-sm"
-              >
-                <option value="booking">Запись</option>
-                <option value="waitlist">Лист ожидания</option>
-                <option value="event">Мероприятия</option>
-                <option value="moderation">Модерация</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-sm text-muted-foreground">Язык</label>
-              <input
-                value={form.language}
-                onChange={(event) => setForm((prev) => ({ ...prev, language: event.target.value }))}
-                className="mt-2 w-full rounded-md border px-3 py-2 text-sm"
-              />
-            </div>
-            {form.channel === 'email' && (
-              <div>
-                <label className="text-sm text-muted-foreground">Тема письма</label>
-                <input
-                  value={form.subject}
-                  onChange={(event) => setForm((prev) => ({ ...prev, subject: event.target.value }))}
-                  className="mt-2 w-full rounded-md border px-3 py-2 text-sm"
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Параметры</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Название</Label>
+                <Input
+                  value={form.name}
+                  onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
                 />
               </div>
-            )}
-            <button
-              type="button"
-              className="rounded-md bg-primary px-4 py-2 text-sm text-white disabled:opacity-50"
-              onClick={handleSubmit}
-              disabled={saving || !form.name.trim() || !form.body_markdown.trim()}
-            >
-              {saving ? 'Создаем...' : 'Создать шаблон'}
-            </button>
-          </div>
+              <div className="space-y-2">
+                <Label>Канал</Label>
+                <Select
+                  value={form.channel}
+                  onValueChange={(value) => setForm((prev) => ({ ...prev, channel: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="email">Email</SelectItem>
+                    <SelectItem value="telegram">Telegram</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Категория</Label>
+                <Select
+                  value={form.category}
+                  onValueChange={(value) => setForm((prev) => ({ ...prev, category: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="booking">Запись</SelectItem>
+                    <SelectItem value="waitlist">Лист ожидания</SelectItem>
+                    <SelectItem value="event">Мероприятия</SelectItem>
+                    <SelectItem value="moderation">Модерация</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Язык</Label>
+                <Input
+                  value={form.language}
+                  onChange={(event) => setForm((prev) => ({ ...prev, language: event.target.value }))}
+                />
+              </div>
+              {form.channel === 'email' && (
+                <div className="space-y-2">
+                  <Label>Тема письма</Label>
+                  <Input
+                    value={form.subject}
+                    onChange={(event) => setForm((prev) => ({ ...prev, subject: event.target.value }))}
+                  />
+                </div>
+              )}
+              <Button
+                type="button"
+                onClick={handleSubmit}
+                disabled={saving || !form.name.trim() || !form.body_markdown.trim()}
+              >
+                {saving ? 'Создаем...' : 'Создать шаблон'}
+              </Button>
+            </CardContent>
+          </Card>
 
-          <div className="rounded-lg border bg-white p-4">
-            <label className="text-sm text-muted-foreground">Тело сообщения (Markdown)</label>
-            <div className="mt-3">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Тело сообщения (Markdown)</CardTitle>
+            </CardHeader>
+            <CardContent>
               <MarkdownEditor
                 value={form.body_markdown}
                 onChange={(value) => setForm((prev) => ({ ...prev, body_markdown: value }))}
                 showPreview={true}
                 height="500px"
               />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </AdminAuthGuard>

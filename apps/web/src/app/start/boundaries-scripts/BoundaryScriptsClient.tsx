@@ -45,6 +45,16 @@ export const BoundaryScriptsClient: React.FC<BoundaryScriptsClientProps> = ({ da
     }
   };
 
+  const handleKeyboardActivate = (
+    event: React.KeyboardEvent<HTMLButtonElement>,
+    action: () => void,
+  ) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      action();
+    }
+  };
+
   const handleToneSelect = (id: string) => {
     setSelections({ ...selections, tone: id });
     setStep('goal');
@@ -80,7 +90,7 @@ export const BoundaryScriptsClient: React.FC<BoundaryScriptsClientProps> = ({ da
 
   const handleTelegram = async (ctaId: string) => {
     const { deepLinkId, url } = await createTelegramDeepLink({
-      flow: 'save_resource',
+      flow: 'boundaries',
       tgTarget: 'bot',
       source: `/start/boundaries-scripts/${data.slug}`,
       entityId: data.slug,
@@ -89,7 +99,7 @@ export const BoundaryScriptsClient: React.FC<BoundaryScriptsClientProps> = ({ da
     });
     track('cta_tg_click', {
       tg_target: 'bot',
-      tg_flow: 'save_resource',
+      tg_flow: 'boundaries',
       deep_link_id: deepLinkId,
       cta_id: ctaId,
     });
@@ -126,6 +136,7 @@ export const BoundaryScriptsClient: React.FC<BoundaryScriptsClientProps> = ({ da
                 <Button
                   key={s.id}
                   onClick={() => handleScenarioSelect(s.id)}
+                  onKeyDown={(event) => handleKeyboardActivate(event, () => handleScenarioSelect(s.id))}
                   variant="outline"
                   className="p-6 text-left h-auto flex flex-col items-start border border-border rounded-xl transition-all bg-card hover:border-primary shadow-sm group"
                 >
@@ -142,7 +153,14 @@ export const BoundaryScriptsClient: React.FC<BoundaryScriptsClientProps> = ({ da
             <h2 ref={headingRef} tabIndex={-1} className="text-3xl font-bold text-center outline-none">Выберите стиль общения</h2>
             <div className="flex flex-col gap-3 max-w-md mx-auto w-full">
               {config.tones.map((t: any) => (
-                <Button key={t.id} onClick={() => handleToneSelect(t.id)} variant="outline" size="lg" className="w-full justify-start h-auto py-4">
+                <Button
+                  key={t.id}
+                  onClick={() => handleToneSelect(t.id)}
+                  onKeyDown={(event) => handleKeyboardActivate(event, () => handleToneSelect(t.id))}
+                  variant="outline"
+                  size="lg"
+                  className="w-full justify-start h-auto py-4"
+                >
                   {t.name}
                 </Button>
               ))}
@@ -160,7 +178,14 @@ export const BoundaryScriptsClient: React.FC<BoundaryScriptsClientProps> = ({ da
             <h2 ref={headingRef} tabIndex={-1} className="text-3xl font-bold text-center outline-none">Чего хотите добиться?</h2>
             <div className="flex flex-col gap-3 max-w-md mx-auto w-full">
               {config.goals.map((g: any) => (
-                <Button key={g.id} onClick={() => handleGoalSelect(g.id)} variant="outline" size="lg" className="w-full justify-start h-auto py-4">
+                <Button
+                  key={g.id}
+                  onClick={() => handleGoalSelect(g.id)}
+                  onKeyDown={(event) => handleKeyboardActivate(event, () => handleGoalSelect(g.id))}
+                  variant="outline"
+                  size="lg"
+                  className="w-full justify-start h-auto py-4"
+                >
                   {g.name}
                 </Button>
               ))}

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "updatedAt": "2026-01-07",
+  "updatedAt": "2026-01-19",
   "sourcePrompts": "docs/design-system/Image-Generation-Prompts.md",
   "notes": [
     "Файлы должны лежать в assets/graphics/* по типам.",
@@ -48,6 +48,30 @@
       }
     ],
     "spot": [
+      {
+        "id": "spot-confidentiality",
+        "description": "Spot: Конфиденциальность (щит/защита)",
+        "expected": ["spot-confidentiality-1024x1024.svg"],
+        "path": "assets/graphics/spot/"
+      },
+      {
+        "id": "spot-boundaries",
+        "description": "Spot: Профессиональные границы (связанные формы)",
+        "expected": ["spot-boundaries-1024x1024.svg"],
+        "path": "assets/graphics/spot/"
+      },
+      {
+        "id": "spot-meditation",
+        "description": "Spot: Медитация и спокойствие (фигура/круги)",
+        "expected": ["spot-meditation-1024x1024.svg"],
+        "path": "assets/graphics/spot/"
+      },
+      {
+        "id": "spot-community",
+        "description": "Spot: Сообщество и поддержка (группа форм)",
+        "expected": ["spot-community-1024x1024.svg"],
+        "path": "assets/graphics/spot/"
+      },
       {
         "id": "spot-anxiety-waves",
         "description": "Spot: Тревога и спокойствие (волны)",
@@ -170,6 +194,12 @@
       }
     ],
     "abstract": [
+      {
+        "id": "abstract-soft-gradient",
+        "description": "Абстракция: мягкий градиент (вектор)",
+        "expected": ["abstract-soft-gradient-1376x768.svg"],
+        "path": "assets/graphics/abstract/"
+      },
       {
         "id": "abstract-emotional-waves",
         "description": "Абстракция: эмоциональные волны",

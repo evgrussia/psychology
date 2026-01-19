@@ -5,6 +5,24 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { AdminAuthGuard } from '@/components/admin-auth-guard';
 import { useAdminAuth } from '@/components/admin-auth-context';
+import {
+  Alert,
+  AlertDescription,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Checkbox,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Textarea,
+} from '@psychology/design-system';
 import ReactFlow, {
   addEdge,
   Background,
@@ -84,8 +102,8 @@ const createId = () => {
 };
 
 const StepNode = ({ data }: { data: { step: NavigatorStep } }) => (
-  <div className="rounded border bg-white px-3 py-2 shadow-sm text-xs min-w-[180px]">
-    <div className="font-semibold mb-2">{data.step.question_text || 'Без текста'}</div>
+  <div className="rounded border border-border bg-card px-3 py-2 shadow-sm text-xs min-w-[180px]">
+    <div className="font-semibold text-foreground mb-2">{data.step.question_text || 'Без текста'}</div>
     <div className="space-y-1">
       {data.step.choices.map((choice) => (
         <div key={choice.choice_id} className="relative flex items-center gap-2">
@@ -93,21 +111,21 @@ const StepNode = ({ data }: { data: { step: NavigatorStep } }) => (
             type="source"
             id={choice.choice_id}
             position={Position.Right}
-            className="!bg-blue-500"
+            className="!bg-primary"
           />
-          <span className="text-[11px] text-gray-700">{choice.text || 'Без текста'}</span>
+          <span className="text-xs text-muted-foreground">{choice.text || 'Без текста'}</span>
         </div>
       ))}
     </div>
-    <Handle type="target" position={Position.Left} className="!bg-gray-500" />
+    <Handle type="target" position={Position.Left} className="!bg-muted-foreground" />
   </div>
 );
 
 const ResultNode = ({ data }: { data: { profile: NavigatorResultProfile } }) => (
-  <div className="rounded border bg-emerald-50 px-3 py-2 shadow-sm text-xs min-w-[180px]">
-    <div className="font-semibold">{data.profile.title || 'Профиль результата'}</div>
-    <div className="text-[11px] text-emerald-700">{data.profile.id}</div>
-    <Handle type="target" position={Position.Left} className="!bg-emerald-500" />
+  <div className="rounded border border-success/30 bg-success/10 px-3 py-2 shadow-sm text-xs min-w-[180px]">
+    <div className="font-semibold text-foreground">{data.profile.title || 'Профиль результата'}</div>
+    <div className="text-xs text-success">{data.profile.id}</div>
+    <Handle type="target" position={Position.Left} className="!bg-success" />
   </div>
 );
 
@@ -508,351 +526,407 @@ export default function NavigatorEditorPage() {
   return (
     <AdminAuthGuard allowedRoles={['owner', 'assistant', 'editor']}>
       {loading ? (
-        <div className="p-8">Загрузка...</div>
+        <Card>
+          <CardContent className="p-8 text-sm text-muted-foreground">Загрузка...</CardContent>
+        </Card>
       ) : error && !definition ? (
-        <div className="p-8 text-red-500">Ошибка: {error}</div>
+        <Alert variant="destructive">
+          <AlertDescription>Ошибка: {error}</AlertDescription>
+        </Alert>
       ) : !definition || !definition.config ? (
-        <div className="p-8">Навигатор не найден</div>
+        <Card>
+          <CardContent className="p-8 text-sm text-muted-foreground">Навигатор не найден</CardContent>
+        </Card>
       ) : (
-        <div className="p-8 space-y-6">
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <Link href="/interactive/navigator" className="text-blue-600">← Назад к списку</Link>
-              <h1 className="text-2xl font-bold mt-2">{definition.title}</h1>
-              {error && <div className="mt-2 text-red-500">{error}</div>}
+              <Button asChild variant="link" className="px-0">
+                <Link href="/interactive/navigator">← Назад к списку</Link>
+              </Button>
+              <h1 className="text-2xl font-semibold text-foreground mt-2">{definition.title}</h1>
+              {error && (
+                <Alert variant="destructive" className="mt-2">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
             </div>
             <div className="flex flex-wrap gap-3">
-              <button
-                onClick={handleSave}
-                disabled={!canEdit || saving}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-              >
+              <Button onClick={handleSave} disabled={!canEdit || saving}>
                 {saving ? 'Сохранение...' : 'Сохранить'}
-              </button>
+              </Button>
               {canEdit && (
-                <button
-                  onClick={handlePublish}
-                  disabled={publishing}
-                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-                >
+                <Button onClick={handlePublish} disabled={publishing} variant="outline">
                   {publishing ? 'Публикация...' : 'Опубликовать изменения'}
-                </button>
+                </Button>
               )}
-              <button
-                onClick={fetchValidation}
-                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-              >
+              <Button onClick={fetchValidation} variant="secondary">
                 Проверить валидность
-              </button>
-          <button
-            onClick={addStep}
-            className="px-4 py-2 border rounded hover:bg-gray-50"
-          >
-            Добавить шаг
-          </button>
-        </div>
-      </div>
+              </Button>
+              <Button onClick={addStep} variant="outline">
+                Добавить шаг
+              </Button>
+            </div>
+          </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-        <div className="rounded-lg border bg-white p-4">
-          <ReactFlowProvider>
-            <div className="h-[640px]">
-              <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                nodeTypes={nodeTypes}
-                onNodesChange={handleNodesChange}
-                onEdgesChange={handleEdgesChange}
-                onConnect={handleConnect}
-                onNodeClick={(_, node) => setSelectedNodeId(node.id)}
-                fitView
-              >
-                <MiniMap />
-                <Controls />
-                <Background />
-              </ReactFlow>
-            </div>
-          </ReactFlowProvider>
-        </div>
+        <Card>
+          <CardContent className="p-4">
+            <ReactFlowProvider>
+              <div className="h-[640px]">
+                <ReactFlow
+                  nodes={nodes}
+                  edges={edges}
+                  nodeTypes={nodeTypes}
+                  onNodesChange={handleNodesChange}
+                  onEdgesChange={handleEdgesChange}
+                  onConnect={handleConnect}
+                  onNodeClick={(_, node) => setSelectedNodeId(node.id)}
+                  fitView
+                >
+                  <MiniMap />
+                  <Controls />
+                  <Background />
+                </ReactFlow>
+              </div>
+            </ReactFlowProvider>
+          </CardContent>
+        </Card>
 
         <div className="space-y-6">
-          <div className="rounded-lg border bg-white p-4 space-y-4">
-            <h2 className="text-lg font-semibold">Параметры</h2>
-            <label className="block text-sm font-medium">Стартовый шаг</label>
-            <select
-              value={definition.config.initial_step_id}
-              onChange={(event) => setDefinition({
-                ...definition,
-                config: { ...definition.config, initial_step_id: event.target.value },
-              })}
-              className="w-full rounded border px-2 py-2 text-sm"
-            >
-              {definition.config.steps.map((step) => (
-                <option key={step.step_id} value={step.step_id}>{step.step_id}</option>
-              ))}
-            </select>
-            {validation && (
-              <div className={`rounded border px-3 py-2 text-sm ${
-                validation.isValid ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-red-200 bg-red-50 text-red-700'
-              }`}>
-                {validation.isValid ? 'Валидация пройдена' : (
-                  <div>
-                    <div className="font-medium mb-2">Ошибки:</div>
-                    <ul className="list-disc list-inside space-y-1">
-                      {validation.errors.map((err, idx) => (
-                        <li key={idx}>{err}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Параметры</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Стартовый шаг</Label>
+                <Select
+                  value={definition.config.initial_step_id}
+                  onValueChange={(value) =>
+                    setDefinition({
+                      ...definition,
+                      config: { ...definition.config, initial_step_id: value },
+                    })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {definition.config.steps.map((step) => (
+                      <SelectItem key={step.step_id} value={step.step_id}>
+                        {step.step_id}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            )}
-          </div>
+              {validation && (
+                <Alert
+                  className={
+                    validation.isValid
+                      ? 'border-success/30 bg-success/10 text-success'
+                      : 'border-destructive/30 bg-destructive/10 text-destructive'
+                  }
+                >
+                  <AlertDescription>
+                    {validation.isValid ? (
+                      'Валидация пройдена'
+                    ) : (
+                      <div>
+                        <div className="font-medium mb-2">Ошибки:</div>
+                        <ul className="list-disc list-inside space-y-1">
+                          {validation.errors.map((err, idx) => (
+                            <li key={idx}>{err}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
 
           {(selectedStep || selectedProfile) && (
-            <div className="rounded-lg border bg-white p-4 space-y-4">
-              <h2 className="text-lg font-semibold">Редактор узла</h2>
-              {selectedStep && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Текст вопроса</label>
-                    <textarea
-                      value={selectedStep.question_text}
-                      onChange={(event) => updateStep(selectedStep.step_id, (step) => ({
-                        ...step,
-                        question_text: event.target.value,
-                      }))}
-                      className="w-full rounded border px-2 py-2 text-sm"
-                      rows={3}
-                    />
-                  </div>
-                  <label className="inline-flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={Boolean(selectedStep.crisis_trigger)}
-                      onChange={(event) => updateStep(selectedStep.step_id, (step) => ({
-                        ...step,
-                        crisis_trigger: event.target.checked,
-                      }))}
-                    />
-                    Кризисный триггер
-                  </label>
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-sm font-semibold">Варианты</h3>
-                      <button
-                        type="button"
-                        onClick={() => addChoice(selectedStep.step_id)}
-                        className="text-xs text-blue-600"
-                      >
-                        Добавить вариант
-                      </button>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Редактор узла</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {selectedStep && (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Текст вопроса</Label>
+                      <Textarea
+                        value={selectedStep.question_text}
+                        onChange={(event) =>
+                          updateStep(selectedStep.step_id, (step) => ({
+                            ...step,
+                            question_text: event.target.value,
+                          }))
+                        }
+                        rows={3}
+                      />
                     </div>
-                    <div className="space-y-3">
-                      {selectedStep.choices.map((choice) => (
-                        <div key={choice.choice_id} className="rounded border p-3 space-y-2">
-                          <div className="flex items-center justify-between text-xs text-gray-500">
-                            <span>{choice.choice_id}</span>
-                            <button
-                              type="button"
-                              onClick={() => removeChoice(selectedStep.step_id, choice.choice_id)}
-                              className="text-red-500"
+                    <label className="inline-flex items-center gap-2 text-sm">
+                      <Checkbox
+                        checked={Boolean(selectedStep.crisis_trigger)}
+                        onCheckedChange={(checked) =>
+                          updateStep(selectedStep.step_id, (step) => ({
+                            ...step,
+                            crisis_trigger: Boolean(checked),
+                          }))
+                        }
+                      />
+                      Кризисный триггер
+                    </label>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-semibold text-foreground">Варианты</h3>
+                        <Button
+                          type="button"
+                          variant="link"
+                          size="sm"
+                          className="px-0"
+                          onClick={() => addChoice(selectedStep.step_id)}
+                        >
+                          Добавить вариант
+                        </Button>
+                      </div>
+                      <div className="space-y-3">
+                        {selectedStep.choices.map((choice) => (
+                          <div key={choice.choice_id} className="rounded border border-border p-3 space-y-2">
+                            <div className="flex items-center justify-between text-xs text-muted-foreground">
+                              <span>{choice.choice_id}</span>
+                              <Button
+                                type="button"
+                                variant="link"
+                                size="sm"
+                                className="px-0 text-destructive"
+                                onClick={() => removeChoice(selectedStep.step_id, choice.choice_id)}
+                              >
+                                Удалить
+                              </Button>
+                            </div>
+                            <Input
+                              type="text"
+                              value={choice.text}
+                              onChange={(event) =>
+                                updateStep(selectedStep.step_id, (step) => ({
+                                  ...step,
+                                  choices: step.choices.map((item) =>
+                                    item.choice_id === choice.choice_id ? { ...item, text: event.target.value } : item,
+                                  ),
+                                }))
+                              }
+                              placeholder="Текст варианта"
+                            />
+                            <select
+                              value={
+                                choice.next_step_id
+                                  ? `step:${choice.next_step_id}`
+                                  : choice.result_profile_id
+                                  ? `result:${choice.result_profile_id}`
+                                  : ''
+                              }
+                              onChange={(event) => {
+                                const value = event.target.value;
+                                updateStep(selectedStep.step_id, (step) => ({
+                                  ...step,
+                                  choices: step.choices.map((item) => {
+                                    if (item.choice_id !== choice.choice_id) return item;
+                                    if (!value) {
+                                      return { ...item, next_step_id: null, result_profile_id: undefined };
+                                    }
+                                    const [kind, idValue] = value.split(':');
+                                    return {
+                                      ...item,
+                                      next_step_id: kind === 'step' ? idValue : null,
+                                      result_profile_id: kind === 'result' ? idValue : undefined,
+                                    };
+                                  }),
+                                }));
+                              }}
+                              className="w-full rounded border border-border bg-background px-2 py-2 text-sm text-foreground"
                             >
-                              Удалить
-                            </button>
+                              <option value="">Без связи</option>
+                              <optgroup label="Шаги">
+                                {definition.config.steps.map((step) => (
+                                  <option key={step.step_id} value={`step:${step.step_id}`}>
+                                    {step.step_id}
+                                  </option>
+                                ))}
+                              </optgroup>
+                              <optgroup label="Профили результата">
+                                {definition.config.result_profiles.map((profile) => (
+                                  <option key={profile.id} value={`result:${profile.id}`}>
+                                    {profile.id}
+                                  </option>
+                                ))}
+                              </optgroup>
+                            </select>
                           </div>
-                          <input
-                            type="text"
-                            value={choice.text}
-                            onChange={(event) => updateStep(selectedStep.step_id, (step) => ({
-                              ...step,
-                              choices: step.choices.map((item) =>
-                                item.choice_id === choice.choice_id ? { ...item, text: event.target.value } : item,
-                              ),
-                            }))}
-                            className="w-full rounded border px-2 py-2 text-sm"
-                            placeholder="Текст варианта"
-                          />
-                          <select
-                            value={choice.next_step_id
-                              ? `step:${choice.next_step_id}`
-                              : choice.result_profile_id
-                              ? `result:${choice.result_profile_id}`
-                              : ''}
-                            onChange={(event) => {
-                              const value = event.target.value;
-                              updateStep(selectedStep.step_id, (step) => ({
-                                ...step,
-                                choices: step.choices.map((item) => {
-                                  if (item.choice_id !== choice.choice_id) return item;
-                                  if (!value) {
-                                    return { ...item, next_step_id: null, result_profile_id: undefined };
-                                  }
-                                  const [kind, idValue] = value.split(':');
-                                  return {
-                                    ...item,
-                                    next_step_id: kind === 'step' ? idValue : null,
-                                    result_profile_id: kind === 'result' ? idValue : undefined,
-                                  };
-                                }),
-                              }));
-                            }}
-                            className="w-full rounded border px-2 py-2 text-sm"
-                          >
-                            <option value="">Без связи</option>
-                            <optgroup label="Шаги">
-                              {definition.config.steps.map((step) => (
-                                <option key={step.step_id} value={`step:${step.step_id}`}>
-                                  {step.step_id}
-                                </option>
-                              ))}
-                            </optgroup>
-                            <optgroup label="Профили результата">
-                              {definition.config.result_profiles.map((profile) => (
-                                <option key={profile.id} value={`result:${profile.id}`}>
-                                  {profile.id}
-                                </option>
-                              ))}
-                            </optgroup>
-                          </select>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                </>
-              )}
-              {selectedProfile && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Заголовок</label>
-                    <input
-                      type="text"
-                      value={selectedProfile.title}
-                      onChange={(event) => updateResultProfile(selectedProfile.id, (profile) => ({
-                        ...profile,
-                        title: event.target.value,
-                      }))}
-                      className="w-full rounded border px-2 py-2 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Описание</label>
-                    <textarea
-                      value={selectedProfile.description}
-                      onChange={(event) => updateResultProfile(selectedProfile.id, (profile) => ({
-                        ...profile,
-                        description: event.target.value,
-                      }))}
-                      className="w-full rounded border px-2 py-2 text-sm"
-                      rows={3}
-                    />
-                  </div>
-                  <div className="grid gap-3">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">CTA текст</label>
-                      <input
+                  </>
+                )}
+                {selectedProfile && (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Заголовок</Label>
+                      <Input
                         type="text"
-                        value={selectedProfile.cta?.text || ''}
-                        onChange={(event) => updateResultProfile(selectedProfile.id, (profile) => ({
-                          ...profile,
-                          cta: { text: event.target.value, link: profile.cta?.link || '' },
-                        }))}
-                        className="w-full rounded border px-2 py-2 text-sm"
+                        value={selectedProfile.title}
+                        onChange={(event) =>
+                          updateResultProfile(selectedProfile.id, (profile) => ({
+                            ...profile,
+                            title: event.target.value,
+                          }))
+                        }
                       />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">CTA ссылка</label>
-                      <input
-                        type="text"
-                        value={selectedProfile.cta?.link || ''}
-                        onChange={(event) => updateResultProfile(selectedProfile.id, (profile) => ({
-                          ...profile,
-                          cta: { text: profile.cta?.text || '', link: event.target.value },
-                        }))}
-                        className="w-full rounded border px-2 py-2 text-sm"
+                    <div className="space-y-2">
+                      <Label>Описание</Label>
+                      <Textarea
+                        value={selectedProfile.description}
+                        onChange={(event) =>
+                          updateResultProfile(selectedProfile.id, (profile) => ({
+                            ...profile,
+                            description: event.target.value,
+                          }))
+                        }
+                        rows={3}
                       />
                     </div>
-                  </div>
-                  <div className="grid gap-3">
-                    <label className="block text-sm font-medium">Рекомендации (каждая с новой строки)</label>
-                    <textarea
-                      value={selectedProfile.recommendations?.articles?.join('\n') || ''}
-                      onChange={(event) => updateResultProfile(selectedProfile.id, (profile) => ({
-                        ...profile,
-                        recommendations: {
-                          ...profile.recommendations,
-                          articles: event.target.value.split('\n').filter((item) => item.trim()),
-                        },
-                      }))}
-                      className="w-full rounded border px-2 py-2 text-sm"
-                      rows={2}
-                      placeholder="Статьи"
-                    />
-                    <textarea
-                      value={selectedProfile.recommendations?.exercises?.join('\n') || ''}
-                      onChange={(event) => updateResultProfile(selectedProfile.id, (profile) => ({
-                        ...profile,
-                        recommendations: {
-                          ...profile.recommendations,
-                          exercises: event.target.value.split('\n').filter((item) => item.trim()),
-                        },
-                      }))}
-                      className="w-full rounded border px-2 py-2 text-sm"
-                      rows={2}
-                      placeholder="Упражнения"
-                    />
-                    <textarea
-                      value={selectedProfile.recommendations?.resources?.join('\n') || ''}
-                      onChange={(event) => updateResultProfile(selectedProfile.id, (profile) => ({
-                        ...profile,
-                        recommendations: {
-                          ...profile.recommendations,
-                          resources: event.target.value.split('\n').filter((item) => item.trim()),
-                        },
-                      }))}
-                      className="w-full rounded border px-2 py-2 text-sm"
-                      rows={2}
-                      placeholder="Ресурсы"
-                    />
-                  </div>
-                </>
-              )}
-            </div>
+                    <div className="grid gap-3">
+                      <div className="space-y-2">
+                        <Label>CTA текст</Label>
+                        <Input
+                          type="text"
+                          value={selectedProfile.cta?.text || ''}
+                          onChange={(event) =>
+                            updateResultProfile(selectedProfile.id, (profile) => ({
+                              ...profile,
+                              cta: { text: event.target.value, link: profile.cta?.link || '' },
+                            }))
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>CTA ссылка</Label>
+                        <Input
+                          type="text"
+                          value={selectedProfile.cta?.link || ''}
+                          onChange={(event) =>
+                            updateResultProfile(selectedProfile.id, (profile) => ({
+                              ...profile,
+                              cta: { text: profile.cta?.text || '', link: event.target.value },
+                            }))
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="grid gap-3">
+                      <Label>Рекомендации (каждая с новой строки)</Label>
+                      <Textarea
+                        value={selectedProfile.recommendations?.articles?.join('\n') || ''}
+                        onChange={(event) =>
+                          updateResultProfile(selectedProfile.id, (profile) => ({
+                            ...profile,
+                            recommendations: {
+                              ...profile.recommendations,
+                              articles: event.target.value.split('\n').filter((item) => item.trim()),
+                            },
+                          }))
+                        }
+                        rows={2}
+                        placeholder="Статьи"
+                      />
+                      <Textarea
+                        value={selectedProfile.recommendations?.exercises?.join('\n') || ''}
+                        onChange={(event) =>
+                          updateResultProfile(selectedProfile.id, (profile) => ({
+                            ...profile,
+                            recommendations: {
+                              ...profile.recommendations,
+                              exercises: event.target.value.split('\n').filter((item) => item.trim()),
+                            },
+                          }))
+                        }
+                        rows={2}
+                        placeholder="Упражнения"
+                      />
+                      <Textarea
+                        value={selectedProfile.recommendations?.resources?.join('\n') || ''}
+                        onChange={(event) =>
+                          updateResultProfile(selectedProfile.id, (profile) => ({
+                            ...profile,
+                            recommendations: {
+                              ...profile.recommendations,
+                              resources: event.target.value.split('\n').filter((item) => item.trim()),
+                            },
+                          }))
+                        }
+                        rows={2}
+                        placeholder="Ресурсы"
+                      />
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
           )}
 
-          <div className="rounded-lg border bg-white p-4 space-y-3">
-            <h2 className="text-lg font-semibold">Версии</h2>
-            {versionError && <div className="text-sm text-red-500">{versionError}</div>}
-            {versions.length === 0 && <div className="text-sm text-gray-500">Нет опубликованных версий.</div>}
-            {versions.length > 0 && (
-              <>
-                <select
-                  value={selectedVersion ?? ''}
-                  onChange={(event) => {
-                    const version = Number(event.target.value);
-                    setSelectedVersion(version);
-                    fetchVersionConfig(version);
-                  }}
-                  className="w-full rounded border px-2 py-2 text-sm"
-                >
-                  {versions.map((version) => (
-                    <option key={version.id} value={version.version}>
-                      v{version.version} · {new Date(version.createdAt).toLocaleString('ru-RU')}
-                    </option>
-                  ))}
-                </select>
-                {diffSummary.length > 0 ? (
-                  <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
-                    {diffSummary.map((note, idx) => (
-                      <li key={idx}>{note}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <div className="text-sm text-gray-500">Отличий не найдено.</div>
-                )}
-              </>
-            )}
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Версии</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {versionError && (
+                <Alert variant="destructive">
+                  <AlertDescription>{versionError}</AlertDescription>
+                </Alert>
+              )}
+              {versions.length === 0 && (
+                <div className="text-sm text-muted-foreground">Нет опубликованных версий.</div>
+              )}
+              {versions.length > 0 && (
+                <>
+                  <Select
+                    value={selectedVersion ? String(selectedVersion) : ''}
+                    onValueChange={(value) => {
+                      const version = Number(value);
+                      setSelectedVersion(version);
+                      fetchVersionConfig(version);
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {versions.map((version) => (
+                        <SelectItem key={version.id} value={String(version.version)}>
+                          v{version.version} · {new Date(version.createdAt).toLocaleString('ru-RU')}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {diffSummary.length > 0 ? (
+                    <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+                      {diffSummary.map((note, idx) => (
+                        <li key={idx}>{note}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="text-sm text-muted-foreground">Отличий не найдено.</div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
         </div>

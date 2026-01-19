@@ -85,7 +85,7 @@ export default function StartHubPage() {
         title="С чего начнём?"
         subtitle="Выберите инструмент"
         description="Выберите подходящий инструмент, чтобы лучше понять своё состояние и получить практические рекомендации. Это анонимно и бесплатно."
-        image="/assets/graphics/hero/hero-journey-1376x768.webp"
+        image="/assets/graphics/hero/hero-balance-pebbles-1376x768.webp"
       />
 
       <Section>
@@ -112,7 +112,7 @@ export default function StartHubPage() {
         className="mx-4 mb-16"
         title="Нужна помощь специалиста?"
         description="Если вы чувствуете, что самопомощи недостаточно, наши психологи всегда готовы поддержать вас."
-        backgroundImage="/assets/graphics/abstract/abstract-inner-landscape-1376x768.webp"
+        backgroundImage="/assets/graphics/abstract/abstract-soft-gradient-1376x768.svg"
         primaryCTA={
           <Button onClick={() => window.location.href = '/booking'}>
             Подобрать психолога

@@ -37,6 +37,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/start/prep',
     '/start/boundaries-scripts',
     '/start/rituals',
+    '/start/favorites',
     '/services',
     '/s-chem-ya-pomogayu',
     '/about',

@@ -35,6 +35,7 @@ export class GetCuratedCollectionUseCase {
             note: item.note,
             contentItem: {
               id: contentItem.id,
+              contentType: contentItem.contentType,
               slug: contentItem.slug,
               title: contentItem.title,
               excerpt: contentItem.excerpt,

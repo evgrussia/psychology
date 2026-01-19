@@ -51,9 +51,7 @@ export default async function EventPage({ params }: { params: { slug: string } }
 
         <div className="mt-8 space-y-6">
           <Card className="p-6">
-            <div className="prose prose-slate dark:prose-invert max-w-none">
-              <SafeMarkdownRenderer content={event.description_markdown} />
-            </div>
+            <SafeMarkdownRenderer content={event.description_markdown} />
           </Card>
 
           <Disclaimer variant="info" title="Важно">

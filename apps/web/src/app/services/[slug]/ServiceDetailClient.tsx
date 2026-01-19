@@ -109,9 +109,7 @@ export default function ServiceDetailClient({ service }: { service: ServiceDetai
 
       <Section className="pt-0">
         <Container className="max-w-4xl">
-          <div className="prose prose-slate dark:prose-invert max-w-none text-muted-foreground">
-            <SafeMarkdownRenderer content={service.description_markdown} />
-          </div>
+          <SafeMarkdownRenderer content={service.description_markdown} />
         </Container>
       </Section>
 

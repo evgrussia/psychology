@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Container, ProgressBar, Section } from '@psychology/design-system';
+import { Container, ProgressBar, Section, Disclaimer } from '@psychology/design-system';
 
 interface BookingStepLayoutProps {
   title: string;
@@ -28,6 +28,10 @@ export function BookingStepLayout({ title, description, step, total, children }:
             </div>
           </div>
           {children}
+            <Disclaimer variant="info" showEmergencyLink title="Важная информация">
+              Консультация не является экстренной помощью. Если вам нужна немедленная поддержка,
+              пожалуйста, воспользуйтесь экстренными службами.
+            </Disclaimer>
         </div>
       </Container>
     </Section>

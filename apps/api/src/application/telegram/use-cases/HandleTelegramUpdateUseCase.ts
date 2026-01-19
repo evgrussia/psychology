@@ -6,6 +6,7 @@ import { ITelegramSessionRepository } from '@domain/telegram/repositories/ITeleg
 import { IDeepLinkRepository } from '@domain/telegram/repositories/IDeepLinkRepository';
 import { ITelegramBotClient } from '@domain/telegram/services/ITelegramBotClient';
 import { TelegramFlow, TelegramFrequency, TelegramSessionState, TelegramTarget } from '@domain/telegram/value-objects/TelegramEnums';
+import { TelegramSeriesType } from '@domain/telegram/value-objects/TelegramSeriesType';
 import { DeepLinkPayloadCodec } from '../services/deep-link-payload-codec';
 import { StartOnboardingUseCase } from './StartOnboardingUseCase';
 import { SendPlanMessageUseCase } from './SendPlanMessageUseCase';
@@ -100,6 +101,7 @@ export class HandleTelegramUpdateUseCase {
     const topicCode = deepLinkRecord?.topicCode ?? deepLinkPayload?.t ?? null;
     const deepLinkId = deepLinkRecord?.deepLinkId ?? deepLinkPayload?.dl ?? null;
     const target = deepLinkRecord?.target ?? TelegramTarget.bot;
+    const skipOnboarding = this.shouldSkipOnboarding(flow);
 
     await this.telegramSessionRepository.deactivateSessions(context.telegramUserId);
 
@@ -111,7 +113,9 @@ export class HandleTelegramUpdateUseCase {
       topicCode,
       state: target === TelegramTarget.channel
         ? TelegramSessionState.channel_confirmation
-        : topicCode
+        : skipOnboarding
+          ? TelegramSessionState.idle
+          : topicCode
           ? TelegramSessionState.onboarding_frequency
           : TelegramSessionState.onboarding_topic,
     });
@@ -137,6 +141,13 @@ export class HandleTelegramUpdateUseCase {
 
     if (target === TelegramTarget.channel) {
       await this.sendChannelConfirmation(session, context.chatId);
+      return;
+    }
+
+    if (skipOnboarding) {
+      await this.sendFlowIntro(session, context);
+      session.update({ state: TelegramSessionState.idle });
+      await this.telegramSessionRepository.update(session);
       return;
     }
 
@@ -266,15 +277,33 @@ export class HandleTelegramUpdateUseCase {
           topicCode: session.topicCode,
           deepLinkId: session.deepLinkId,
         });
+        await this.scheduleSeries(session, flow === TelegramFlow.challenge_7d
+          ? TelegramSeriesType.challenge_7d
+          : TelegramSeriesType.plan_7d);
         break;
       case TelegramFlow.save_resource:
         await this.sendSaveResourceMessage(session, context.chatId);
+        await this.scheduleReminder(session, TelegramSeriesType.save_resource_reminder);
+        break;
+      case TelegramFlow.prep:
+        await this.sendPrepChecklist(session, context.chatId);
+        break;
+      case TelegramFlow.ritual:
+        await this.sendRitualMessage(session, context.chatId);
+        await this.scheduleReminder(session, TelegramSeriesType.ritual_reminder);
+        break;
+      case TelegramFlow.boundaries:
+        await this.sendBoundariesMessage(session, context.chatId);
+        await this.scheduleReminder(session, TelegramSeriesType.boundaries_reminder);
+        break;
+      case TelegramFlow.favorites:
+        await this.sendFavoritesMessage(session, context.chatId);
         break;
       case TelegramFlow.concierge:
         await this.startConciergeFlow(session, context.chatId);
         break;
       case TelegramFlow.question:
-        await this.sendQuestionAck(context.chatId);
+        await this.sendQuestionAck(context.chatId, session.deepLinkId);
         break;
       default:
         await this.botClient.sendMessage(context.chatId, 'Готово. Если нужна запись — нажмите /start снова.');
@@ -295,6 +324,110 @@ export class HandleTelegramUpdateUseCase {
               {
                 text: 'Открыть на сайте',
                 url: this.buildSiteUrl(session.deepLinkId, session.topicCode, session.flow, deepLink?.sourcePage ?? null),
+              },
+            ],
+            [
+              { text: 'Стоп', callback_data: STOP_BUTTON },
+            ],
+          ],
+        },
+        disableWebPagePreview: true,
+      },
+    );
+  }
+
+  private async sendPrepChecklist(session: TelegramSession, chatId: string): Promise<void> {
+    await this.botClient.sendMessage(
+      chatId,
+      'Подготовка к первой встрече: короткий чек-лист и мягкий старт уже доступны.',
+      {
+        replyMarkup: {
+          inline_keyboard: [
+            [
+              {
+                text: 'Открыть чек-лист',
+                url: this.buildSiteUrl(session.deepLinkId, session.topicCode, session.flow, '/start/consultation-prep'),
+              },
+            ],
+            [
+              {
+                text: 'Записаться',
+                url: this.buildBookingUrl(session.deepLinkId, TelegramFlow.prep),
+              },
+            ],
+            [
+              { text: 'Стоп', callback_data: STOP_BUTTON },
+            ],
+          ],
+        },
+        disableWebPagePreview: true,
+      },
+    );
+  }
+
+  private async sendRitualMessage(session: TelegramSession, chatId: string): Promise<void> {
+    const deepLink = session.deepLinkId
+      ? await this.deepLinkRepository.findById(session.deepLinkId)
+      : null;
+    await this.botClient.sendMessage(
+      chatId,
+      'Ритуал сохранен. Можно вернуться к нему в удобное время.',
+      {
+        replyMarkup: {
+          inline_keyboard: [
+            [
+              {
+                text: 'Открыть ритуал',
+                url: this.buildSiteUrl(session.deepLinkId, session.topicCode, session.flow, deepLink?.sourcePage ?? null),
+              },
+            ],
+            [
+              { text: 'Стоп', callback_data: STOP_BUTTON },
+            ],
+          ],
+        },
+        disableWebPagePreview: true,
+      },
+    );
+  }
+
+  private async sendBoundariesMessage(session: TelegramSession, chatId: string): Promise<void> {
+    const deepLink = session.deepLinkId
+      ? await this.deepLinkRepository.findById(session.deepLinkId)
+      : null;
+    await this.botClient.sendMessage(
+      chatId,
+      'Скрипты границ сохранены. Если нужно, можно вернуться и выбрать вариант.',
+      {
+        replyMarkup: {
+          inline_keyboard: [
+            [
+              {
+                text: 'Открыть скрипты',
+                url: this.buildSiteUrl(session.deepLinkId, session.topicCode, session.flow, deepLink?.sourcePage ?? null),
+              },
+            ],
+            [
+              { text: 'Стоп', callback_data: STOP_BUTTON },
+            ],
+          ],
+        },
+        disableWebPagePreview: true,
+      },
+    );
+  }
+
+  private async sendFavoritesMessage(session: TelegramSession, chatId: string): Promise<void> {
+    await this.botClient.sendMessage(
+      chatId,
+      'Избранное доступно на сайте. Можно открыть аптечку и вернуться к материалам.',
+      {
+        replyMarkup: {
+          inline_keyboard: [
+            [
+              {
+                text: 'Открыть избранное',
+                url: this.buildSiteUrl(session.deepLinkId, session.topicCode, session.flow, '/start/favorites'),
               },
             ],
             [
@@ -401,10 +534,17 @@ export class HandleTelegramUpdateUseCase {
     );
   }
 
-  private async sendQuestionAck(chatId: string): Promise<void> {
+  private async sendQuestionAck(chatId: string, deepLinkId: string | null): Promise<void> {
+    const deepLink = deepLinkId ? await this.deepLinkRepository.findById(deepLinkId) : null;
+    const questionId = deepLink?.entityRef ?? null;
+    const questionLine = questionId ? `ID вопроса: ${questionId}.` : '';
     await this.botClient.sendMessage(
       chatId,
-      'Спасибо! Ответ на вопрос придет в Telegram. Если нужна запись — используйте кнопку ниже.',
+      [
+        'Спасибо! Ответ на вопрос придет в Telegram.',
+        questionLine,
+        'Это не экстренная помощь. Если нужна запись — используйте кнопку ниже.',
+      ].filter(Boolean).join('\n'),
       {
         replyMarkup: {
           inline_keyboard: [
@@ -446,6 +586,12 @@ export class HandleTelegramUpdateUseCase {
   }
 
   private async handleStop(session: TelegramSession, context: ParsedUpdateContext, stopMethod: string): Promise<void> {
+    session.update({
+      seriesType: null,
+      seriesStep: null,
+      nextSendAt: null,
+      lastMessageKey: null,
+    });
     session.stop();
     await this.telegramSessionRepository.update(session);
     await this.trackingService.trackTelegramSeriesStopped({
@@ -620,6 +766,41 @@ export class HandleTelegramUpdateUseCase {
     if (length <= 80) return '21_80';
     if (length <= 200) return '81_200';
     return '200_plus';
+  }
+
+  private shouldSkipOnboarding(flow: TelegramFlow): boolean {
+    return [
+      TelegramFlow.save_resource,
+      TelegramFlow.prep,
+      TelegramFlow.ritual,
+      TelegramFlow.boundaries,
+      TelegramFlow.favorites,
+      TelegramFlow.question,
+    ].includes(flow);
+  }
+
+  private async scheduleSeries(session: TelegramSession, seriesType: TelegramSeriesType): Promise<void> {
+    const delayHours = this.configService.get<number>('TELEGRAM_SERIES_STEP_DELAY_HOURS') ?? 24;
+    session.update({
+      seriesType,
+      seriesStep: 1,
+      nextSendAt: new Date(Date.now() + delayHours * 60 * 60 * 1000),
+      lastMessageKey: `${seriesType}_day_1`,
+      lastInteractionAt: new Date(),
+    });
+    await this.telegramSessionRepository.update(session);
+  }
+
+  private async scheduleReminder(session: TelegramSession, seriesType: TelegramSeriesType): Promise<void> {
+    const delayHours = this.configService.get<number>('TELEGRAM_REMINDER_DELAY_HOURS') ?? 24;
+    session.update({
+      seriesType,
+      seriesStep: 1,
+      nextSendAt: new Date(Date.now() + delayHours * 60 * 60 * 1000),
+      lastMessageKey: `${seriesType}_scheduled`,
+      lastInteractionAt: new Date(),
+    });
+    await this.telegramSessionRepository.update(session);
   }
 }
 

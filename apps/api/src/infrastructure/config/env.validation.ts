@@ -105,6 +105,22 @@ class EnvironmentVariables {
   TELEGRAM_DEEP_LINK_CLEANUP_INTERVAL_HOURS?: number;
 
   @IsOptional()
+  @IsNumber()
+  TELEGRAM_REMINDER_DELAY_HOURS?: number;
+
+  @IsOptional()
+  @IsNumber()
+  TELEGRAM_SERIES_STEP_DELAY_HOURS?: number;
+
+  @IsOptional()
+  @IsNumber()
+  TELEGRAM_SCHEDULE_INTERVAL_MS?: number;
+
+  @IsOptional()
+  @IsNumber()
+  TELEGRAM_SCHEDULE_BATCH_LIMIT?: number;
+
+  @IsOptional()
   @IsString()
   PUBLIC_WEB_URL?: string;
 
@@ -123,6 +139,22 @@ class EnvironmentVariables {
   @IsOptional()
   @IsNumber()
   MODERATION_ALERT_INTERVAL_MINUTES?: number;
+
+  @IsOptional()
+  @IsString()
+  SENTRY_DSN?: string;
+
+  @IsOptional()
+  @IsNumber()
+  ERROR_RATE_WINDOW_MINUTES?: number;
+
+  @IsOptional()
+  @IsNumber()
+  ERROR_RATE_THRESHOLD?: number;
+
+  @IsOptional()
+  @IsNumber()
+  ERROR_RATE_MIN_SAMPLES?: number;
 }
 
 export function validate(config: Record<string, any>) {

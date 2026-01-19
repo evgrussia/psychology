@@ -7,6 +7,8 @@ import { PrismaService } from '../src/infrastructure/database/prisma.service';
 import { BcryptHasher } from '../src/infrastructure/auth/bcrypt-hasher';
 import { IEncryptionService } from '../src/domain/security/services/IEncryptionService';
 
+import { clearDatabase } from './test-utils';
+
 describe('Admin Moderation (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
@@ -34,17 +36,7 @@ describe('Admin Moderation (e2e)', () => {
     const hasher = new BcryptHasher();
     const encryptionService = app.get<IEncryptionService>('IEncryptionService');
 
-    await prisma.questionAnswer.deleteMany();
-    await prisma.ugcModerationAction.deleteMany();
-    await prisma.anonymousQuestion.deleteMany();
-    await prisma.auditLogEntry.deleteMany();
-    await prisma.messageTemplateVersion.deleteMany();
-    await prisma.messageTemplate.deleteMany();
-    await prisma.session.deleteMany();
-    await prisma.userRole.deleteMany();
-    await prisma.contentItem.deleteMany({});
-    await prisma.user.deleteMany();
-    await prisma.role.deleteMany();
+    await clearDatabase(prisma);
 
     await prisma.role.createMany({
       data: [

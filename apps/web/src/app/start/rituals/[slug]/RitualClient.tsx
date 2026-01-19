@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { InteractivePlatform } from '@/lib/interactive';
+import { createTelegramDeepLink } from '@/lib/telegram';
+import { track } from '@/lib/tracking';
 import { Button, Card, ProgressBar, Section, Container } from '@psychology/design-system';
 import SafeMarkdownRenderer from '@/components/SafeMarkdownRenderer';
 
@@ -43,26 +45,6 @@ export function RitualClient({ initialRitual }: { initialRitual: Ritual }) {
   const currentStep = currentStepIndex >= 0 ? initialRitual.config.steps[currentStepIndex] : null;
   const hasAudio = initialRitual.config.audioUrl && !audioError;
 
-  // Initialize InteractiveRun when ritual starts
-  useEffect(() => {
-    if (currentStepIndex === -1) {
-      // Start tracking and create InteractiveRun
-      InteractivePlatform.trackRitualStart(initialRitual.slug, initialRitual.topicCode || undefined);
-      
-      // Create InteractiveRun in backend
-      InteractivePlatform.startRun({
-        interactive_type: 'ritual',
-        interactive_slug: initialRitual.slug,
-        topic: initialRitual.topicCode || undefined,
-      }).then((id) => {
-        setRunId(id);
-        localStorage.setItem(`ritual_run_${initialRitual.slug}`, id);
-      }).catch((error) => {
-        console.error('Failed to create InteractiveRun:', error);
-      });
-    }
-  }, [currentStepIndex, initialRitual.slug, initialRitual.topicCode]);
-
   useEffect(() => {
     if (currentStep && currentStep.durationSeconds && !isPaused) {
       setTimeLeft(currentStep.durationSeconds);
@@ -88,9 +70,22 @@ export function RitualClient({ initialRitual }: { initialRitual: Ritual }) {
     };
   }, [currentStepIndex, isPaused]);
 
-  const handleStart = () => {
+  const handleStart = async () => {
     setCurrentStepIndex(0);
     startTimeRef.current = Date.now();
+    InteractivePlatform.trackRitualStart(initialRitual.slug, initialRitual.topicCode || undefined);
+
+    try {
+      const id = await InteractivePlatform.startRun({
+        interactive_type: 'ritual',
+        interactive_slug: initialRitual.slug,
+        topic: initialRitual.topicCode || undefined,
+      });
+      setRunId(id);
+      localStorage.setItem(`ritual_run_${initialRitual.slug}`, id);
+    } catch (error) {
+      console.error('Failed to create InteractiveRun:', error);
+    }
   };
 
   const handleNext = () => {
@@ -106,6 +101,8 @@ export function RitualClient({ initialRitual }: { initialRitual: Ritual }) {
       setCurrentStepIndex(prev => prev - 1);
     } else {
       setCurrentStepIndex(-1);
+      setRunId(null);
+      localStorage.removeItem(`ritual_run_${initialRitual.slug}`);
     }
   };
 
@@ -132,6 +129,25 @@ export function RitualClient({ initialRitual }: { initialRitual: Ritual }) {
         console.error('Failed to complete InteractiveRun:', error);
       });
     }
+  };
+
+  const handleTelegramSave = async () => {
+    const { deepLinkId, url } = await createTelegramDeepLink({
+      flow: 'ritual',
+      tgTarget: 'bot',
+      source: `/start/rituals/${initialRitual.slug}`,
+      entityId: `ritual:${initialRitual.slug}`,
+      utmMedium: 'bot',
+      utmContent: `ritual_${initialRitual.slug}_complete`,
+    });
+    track('cta_tg_click', {
+      tg_target: 'bot',
+      tg_flow: 'ritual',
+      deep_link_id: deepLinkId,
+      cta_id: `ritual_${initialRitual.slug}_complete`,
+      topic: initialRitual.topicCode ?? undefined,
+    });
+    window.location.href = url;
   };
 
   const handleAudioToggle = () => {
@@ -174,6 +190,13 @@ export function RitualClient({ initialRitual }: { initialRitual: Ritual }) {
             <p className="text-lg text-muted-foreground leading-relaxed">
               Вы уделили время себе и своему состоянию. Это важный шаг к эмоциональному балансу.
             </p>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => void handleTelegramSave()}
+            >
+              Сохранить в Telegram
+            </Button>
             <Button 
               className="w-full mt-4"
               onClick={() => router.push('/start/rituals')} 

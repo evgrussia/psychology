@@ -37,7 +37,8 @@ export default function HomeClient({ data }: HomeClientProps) {
     window.location.href = '/booking';
   };
 
-  const handleTGClick = async (ctaId: string) => {
+  const handleTGClick = async (ctaId: string, ctaLabel: string) => {
+    track('cta_click', { cta_id: ctaId, cta_label: ctaLabel, cta_target: 'telegram', ...experimentProps });
     try {
       const { deepLinkId, url } = await createTelegramDeepLink({
         flow: 'plan_7d',
@@ -116,7 +117,7 @@ export default function HomeClient({ data }: HomeClientProps) {
             <p className="text-muted-foreground mb-4">
               Мягкий старт на 7 дней: короткие шаги и поддержка, без регистрации и давления.
             </p>
-            <Button size="lg" onClick={() => void handleTGClick('quickstart_tg')}>
+            <Button size="lg" onClick={() => void handleTGClick('quickstart_tg', 'Получить план')}>
               Получить план
             </Button>
             <p className="text-sm text-muted-foreground mt-3">Можно остановить в любой момент.</p>
@@ -168,6 +169,27 @@ export default function HomeClient({ data }: HomeClientProps) {
     </Section>
   ) : null;
 
+  const emptyInteractivesSection = data.featured_interactives.length === 0 ? (
+    <Section className="bg-muted">
+      <Container>
+        <div className="rounded-2xl border bg-background p-8 text-center shadow-sm">
+          <h2 className="text-2xl font-semibold mb-3">Первый шаг уже доступен</h2>
+          <p className="text-muted-foreground mb-6">
+            Подберите практику или короткий интерактив, чтобы мягко начать путь к устойчивости.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button size="lg" onClick={() => (window.location.href = '/start')}>
+              Перейти к практикам
+            </Button>
+            <Button size="lg" variant="outline" onClick={() => handleBookingClick('empty_interactives_booking', 'Записаться')}>
+              Записаться на консультацию
+            </Button>
+          </div>
+        </div>
+      </Container>
+    </Section>
+  ) : null;
+
   const topicsSection = (
     <Section>
       <Container>
@@ -175,23 +197,39 @@ export default function HomeClient({ data }: HomeClientProps) {
         {topicsDescription && (
           <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">{topicsDescription}</p>
         )}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {data.topics.map((topic) => (
-            <TopicCard 
-              key={topic.code}
-              title={topic.title}
-              description={`Узнайте больше о том, как я работаю с темой ${topic.title.toLowerCase()}.`}
-              href={`/s-chem-ya-pomogayu/${topic.code}`}
-              image={`/assets/graphics/spot/${
-                topic.code === 'anxiety' ? 'spot-anxiety-waves-1024x1024.svg' : 
-                topic.code === 'relationship' ? 'spot-support-connection-1024x1024.svg' :
-                topic.code === 'growth' ? 'spot-growth-sprout-1024x1024.svg' :
-                'spot-dialog-bubbles-1024x1024.svg'
-              }`}
-              onClick={() => handleTopicClick(topic.code)}
-            />
-          ))}
-        </div>
+        {data.topics.length === 0 ? (
+          <div className="rounded-2xl border bg-background p-8 text-center">
+            <p className="text-muted-foreground mb-6">
+              Мы готовим подборку тем. Пока можно начать с практик или консультации.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button size="lg" onClick={() => (window.location.href = '/start')}>
+                Выбрать практику
+              </Button>
+              <Button size="lg" variant="outline" onClick={() => handleBookingClick('empty_topics_booking', 'Записаться')}>
+                Записаться
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {data.topics.map((topic) => (
+              <TopicCard 
+                key={topic.code}
+                title={topic.title}
+                description={`Узнайте больше о том, как я работаю с темой ${topic.title.toLowerCase()}.`}
+                href={`/s-chem-ya-pomogayu/${topic.code}`}
+                image={`/assets/graphics/spot/${
+                  topic.code === 'anxiety' ? 'spot-anxiety-waves-1024x1024.svg' : 
+                  topic.code === 'relationship' ? 'spot-support-connection-1024x1024.svg' :
+                  topic.code === 'growth' ? 'spot-growth-sprout-1024x1024.svg' :
+                  'spot-dialog-bubbles-1024x1024.svg'
+                }`}
+                onClick={() => handleTopicClick(topic.code)}
+              />
+            ))}
+          </div>
+        )}
       </Container>
     </Section>
   );
@@ -228,17 +266,28 @@ export default function HomeClient({ data }: HomeClientProps) {
   const trustSection = (
     <Section>
       <Container>
-        <TrustBlocks 
-          viewport="desktop" 
-          title="Почему мне можно доверять"
-          items={data.trust_blocks.map((block, index) => ({
-            ...block,
-            image: index === 0 ? "/assets/graphics/spot/spot-safe-space-1024x1024.svg" :
-                   index === 1 ? "/assets/graphics/spot/spot-education-1024x1024.svg" :
-                   index === 2 ? "/assets/graphics/spot/spot-hopeful-progression-1024x1024.svg" :
-                   "/assets/graphics/spot/spot-support-connection-1024x1024.svg"
-          }))} 
-        />
+        {data.trust_blocks.length === 0 ? (
+          <div className="rounded-2xl border bg-background p-8 text-center">
+            <p className="text-muted-foreground mb-4">
+              Раздел о принципах и конфиденциальности доступен на страницах доверия.
+            </p>
+            <Button variant="outline" onClick={() => (window.location.href = '/about')}>
+              Узнать об авторе
+            </Button>
+          </div>
+        ) : (
+          <TrustBlocks 
+            viewport="desktop" 
+            title="Почему мне можно доверять"
+            items={data.trust_blocks.map((block, index) => ({
+              ...block,
+              image: index === 0 ? "/assets/graphics/spot/spot-confidentiality-1024x1024.svg" :
+                     index === 1 ? "/assets/graphics/spot/spot-boundaries-1024x1024.svg" :
+                     index === 2 ? "/assets/graphics/spot/spot-meditation-1024x1024.svg" :
+                     "/assets/graphics/spot/spot-community-1024x1024.svg"
+            }))} 
+          />
+        )}
       </Container>
     </Section>
   );
@@ -255,7 +304,7 @@ export default function HomeClient({ data }: HomeClientProps) {
         image="/assets/graphics/hero/hero-homepage-calm-1376x768.webp"
         primaryCTA={
           conversionV2Enabled ? (
-            <Button size="lg" onClick={() => void handleTGClick('hero_tg')}>
+            <Button size="lg" onClick={() => void handleTGClick('hero_tg', heroCopy.primaryLabel)}>
               {heroCopy.primaryLabel}
             </Button>
           ) : (
@@ -270,7 +319,7 @@ export default function HomeClient({ data }: HomeClientProps) {
               {heroCopy.secondaryLabel}
             </Button>
           ) : (
-            <Button variant="outline" size="lg" onClick={() => void handleTGClick('hero_tg')}>
+            <Button variant="outline" size="lg" onClick={() => void handleTGClick('hero_tg', heroCopy.secondaryLabel)}>
               {heroCopy.secondaryLabel}
             </Button>
           )
@@ -281,6 +330,7 @@ export default function HomeClient({ data }: HomeClientProps) {
       {conversionV2Enabled ? (
         <>
           {featuredInteractivesSection}
+          {emptyInteractivesSection}
           {trustSection}
           {topicsSection}
           {retentionOffersSection}
@@ -292,6 +342,7 @@ export default function HomeClient({ data }: HomeClientProps) {
           {topicsSection}
           {retentionOffersSection}
           {featuredInteractivesSection}
+          {emptyInteractivesSection}
           {trustSection}
         </>
       )}
@@ -339,7 +390,7 @@ export default function HomeClient({ data }: HomeClientProps) {
         backgroundImage="/assets/graphics/abstract/abstract-balance-forms-1376x768.webp"
         primaryCTA={
           conversionV2Enabled ? (
-            <Button size="lg" onClick={() => void handleTGClick('footer_tg')}>
+            <Button size="lg" onClick={() => void handleTGClick('footer_tg', 'Telegram-план')}>
               Telegram-план
             </Button>
           ) : (
@@ -354,7 +405,7 @@ export default function HomeClient({ data }: HomeClientProps) {
               Записаться
             </Button>
           ) : (
-            <Button variant="outline" size="lg" onClick={() => void handleTGClick('footer_tg')}>
+            <Button variant="outline" size="lg" onClick={() => void handleTGClick('footer_tg', 'Telegram-канал')}>
               Telegram-канал
             </Button>
           )

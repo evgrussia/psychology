@@ -5,6 +5,18 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { AdminAuthGuard } from '@/components/admin-auth-guard';
 import { useAdminAuth } from '@/components/admin-auth-context';
+import {
+  Alert,
+  AlertDescription,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Textarea,
+} from '@psychology/design-system';
 
 type InteractiveStatus = 'draft' | 'published' | 'archived';
 
@@ -128,77 +140,83 @@ export default function EditThermometerPage() {
   return (
     <AdminAuthGuard allowedRoles={['owner', 'assistant', 'editor']}>
       {loading ? (
-        <div className="p-8">Загрузка...</div>
+        <Card>
+          <CardContent className="p-8 text-sm text-muted-foreground">Загрузка...</CardContent>
+        </Card>
       ) : error && !definition ? (
-        <div className="p-8 text-red-500">Ошибка: {error}</div>
+        <Alert variant="destructive">
+          <AlertDescription>Ошибка: {error}</AlertDescription>
+        </Alert>
       ) : !definition ? (
-        <div className="p-8">Термометр не найден</div>
+        <Card>
+          <CardContent className="p-8 text-sm text-muted-foreground">Термометр не найден</CardContent>
+        </Card>
       ) : (
-        <div className="p-8 space-y-6">
+        <div className="space-y-6">
           <div>
-            <Link href="/interactive/thermometer" className="text-indigo-600 hover:text-indigo-900">
-              ← Назад к списку
-            </Link>
-            <h1 className="text-2xl font-bold mt-4">Редактирование: {definition.title}</h1>
-            {error && <div className="mt-2 text-red-500">{error}</div>}
+            <Button asChild variant="link" className="px-0">
+              <Link href="/interactive/thermometer">← Назад к списку</Link>
+            </Button>
+            <h1 className="text-2xl font-semibold text-foreground mt-4">Редактирование: {definition.title}</h1>
+            {error && (
+              <Alert variant="destructive" className="mt-2">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
           </div>
 
-      <div className="flex flex-wrap gap-3">
-        <button
-          onClick={handleSave}
-          disabled={!canEdit || saving}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-        >
-          {saving ? 'Сохранение...' : 'Сохранить'}
-        </button>
-        {canEdit && definition.status !== 'published' && (
-          <button
-            onClick={handlePublish}
-            disabled={publishing}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-          >
-            {publishing ? 'Публикация...' : 'Опубликовать'}
-          </button>
-        )}
-      </div>
-
-      <div className="bg-white rounded-lg shadow p-6 space-y-6">
-        <div>
-          <label className="block text-sm font-medium mb-2">Название</label>
-          <input
-            type="text"
-            value={definition.title}
-            onChange={(e) => setDefinition({ ...definition, title: e.target.value })}
-            className="w-full px-3 py-2 border rounded"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-2">Тема (topicCode)</label>
-          <input
-            type="text"
-            value={definition.topicCode || ''}
-            onChange={(e) => setDefinition({ ...definition, topicCode: e.target.value || null })}
-            className="w-full px-3 py-2 border rounded"
-            placeholder="anxiety, burnout, ..."
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">Config (JSON)</label>
-          <textarea
-            value={configText}
-            onChange={(e) => setConfigText(e.target.value)}
-            className="w-full font-mono text-xs px-3 py-2 border rounded"
-            rows={24}
-          />
-          {!parsedConfig && (
-            <div className="mt-2 text-sm text-red-600">JSON некорректен — сохранение невозможно.</div>
-          )}
-          <div className="mt-2 text-xs text-gray-500">
-            Подсказка: config должен содержать `scales`, `thresholds`, `results`.
+          <div className="flex flex-wrap gap-3">
+            <Button onClick={handleSave} disabled={!canEdit || saving}>
+              {saving ? 'Сохранение...' : 'Сохранить'}
+            </Button>
+            {canEdit && definition.status !== 'published' && (
+              <Button onClick={handlePublish} disabled={publishing} variant="outline">
+                {publishing ? 'Публикация...' : 'Опубликовать'}
+              </Button>
+            )}
           </div>
-        </div>
-      </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Параметры</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label>Название</Label>
+                <Input
+                  type="text"
+                  value={definition.title}
+                  onChange={(e) => setDefinition({ ...definition, title: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Тема (topicCode)</Label>
+                <Input
+                  type="text"
+                  value={definition.topicCode || ''}
+                  onChange={(e) => setDefinition({ ...definition, topicCode: e.target.value || null })}
+                  placeholder="anxiety, burnout, ..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Config (JSON)</Label>
+                <Textarea
+                  value={configText}
+                  onChange={(e) => setConfigText(e.target.value)}
+                  className="min-h-[420px] font-mono text-xs"
+                />
+                {!parsedConfig && (
+                  <div className="text-sm text-destructive">
+                    JSON некорректен — сохранение невозможно.
+                  </div>
+                )}
+                <div className="text-xs text-muted-foreground">
+                  Подсказка: config должен содержать `scales`, `thresholds`, `results`.
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
     </AdminAuthGuard>

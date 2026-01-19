@@ -78,7 +78,7 @@ export function PrepClient({ definition, slug }: { definition: PrepDefinition; s
 
   const handleTelegram = async () => {
     const { deepLinkId, url } = await createTelegramDeepLink({
-      flow: 'save_resource',
+      flow: 'prep',
       tgTarget: 'bot',
       source: `/start/prep/${slug}`,
       entityId: `prep:${slug}`,
@@ -92,7 +92,7 @@ export function PrepClient({ definition, slug }: { definition: PrepDefinition; s
     });
     track('cta_tg_click', {
       tg_target: 'bot',
-      tg_flow: 'save_resource',
+      tg_flow: 'prep',
       deep_link_id: deepLinkId,
       cta_id: `prep_${slug}_result`,
     });

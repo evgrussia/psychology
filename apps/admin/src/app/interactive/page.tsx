@@ -3,6 +3,21 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AdminAuthGuard } from '@/components/admin-auth-guard';
+import {
+  Alert,
+  AlertDescription,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@psychology/design-system';
 
 interface InteractiveOverviewResponse {
   range: { from: string; to: string; label: string };
@@ -49,71 +64,77 @@ export default function InteractivePage() {
     <AdminAuthGuard allowedRoles={['owner', 'assistant', 'editor']}>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-semibold">Интерактивы</h1>
+          <h1 className="text-2xl font-semibold text-foreground">Интерактивы</h1>
           <p className="text-sm text-muted-foreground">
             Тексты и параметры интерактивов (квизы, навигатор, термометр, подготовка, границы, ритуалы).
           </p>
         </div>
 
         <div className="flex flex-wrap gap-2 text-sm">
-          <Link href="/interactive/quizzes" className="rounded-md border px-3 py-1">
-            Квизы
-          </Link>
-          <Link href="/interactive/navigator" className="rounded-md border px-3 py-1">
-            Навигатор
-          </Link>
-          <Link href="/interactive/thermometer" className="rounded-md border px-3 py-1">
-            Термометр ресурса
-          </Link>
-          <Link href="/interactive/prep" className="rounded-md border px-3 py-1">
-            Подготовка к первой встрече
-          </Link>
-          <Link href="/interactive/boundaries" className="rounded-md border px-3 py-1">
-            Скрипты границ
-          </Link>
-          <Link href="/interactive/rituals" className="rounded-md border px-3 py-1">
-            Мини-ритуалы
-          </Link>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/interactive/quizzes">Квизы</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/interactive/navigator">Навигатор</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/interactive/thermometer">Термометр ресурса</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/interactive/prep">Подготовка к первой встрече</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/interactive/boundaries">Скрипты границ</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/interactive/rituals">Мини-ритуалы</Link>
+          </Button>
         </div>
 
-        <div className="rounded-lg border bg-white">
-          <div className="border-b px-4 py-3 text-sm text-muted-foreground">
-            Статистика за 30 дней
-          </div>
-          {loading && <div className="p-4 text-sm">Загрузка...</div>}
-          {error && <div className="p-4 text-sm text-red-500">{error}</div>}
-          {overview && (
-            <table className="min-w-full divide-y divide-gray-200 text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left font-medium">Интерактив</th>
-                  <th className="px-4 py-3 text-left font-medium">Тип</th>
-                  <th className="px-4 py-3 text-left font-medium">Статус</th>
-                  <th className="px-4 py-3 text-left font-medium">Стартов</th>
-                  <th className="px-4 py-3 text-left font-medium">Завершений</th>
-                  <th className="px-4 py-3 text-left font-medium">Completion</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {overview.items.map((item) => (
-                  <tr key={item.id}>
-                    <td className="px-4 py-3">
-                      <div className="font-medium">{item.title}</div>
-                      <div className="text-xs text-muted-foreground">{item.slug}</div>
-                    </td>
-                    <td className="px-4 py-3">{item.type}</td>
-                    <td className="px-4 py-3">{item.status}</td>
-                    <td className="px-4 py-3">{item.starts}</td>
-                    <td className="px-4 py-3">{item.completes}</td>
-                    <td className="px-4 py-3">
-                      {item.completionRate !== null ? `${item.completionRate}%` : '—'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-muted-foreground">Статистика за 30 дней</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {loading && <div className="p-4 text-sm text-muted-foreground">Загрузка...</div>}
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            {overview && (
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/40 text-xs uppercase text-muted-foreground">
+                    <TableHead>Интерактив</TableHead>
+                    <TableHead>Тип</TableHead>
+                    <TableHead>Статус</TableHead>
+                    <TableHead>Стартов</TableHead>
+                    <TableHead>Завершений</TableHead>
+                    <TableHead>Completion</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {overview.items.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>
+                        <div className="font-medium">{item.title}</div>
+                        <div className="text-xs text-muted-foreground">{item.slug}</div>
+                      </TableCell>
+                      <TableCell>{item.type}</TableCell>
+                      <TableCell>{item.status}</TableCell>
+                      <TableCell>{item.starts}</TableCell>
+                      <TableCell>{item.completes}</TableCell>
+                      <TableCell>
+                        {item.completionRate !== null ? `${item.completionRate}%` : '—'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </AdminAuthGuard>
   );

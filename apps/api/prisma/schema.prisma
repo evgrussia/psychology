@@ -631,6 +631,10 @@ model TelegramSession {
   topic_code           String?
   frequency            String?
   concierge_payload    Json?
+  series_type          String?
+  series_step          Int?
+  next_send_at         DateTime?
+  last_message_key     String?
   is_active            Boolean       @default(true)
   started_at           DateTime      @default(now())
   updated_at           DateTime      @updatedAt

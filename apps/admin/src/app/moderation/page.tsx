@@ -3,6 +3,28 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { AdminAuthGuard } from '@/components/admin-auth-guard';
+import {
+  Alert,
+  AlertDescription,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@psychology/design-system';
 
 type UgcStatus = 'pending' | 'flagged' | 'approved' | 'answered' | 'rejected';
 type UgcType = 'anonymous_question';
@@ -34,6 +56,29 @@ interface ModerationListResponse {
   };
 }
 
+interface ModerationMetrics {
+  range: {
+    preset: string;
+    from: string;
+    to: string;
+    label: string;
+  };
+  queue: {
+    pendingCount: number;
+    flaggedCount: number;
+    overdueCount: number;
+    crisisOverdueCount: number;
+  };
+  sla: {
+    averageDecisionHours: number | null;
+    averageAnswerHours: number | null;
+  };
+  alerts: Array<{
+    type: 'queue_overflow' | 'crisis_overdue' | 'slow_moderation';
+    message: string;
+  }>;
+}
+
 const statusLabels: Record<UgcStatus, string> = {
   pending: 'На модерации',
   flagged: 'Флаги',
@@ -50,17 +95,19 @@ const triggerLabels: Record<string, string> = {
 };
 
 const statusBadgeStyles: Record<UgcStatus, string> = {
-  pending: 'border-amber-200 bg-amber-50 text-amber-700',
-  flagged: 'border-red-200 bg-red-50 text-red-700',
-  approved: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-  answered: 'border-blue-200 bg-blue-50 text-blue-700',
-  rejected: 'border-slate-200 bg-slate-50 text-slate-700',
+  pending: 'border-warning/30 bg-warning/10 text-warning',
+  flagged: 'border-destructive/30 bg-destructive/10 text-destructive',
+  approved: 'border-success/30 bg-success/10 text-success',
+  answered: 'border-info/30 bg-info/10 text-info',
+  rejected: 'border-muted text-muted-foreground bg-muted/40',
 };
 
 export default function ModerationPage() {
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<ModerationItem[]>([]);
   const [statusCounts, setStatusCounts] = useState<Record<string, number>>({});
+  const [metrics, setMetrics] = useState<ModerationMetrics | null>(null);
+  const [metricsLoading, setMetricsLoading] = useState(true);
   const [filters, setFilters] = useState({
     type: 'anonymous_question',
     status: '',
@@ -78,6 +125,16 @@ export default function ModerationPage() {
     if (filters.to) params.set('to', filters.to);
     return params.toString();
   }, [filters]);
+
+  const metricsQuery = useMemo(() => {
+    const params = new URLSearchParams();
+    if (filters.from) params.set('from', filters.from);
+    if (filters.to) params.set('to', filters.to);
+    if (!filters.from && !filters.to) {
+      params.set('range', '30d');
+    }
+    return params.toString();
+  }, [filters.from, filters.to]);
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -100,9 +157,32 @@ export default function ModerationPage() {
     }
   }, [queryString]);
 
+  const fetchMetrics = useCallback(async () => {
+    setMetricsLoading(true);
+    try {
+      const response = await fetch(`/api/admin/moderation/metrics?${metricsQuery}`, {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to load moderation metrics');
+      }
+      const data = (await response.json()) as ModerationMetrics;
+      setMetrics(data);
+    } catch (error) {
+      console.error(error);
+      setMetrics(null);
+    } finally {
+      setMetricsLoading(false);
+    }
+  }, [metricsQuery]);
+
   useEffect(() => {
     fetchItems();
   }, [fetchItems]);
+
+  useEffect(() => {
+    fetchMetrics();
+  }, [fetchMetrics]);
 
   return (
     <AdminAuthGuard allowedRoles={['owner', 'assistant']}>
@@ -116,71 +196,170 @@ export default function ModerationPage() {
           </div>
         </div>
 
-        <div className="grid gap-3 rounded-lg border p-4 md:grid-cols-2 xl:grid-cols-5">
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-muted-foreground">Тип</label>
-            <select
-              value={filters.type}
-              onChange={(event) => setFilters((prev) => ({ ...prev, type: event.target.value }))}
-              className="rounded-md border bg-background px-2 py-1 text-sm"
-            >
-              <option value="anonymous_question">Анонимные вопросы</option>
-            </select>
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-muted-foreground">Статус</label>
-            <select
-              value={filters.status}
-              onChange={(event) => setFilters((prev) => ({ ...prev, status: event.target.value }))}
-              className="rounded-md border bg-background px-2 py-1 text-sm"
-            >
-              <option value="">Все</option>
-              {(Object.keys(statusLabels) as UgcStatus[]).map((status) => (
-                <option key={status} value={status}>
-                  {statusLabels[status]} ({statusCounts[status] ?? 0})
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-muted-foreground">Триггер</label>
-            <select
-              value={filters.trigger}
-              onChange={(event) => setFilters((prev) => ({ ...prev, trigger: event.target.value }))}
-              className="rounded-md border bg-background px-2 py-1 text-sm"
-            >
-              <option value="">Любой</option>
-              {Object.entries(triggerLabels).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-muted-foreground">Дата с</label>
-            <input
-              type="date"
-              value={filters.from}
-              onChange={(event) => setFilters((prev) => ({ ...prev, from: event.target.value }))}
-              className="rounded-md border bg-background px-2 py-1 text-sm"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-muted-foreground">Дата по</label>
-            <input
-              type="date"
-              value={filters.to}
-              onChange={(event) => setFilters((prev) => ({ ...prev, to: event.target.value }))}
-              className="rounded-md border bg-background px-2 py-1 text-sm"
-            />
-          </div>
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {metricsLoading ? (
+            <Card>
+              <CardContent className="p-4 text-sm text-muted-foreground">
+                Загружаем SLA-метрики...
+              </CardContent>
+            </Card>
+          ) : metrics ? (
+            <>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs uppercase text-muted-foreground">Очередь</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-1 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span>Pending</span>
+                    <span className="font-medium">{metrics.queue.pendingCount}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Flagged</span>
+                    <span className="font-medium">{metrics.queue.flaggedCount}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Overdue 24h</span>
+                    <span className="font-medium">{metrics.queue.overdueCount}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Кризис &gt; 4h</span>
+                    <span className="font-medium">{metrics.queue.crisisOverdueCount}</span>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs uppercase text-muted-foreground">SLA</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-1 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span>До решения</span>
+                    <span className="font-medium">
+                      {metrics.sla.averageDecisionHours === null
+                        ? '—'
+                        : `${metrics.sla.averageDecisionHours.toFixed(1)} ч`}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>До ответа</span>
+                    <span className="font-medium">
+                      {metrics.sla.averageAnswerHours === null
+                        ? '—'
+                        : `${metrics.sla.averageAnswerHours.toFixed(1)} ч`}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="md:col-span-2">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs uppercase text-muted-foreground">Alerts</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                  {metrics.alerts.length === 0 ? (
+                    <div className="text-muted-foreground">Нет критичных сигналов.</div>
+                  ) : (
+                    metrics.alerts.map((alert) => (
+                      <Alert key={alert.type} variant="destructive">
+                        <AlertDescription>{alert.message}</AlertDescription>
+                      </Alert>
+                    ))
+                  )}
+                </CardContent>
+              </Card>
+            </>
+          ) : (
+            <Card>
+              <CardContent className="p-4 text-sm text-muted-foreground">
+                Метрики недоступны.
+              </CardContent>
+            </Card>
+          )}
         </div>
 
+        <Card>
+          <CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-muted-foreground">Тип</label>
+              <Select
+                value={filters.type}
+                onValueChange={(value) => setFilters((prev) => ({ ...prev, type: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Тип" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="anonymous_question">Анонимные вопросы</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-muted-foreground">Статус</label>
+              <Select
+                value={filters.status || 'all'}
+                onValueChange={(value) =>
+                  setFilters((prev) => ({ ...prev, status: value === 'all' ? '' : value }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Все" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Все</SelectItem>
+                  {(Object.keys(statusLabels) as UgcStatus[]).map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {statusLabels[status]} ({statusCounts[status] ?? 0})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-muted-foreground">Триггер</label>
+              <Select
+                value={filters.trigger || 'all'}
+                onValueChange={(value) =>
+                  setFilters((prev) => ({ ...prev, trigger: value === 'all' ? '' : value }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Любой" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Любой</SelectItem>
+                  {Object.entries(triggerLabels).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-muted-foreground">Дата с</label>
+              <Input
+                type="date"
+                value={filters.from}
+                onChange={(event) => setFilters((prev) => ({ ...prev, from: event.target.value }))}
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-muted-foreground">Дата по</label>
+              <Input
+                type="date"
+                value={filters.to}
+                onChange={(event) => setFilters((prev) => ({ ...prev, to: event.target.value }))}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
         {loading ? (
-          <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-            Загружаем очередь модерации...
-          </div>
+          <Card className="border-dashed">
+            <CardContent className="py-10 text-center text-sm text-muted-foreground">
+              Загружаем очередь модерации...
+            </CardContent>
+          </Card>
         ) : (
           <>
             <div className="space-y-3 md:hidden">
@@ -188,116 +367,112 @@ export default function ModerationPage() {
                 const submittedAt = new Date(item.submittedAt);
                 const ageHours = Math.floor((Date.now() - submittedAt.getTime()) / 36e5);
                 return (
-                  <div key={item.id} className="rounded-lg border p-4 text-sm">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="font-medium">Анонимный вопрос</div>
-                        <div className="text-xs text-muted-foreground">{item.id}</div>
-                      </div>
-                      <span
-                        className={`inline-flex items-center rounded-full border px-2 py-1 text-xs font-medium ${statusBadgeStyles[item.status]}`}
-                      >
-                        {statusLabels[item.status]}
-                      </span>
-                    </div>
-                    <div className="mt-3 space-y-1 text-xs text-muted-foreground">
-                      <div>Дата: {submittedAt.toLocaleString()}</div>
-                      <div>
-                        Триггеры:{' '}
-                        {item.triggerFlags.length > 0
-                          ? item.triggerFlags.map((flag) => triggerLabels[flag] ?? flag).join(', ')
-                          : '—'}
-                      </div>
-                      <div>SLA: {ageHours} ч</div>
-                      <div>
-                        Модератор:{' '}
-                        {item.lastAction?.moderator?.displayName ||
-                          item.lastAction?.moderator?.email ||
-                          '—'}
-                      </div>
-                    </div>
-                    <Link
-                      href={`/moderation/questions/${item.id}`}
-                      className="mt-3 inline-flex text-sm font-medium text-primary"
-                    >
-                      Открыть
-                    </Link>
-                  </div>
-                );
-              })}
-              {items.length === 0 && (
-                <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-                  В очереди нет вопросов.
-                </div>
-              )}
-            </div>
-
-            <div className="hidden overflow-hidden rounded-lg border md:block">
-              <table className="w-full text-sm">
-                <thead className="bg-muted/40 text-xs uppercase text-muted-foreground">
-                  <tr>
-                    <th className="px-4 py-3 text-left">Вопрос</th>
-                    <th className="px-4 py-3 text-left">Статус</th>
-                    <th className="px-4 py-3 text-left">Триггеры</th>
-                    <th className="px-4 py-3 text-left">SLA</th>
-                    <th className="px-4 py-3 text-left">Модератор</th>
-                    <th className="px-4 py-3 text-left">Действие</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((item) => {
-                    const submittedAt = new Date(item.submittedAt);
-                    const ageHours = Math.floor((Date.now() - submittedAt.getTime()) / 36e5);
-                    return (
-                      <tr key={item.id} className="border-t">
-                        <td className="px-4 py-3">
+                  <Card key={item.id}>
+                    <CardContent className="space-y-3 text-sm">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
                           <div className="font-medium">Анонимный вопрос</div>
                           <div className="text-xs text-muted-foreground">{item.id}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {submittedAt.toLocaleString()}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`inline-flex items-center rounded-full border px-2 py-1 text-xs font-medium ${statusBadgeStyles[item.status]}`}
-                          >
-                            {statusLabels[item.status]}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-xs text-muted-foreground">
+                        </div>
+                        <Badge variant="outline" className={statusBadgeStyles[item.status]}>
+                          {statusLabels[item.status]}
+                        </Badge>
+                      </div>
+                      <div className="space-y-1 text-xs text-muted-foreground">
+                        <div>Дата: {submittedAt.toLocaleString()}</div>
+                        <div>
+                          Триггеры:{' '}
                           {item.triggerFlags.length > 0
                             ? item.triggerFlags.map((flag) => triggerLabels[flag] ?? flag).join(', ')
                             : '—'}
-                        </td>
-                        <td className="px-4 py-3 text-xs text-muted-foreground">
-                          {ageHours} ч
-                        </td>
-                        <td className="px-4 py-3 text-xs text-muted-foreground">
+                        </div>
+                        <div>SLA: {ageHours} ч</div>
+                        <div>
+                          Модератор:{' '}
                           {item.lastAction?.moderator?.displayName ||
                             item.lastAction?.moderator?.email ||
                             '—'}
-                        </td>
-                        <td className="px-4 py-3">
-                          <Link
-                            href={`/moderation/questions/${item.id}`}
-                            className="text-sm font-medium text-primary"
-                          >
-                            Открыть
-                          </Link>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                  {items.length === 0 && (
-                    <tr>
-                      <td colSpan={6} className="px-4 py-6 text-center text-sm text-muted-foreground">
-                        В очереди нет вопросов.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                        </div>
+                      </div>
+                      <Button asChild variant="link" className="px-0">
+                        <Link href={`/moderation/questions/${item.id}`}>Открыть</Link>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+              {items.length === 0 && (
+                <Card className="border-dashed">
+                  <CardContent className="py-8 text-center text-sm text-muted-foreground">
+                    В очереди нет вопросов.
+                  </CardContent>
+                </Card>
+              )}
             </div>
+
+            <Card className="hidden md:block">
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/40 text-xs uppercase text-muted-foreground">
+                      <TableHead>Вопрос</TableHead>
+                      <TableHead>Статус</TableHead>
+                      <TableHead>Триггеры</TableHead>
+                      <TableHead>SLA</TableHead>
+                      <TableHead>Модератор</TableHead>
+                      <TableHead>Действие</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {items.map((item) => {
+                      const submittedAt = new Date(item.submittedAt);
+                      const ageHours = Math.floor((Date.now() - submittedAt.getTime()) / 36e5);
+                      return (
+                        <TableRow key={item.id}>
+                          <TableCell>
+                            <div className="font-medium">Анонимный вопрос</div>
+                            <div className="text-xs text-muted-foreground">{item.id}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {submittedAt.toLocaleString()}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={statusBadgeStyles[item.status]}>
+                              {statusLabels[item.status]}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {item.triggerFlags.length > 0
+                              ? item.triggerFlags.map((flag) => triggerLabels[flag] ?? flag).join(', ')
+                              : '—'}
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {ageHours} ч
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {item.lastAction?.moderator?.displayName ||
+                              item.lastAction?.moderator?.email ||
+                              '—'}
+                          </TableCell>
+                          <TableCell>
+                            <Button asChild variant="link" className="px-0">
+                              <Link href={`/moderation/questions/${item.id}`}>Открыть</Link>
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                    {items.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={6} className="py-6 text-center text-sm text-muted-foreground">
+                          В очереди нет вопросов.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
           </>
         )}
       </div>

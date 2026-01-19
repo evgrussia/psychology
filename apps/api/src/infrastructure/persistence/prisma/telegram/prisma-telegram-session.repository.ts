@@ -3,6 +3,7 @@ import { PrismaService } from '../../../database/prisma.service';
 import { ITelegramSessionRepository } from '@domain/telegram/repositories/ITelegramSessionRepository';
 import { TelegramSession } from '@domain/telegram/entities/TelegramSession';
 import { TelegramFlow, TelegramFrequency, TelegramSessionState } from '@domain/telegram/value-objects/TelegramEnums';
+import { TelegramSeriesType } from '@domain/telegram/value-objects/TelegramSeriesType';
 
 @Injectable()
 export class PrismaTelegramSessionRepository implements ITelegramSessionRepository {
@@ -16,6 +17,18 @@ export class PrismaTelegramSessionRepository implements ITelegramSessionReposito
       },
     });
     return record ? this.toDomain(record) : null;
+  }
+
+  async findDueScheduledSessions(now: Date, limit: number): Promise<TelegramSession[]> {
+    const records = await this.prisma.telegramSession.findMany({
+      where: {
+        is_active: true,
+        next_send_at: { lte: now },
+      },
+      orderBy: { next_send_at: 'asc' },
+      take: limit,
+    });
+    return records.map((record) => this.toDomain(record));
   }
 
   async create(session: TelegramSession): Promise<void> {
@@ -42,6 +55,10 @@ export class PrismaTelegramSessionRepository implements ITelegramSessionReposito
         state: TelegramSessionState.stopped,
         stopped_at: new Date(),
         updated_at: new Date(),
+        series_type: null,
+        series_step: null,
+        next_send_at: null,
+        last_message_key: null,
       },
     });
     return result.count;
@@ -57,6 +74,10 @@ export class PrismaTelegramSessionRepository implements ITelegramSessionReposito
       topicCode: record.topic_code,
       frequency: record.frequency ? (record.frequency as TelegramFrequency) : null,
       conciergePreferences: record.concierge_payload ?? null,
+      seriesType: record.series_type ? (record.series_type as TelegramSeriesType) : null,
+      seriesStep: typeof record.series_step === 'number' ? record.series_step : null,
+      nextSendAt: record.next_send_at ?? null,
+      lastMessageKey: record.last_message_key ?? null,
       isActive: record.is_active,
       startedAt: record.started_at,
       updatedAt: record.updated_at,
@@ -75,6 +96,10 @@ export class PrismaTelegramSessionRepository implements ITelegramSessionReposito
       topic_code: session.topicCode,
       frequency: session.frequency ?? null,
       concierge_payload: session.conciergePreferences ?? undefined,
+      series_type: session.seriesType ?? null,
+      series_step: session.seriesStep ?? null,
+      next_send_at: session.nextSendAt ?? null,
+      last_message_key: session.lastMessageKey ?? null,
       is_active: session.isActive,
       started_at: session.startedAt,
       updated_at: session.updatedAt,

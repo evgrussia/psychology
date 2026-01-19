@@ -6,6 +6,8 @@ import { PrismaService } from '../src/infrastructure/database/prisma.service';
 import { BcryptHasher } from '../src/infrastructure/auth/bcrypt-hasher';
 import * as cookieParser from 'cookie-parser';
 
+import { clearDatabase } from './test-utils';
+
 describe('Admin Interactive (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
@@ -31,23 +33,7 @@ describe('Admin Interactive (e2e)', () => {
   });
 
   beforeEach(async () => {
-    await prisma.ugcModerationAction.deleteMany({});
-    await prisma.questionAnswer.deleteMany({});
-    await prisma.anonymousQuestion.deleteMany({});
-    await prisma.auditLogEntry.deleteMany({});
-    await prisma.interactiveRun.deleteMany({});
-    await prisma.curatedItem.deleteMany({});
-    await prisma.interactiveDefinition.deleteMany({});
-    await prisma.messageTemplateVersion.deleteMany({});
-    await prisma.messageTemplate.deleteMany({});
-    await prisma.session.deleteMany({});
-    await prisma.userRole.deleteMany({});
-    await prisma.contentRevision.deleteMany({});
-    await prisma.contentItemTag.deleteMany({});
-    await prisma.contentItemTopic.deleteMany({});
-    await prisma.contentItem.deleteMany({});
-    await prisma.user.deleteMany({});
-    await prisma.role.deleteMany({});
+    await clearDatabase(prisma);
 
     await prisma.role.createMany({
       data: [

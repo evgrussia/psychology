@@ -353,15 +353,15 @@ cd /var/www/psychology
 cd /var/www/psychology
 
 # Запуск seed (выполняется внутри контейнера api)
-docker compose -f docker-compose.prod.yml run --rm api \
-  sh -c "cd /app && npx -y ts-node --transpile-only prisma/seed.ts"
+docker compose -f docker-compose.prod.yml --env-file .env.prod run --rm api \
+  ts-node --transpile-only prisma/seed.ts
 ```
 
 Если вам нужны только подборки (curated) отдельно:
 
 ```bash
-docker compose -f docker-compose.prod.yml run --rm api \
-  sh -c "cd /app && npx -y ts-node --transpile-only prisma/seed-curated.ts"
+docker compose -f docker-compose.prod.yml --env-file .env.prod run --rm api \
+  ts-node --transpile-only prisma/seed-curated.ts
 ```
 
 ### 6.2 Мониторинг процесса деплоя
@@ -601,12 +601,12 @@ docker restart psychology-prod-nginx
 
 ```bash
 # Запускаем миграции вручную
-docker compose -f docker-compose.prod.yml run --rm api \
-  sh -c "cd /app && npx prisma migrate deploy"
+docker compose -f docker-compose.prod.yml --env-file .env.prod run --rm api \
+  prisma migrate deploy
 
 # Проверяем статус миграций
-docker compose -f docker-compose.prod.yml run --rm api \
-  sh -c "cd /app && npx prisma migrate status"
+docker compose -f docker-compose.prod.yml --env-file .env.prod run --rm api \
+  prisma migrate status
 ```
 
 ### 9.6 Проблема: Не хватает места на диске

@@ -49,6 +49,7 @@
 - `FEAT-SEC-03-Implementation-Report.md`
 - `FEAT-A11Y-01-Implementation-Report.md`
 - `FEAT-DS-01-Implementation-Report.md`
+- `FEAT-DS-02-Implementation-Report.md`
 - `FEAT-WEB-11-Implementation-Report.md`
 - `FEAT-MOB-01-Implementation-Report.md`
 - `FEAT-RET-99-Implementation-Report.md`
@@ -101,7 +102,7 @@
 | Feature ID | Спека | Оценка токенов | Примечание |
 |---|---|---:|---|
 | FEAT-BKG-01 | `FEAT-BKG-01.md` | ~120k | услуги + правила |
-| FEAT-BKG-02 | `FEAT-BKG-02.md` | ~260k | близко к лимиту → есть slices |
+| FEAT-BKG-02 | `FEAT-BKG-02.md` | ~260k | ревизия: без GCal, внутренняя доступность |
 | FEAT-BKG-03 | `FEAT-BKG-03.md` | ~220k | UI записи + анкета + согласия |
 | FEAT-BKG-04 | `FEAT-BKG-04.md` | ~120k | анти-гонки / конфликты |
 | FEAT-BKG-05 | `FEAT-BKG-05.md` | ~90k | no slots → waitlist/TG |

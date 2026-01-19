@@ -3,6 +3,28 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { AdminAuthGuard } from '@/components/admin-auth-guard';
+import {
+  Alert,
+  AlertDescription,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@psychology/design-system';
 
 interface TemplateItem {
   id: string;
@@ -84,101 +106,121 @@ export default function TemplatesPage() {
       <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold">Шаблоны сообщений</h1>
+            <h1 className="text-2xl font-semibold text-foreground">Шаблоны сообщений</h1>
             <p className="text-sm text-muted-foreground">Email и Telegram уведомления по ключевым сценариям.</p>
           </div>
-          <Link href="/templates/new" className="rounded-md bg-primary px-4 py-2 text-sm text-white">
-            Создать шаблон
-          </Link>
+          <Button asChild>
+            <Link href="/templates/new">Создать шаблон</Link>
+          </Button>
         </div>
 
-        <div className="flex flex-wrap gap-3 rounded-lg border bg-white p-4 text-sm">
-          <input
-            className="w-full max-w-xs rounded-md border px-3 py-2"
-            placeholder="Поиск по названию"
-            value={filters.search}
-            onChange={(event) => setFilters((prev) => ({ ...prev, search: event.target.value }))}
-          />
-          <select
-            className="rounded-md border px-3 py-2"
-            value={filters.channel}
-            onChange={(event) => setFilters((prev) => ({ ...prev, channel: event.target.value }))}
-          >
-            <option value="">Все каналы</option>
-            <option value="email">Email</option>
-            <option value="telegram">Telegram</option>
-          </select>
-          <select
-            className="rounded-md border px-3 py-2"
-            value={filters.category}
-            onChange={(event) => setFilters((prev) => ({ ...prev, category: event.target.value }))}
-          >
-            <option value="">Все категории</option>
-            <option value="booking">Запись</option>
-            <option value="waitlist">Лист ожидания</option>
-            <option value="event">Мероприятия</option>
-            <option value="moderation">Модерация</option>
-          </select>
-          <select
-            className="rounded-md border px-3 py-2"
-            value={filters.status}
-            onChange={(event) => setFilters((prev) => ({ ...prev, status: event.target.value }))}
-          >
-            <option value="">Все статусы</option>
-            <option value="draft">Черновик</option>
-            <option value="active">Активен</option>
-            <option value="archived">Архив</option>
-          </select>
-        </div>
+        <Card>
+          <CardContent className="flex flex-wrap gap-3">
+            <Input
+              className="w-full max-w-xs"
+              placeholder="Поиск по названию"
+              value={filters.search}
+              onChange={(event) => setFilters((prev) => ({ ...prev, search: event.target.value }))}
+            />
+            <Select
+              value={filters.channel || 'all'}
+              onValueChange={(value) => setFilters((prev) => ({ ...prev, channel: value === 'all' ? '' : value }))}
+            >
+              <SelectTrigger className="w-44">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все каналы</SelectItem>
+                <SelectItem value="email">Email</SelectItem>
+                <SelectItem value="telegram">Telegram</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={filters.category || 'all'}
+              onValueChange={(value) => setFilters((prev) => ({ ...prev, category: value === 'all' ? '' : value }))}
+            >
+              <SelectTrigger className="w-44">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все категории</SelectItem>
+                <SelectItem value="booking">Запись</SelectItem>
+                <SelectItem value="waitlist">Лист ожидания</SelectItem>
+                <SelectItem value="event">Мероприятия</SelectItem>
+                <SelectItem value="moderation">Модерация</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={filters.status || 'all'}
+              onValueChange={(value) => setFilters((prev) => ({ ...prev, status: value === 'all' ? '' : value }))}
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все статусы</SelectItem>
+                <SelectItem value="draft">Черновик</SelectItem>
+                <SelectItem value="active">Активен</SelectItem>
+                <SelectItem value="archived">Архив</SelectItem>
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
 
         {loading ? (
-          <div className="text-sm text-muted-foreground">Загрузка...</div>
+          <Card>
+            <CardContent className="p-4 text-sm text-muted-foreground">Загрузка...</CardContent>
+          </Card>
         ) : error ? (
-          <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{error}</div>
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         ) : (
-          <div className="overflow-hidden rounded-lg border bg-white">
-            <table className="min-w-full divide-y divide-gray-200 text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Название</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Категория</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Канал</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Статус</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Активирован</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Действия</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {templates.map((template) => (
-                  <tr key={template.id}>
-                    <td className="px-4 py-3 font-medium">{template.name}</td>
-                    <td className="px-4 py-3">{categoryLabels[template.category] || template.category}</td>
-                    <td className="px-4 py-3">{channelLabels[template.channel] || template.channel}</td>
-                    <td className="px-4 py-3">
-                      <span className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-700">
-                        {statusLabels[template.status] || template.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-gray-500">
-                      {template.activated_at ? new Date(template.activated_at).toLocaleString('ru-RU') : '—'}
-                    </td>
-                    <td className="px-4 py-3">
-                      <Link href={`/templates/${template.id}`} className="text-primary">
-                        Открыть
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-                {templates.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="px-4 py-6 text-center text-sm text-gray-500">
-                      Шаблоны не найдены
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/40 text-xs uppercase text-muted-foreground">
+                    <TableHead>Название</TableHead>
+                    <TableHead>Категория</TableHead>
+                    <TableHead>Канал</TableHead>
+                    <TableHead>Статус</TableHead>
+                    <TableHead>Активирован</TableHead>
+                    <TableHead>Действия</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {templates.map((template) => (
+                    <TableRow key={template.id}>
+                      <TableCell className="font-medium">{template.name}</TableCell>
+                      <TableCell>{categoryLabels[template.category] || template.category}</TableCell>
+                      <TableCell>{channelLabels[template.channel] || template.channel}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="bg-muted/40 text-muted-foreground">
+                          {statusLabels[template.status] || template.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {template.activated_at ? new Date(template.activated_at).toLocaleString('ru-RU') : '—'}
+                      </TableCell>
+                      <TableCell>
+                        <Button asChild variant="link" className="px-0">
+                          <Link href={`/templates/${template.id}`}>Открыть</Link>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {templates.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={6} className="px-4 py-6 text-center text-sm text-muted-foreground">
+                        Шаблоны не найдены
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         )}
       </div>
     </AdminAuthGuard>

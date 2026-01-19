@@ -1,4 +1,4 @@
-import { NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
@@ -8,6 +8,9 @@ import { AppLogger } from './infrastructure/logging/logger.service';
 import * as cookieParser from 'cookie-parser';
 import * as bodyParser from 'body-parser';
 import { requestContextMiddleware } from './infrastructure/observability/request-context.middleware';
+import { ErrorRateMonitor } from './infrastructure/observability/error-rate-monitor.service';
+import { ObservabilityExceptionFilter } from './infrastructure/observability/observability-exception.filter';
+import { IErrorReporter } from './domain/observability/services/IErrorReporter';
 
 async function bootstrap() {
   const logger = new AppLogger('Bootstrap');
@@ -16,6 +19,17 @@ async function bootstrap() {
     bodyParser: false,
   });
   Logger.overrideLogger(logger);
+
+  const httpAdapterHost = app.get(HttpAdapterHost);
+  const errorReporter = app.get<IErrorReporter>('IErrorReporter');
+  app.useGlobalFilters(new ObservabilityExceptionFilter(httpAdapterHost, errorReporter));
+
+  process.on('unhandledRejection', (reason) => {
+    errorReporter.captureException(reason, { source: 'unhandledRejection' });
+  });
+  process.on('uncaughtException', (error) => {
+    errorReporter.captureException(error, { source: 'uncaughtException' });
+  });
 
   app.use(
     bodyParser.json({
@@ -26,6 +40,11 @@ async function bootstrap() {
   );
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(requestContextMiddleware);
+  const errorRateMonitor = app.get(ErrorRateMonitor);
+  app.use((_req, res, next) => {
+    res.on('finish', () => errorRateMonitor.recordStatus(res.statusCode));
+    next();
+  });
 
   const configService = app.get(ConfigService);
   const storagePath = configService.get<string>('MEDIA_STORAGE_PATH');

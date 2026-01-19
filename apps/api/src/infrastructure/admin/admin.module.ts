@@ -20,6 +20,7 @@ import { ArchiveContentItemUseCase } from '../../application/admin/use-cases/Arc
 import { ListContentRevisionsUseCase } from '../../application/admin/use-cases/ListContentRevisionsUseCase';
 import { RollbackContentRevisionUseCase } from '../../application/admin/use-cases/RollbackContentRevisionUseCase';
 import { UpdateInteractiveDefinitionUseCase } from '../../application/admin/use-cases/interactive/UpdateInteractiveDefinitionUseCase';
+import { CreateInteractiveDefinitionUseCase } from '../../application/admin/use-cases/interactive/CreateInteractiveDefinitionUseCase';
 import { GetInteractiveDefinitionByIdUseCase } from '../../application/admin/use-cases/interactive/GetInteractiveDefinitionByIdUseCase';
 import { GetPublishedInteractiveDefinitionByIdUseCase } from '../../application/admin/use-cases/interactive/GetPublishedInteractiveDefinitionByIdUseCase';
 import { ListInteractiveDefinitionsUseCase } from '../../application/admin/use-cases/interactive/ListInteractiveDefinitionsUseCase';
@@ -161,6 +162,7 @@ import { DeleteAdminUserUseCase } from '../../application/admin/use-cases/settin
     ListContentRevisionsUseCase,
     RollbackContentRevisionUseCase,
     UpdateInteractiveDefinitionUseCase,
+    CreateInteractiveDefinitionUseCase,
     GetInteractiveDefinitionByIdUseCase,
     GetPublishedInteractiveDefinitionByIdUseCase,
     ListInteractiveDefinitionsUseCase,
@@ -241,6 +243,7 @@ import { DeleteAdminUserUseCase } from '../../application/admin/use-cases/settin
     ListContentRevisionsUseCase,
     RollbackContentRevisionUseCase,
     UpdateInteractiveDefinitionUseCase,
+    CreateInteractiveDefinitionUseCase,
     GetInteractiveDefinitionByIdUseCase,
     GetPublishedInteractiveDefinitionByIdUseCase,
     ListInteractiveDefinitionsUseCase,

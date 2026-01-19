@@ -55,7 +55,7 @@ export default function EmergencyClient() {
 
           <div className="mb-12 flex justify-center">
             <img 
-              src="/assets/graphics/spot/spot-safe-space-1024x1024.svg" 
+              src="/assets/graphics/spot/spot-confidentiality-1024x1024.svg" 
               alt="Безопасное пространство" 
               className="w-48 h-48 opacity-80"
             />

@@ -4,6 +4,7 @@ export interface PublicCuratedItemDto {
   itemType: CuratedItemType;
   contentItem?: {
     id: string;
+    contentType: string;
     slug: string;
     title: string;
     excerpt?: string;

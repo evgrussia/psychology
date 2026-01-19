@@ -16,7 +16,7 @@
 ---
 
 ## 1) Summary
-Раздел `/admin/schedule/`: управление слотами, исключениями, буферами и синхронизацией с Google Calendar (в UI). Owner+assistant.
+Раздел `/admin/schedule/`: управление слотами, исключениями, буферами и бронированиями. Owner+assistant.
 
 ### Ссылки
 - Admin spec: `docs/Admin-Panel-Specification.md` (4.2)
@@ -28,7 +28,7 @@
 - календарь (день/неделя/месяц) + список слотов,
 - создание/редактирование слотов и исключений,
 - просмотр бронирований,
-- запуск sync и статус интеграции.
+- фиксация исхода встречи (best effort).
 
 ---
 
@@ -40,7 +40,6 @@
 
 ## 7) API
 - `GET/POST/PUT /api/admin/schedule/*`
-- `POST /api/admin/integrations/google-calendar/sync`
 
 ---
 

@@ -1,6 +1,24 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
+import {
+  Alert,
+  AlertDescription,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@psychology/design-system';
 
 interface AuditLogEntry {
   id: string;
@@ -85,140 +103,150 @@ export default function AuditLogPage() {
     return params.toString();
   };
 
-  if (loading && entries.length === 0) return <div className="p-8">Загрузка...</div>;
-  if (error) return <div className="p-8 text-red-500">Ошибка: {error}</div>;
+  if (loading && entries.length === 0) {
+    return (
+      <Card>
+        <CardContent className="p-8 text-sm text-muted-foreground">Загрузка...</CardContent>
+      </Card>
+    );
+  }
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertDescription>Ошибка: {error}</AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6">Журнал аудита</h1>
-
-      <div className="mb-6 grid gap-3 md:grid-cols-3">
-        <label className="text-sm text-muted-foreground">
-          Actor User ID
-          <input
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-            value={filters.actorUserId}
-            onChange={(event) => setFilters({ ...filters, actorUserId: event.target.value })}
-          />
-        </label>
-        <label className="text-sm text-muted-foreground">
-          Action
-          <input
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-            value={filters.action}
-            onChange={(event) => setFilters({ ...filters, action: event.target.value })}
-          />
-        </label>
-        <label className="text-sm text-muted-foreground">
-          Entity Type
-          <input
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-            value={filters.entityType}
-            onChange={(event) => setFilters({ ...filters, entityType: event.target.value })}
-          />
-        </label>
-        <label className="text-sm text-muted-foreground">
-          Entity ID
-          <input
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-            value={filters.entityId}
-            onChange={(event) => setFilters({ ...filters, entityId: event.target.value })}
-          />
-        </label>
-        <label className="text-sm text-muted-foreground">
-          From
-          <input
-            type="date"
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-            value={filters.fromDate}
-            onChange={(event) => setFilters({ ...filters, fromDate: event.target.value })}
-          />
-        </label>
-        <label className="text-sm text-muted-foreground">
-          To
-          <input
-            type="date"
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-            value={filters.toDate}
-            onChange={(event) => setFilters({ ...filters, toDate: event.target.value })}
-          />
-        </label>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold text-foreground">Журнал аудита</h1>
+        <p className="text-sm text-muted-foreground">
+          История изменений и операций в системе.
+        </p>
       </div>
 
-      <div className="mb-6 flex flex-wrap gap-2">
-        <a
-          className="rounded-md border px-3 py-2 text-sm"
-          href={`/api/admin/audit-log/export?format=csv&${exportQuery()}`}
-        >
-          Экспорт CSV
-        </a>
-        <a
-          className="rounded-md border px-3 py-2 text-sm"
-          href={`/api/admin/audit-log/export?format=json&${exportQuery()}`}
-        >
-          Экспорт JSON
-        </a>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Фильтры</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-3">
+          <div className="space-y-2">
+            <Label>Actor User ID</Label>
+            <Input
+              value={filters.actorUserId}
+              onChange={(event) => setFilters({ ...filters, actorUserId: event.target.value })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Action</Label>
+            <Input
+              value={filters.action}
+              onChange={(event) => setFilters({ ...filters, action: event.target.value })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Entity Type</Label>
+            <Input
+              value={filters.entityType}
+              onChange={(event) => setFilters({ ...filters, entityType: event.target.value })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Entity ID</Label>
+            <Input
+              value={filters.entityId}
+              onChange={(event) => setFilters({ ...filters, entityId: event.target.value })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>From</Label>
+            <Input
+              type="date"
+              value={filters.fromDate}
+              onChange={(event) => setFilters({ ...filters, fromDate: event.target.value })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>To</Label>
+            <Input
+              type="date"
+              value={filters.toDate}
+              onChange={(event) => setFilters({ ...filters, toDate: event.target.value })}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex flex-wrap gap-2">
+        <Button asChild variant="outline">
+          <a href={`/api/admin/audit-log/export?format=csv&${exportQuery()}`}>Экспорт CSV</a>
+        </Button>
+        <Button asChild variant="outline">
+          <a href={`/api/admin/audit-log/export?format=json&${exportQuery()}`}>Экспорт JSON</a>
+        </Button>
       </div>
-      
-      <div className="bg-white shadow-md rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дата</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Пользователь</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Действие</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Сущность</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP / UA</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {entries.map((entry) => (
-              <tr key={entry.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {new Date(entry.createdAt).toLocaleString()}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{entry.actorUserId || 'Система'}</div>
-                  <div className="text-sm text-gray-500">{entry.actorRole}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                    {entry.action}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {entry.entityType} ({entry.entityId || '-'})
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-500">
-                  <div className="truncate max-w-xs" title={entry.ipAddress || ''}>{entry.ipAddress}</div>
-                  <div className="truncate max-w-xs text-xs" title={entry.userAgent || ''}>{entry.userAgent}</div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/40 text-xs uppercase text-muted-foreground">
+                <TableHead>Дата</TableHead>
+                <TableHead>Пользователь</TableHead>
+                <TableHead>Действие</TableHead>
+                <TableHead>Сущность</TableHead>
+                <TableHead>IP / UA</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {entries.map((entry) => (
+                <TableRow key={entry.id}>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {new Date(entry.createdAt).toLocaleString()}
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm font-medium text-foreground">{entry.actorUserId || 'Система'}</div>
+                    <div className="text-sm text-muted-foreground">{entry.actorRole}</div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="secondary">{entry.action}</Badge>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {entry.entityType} ({entry.entityId || '-'})
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    <div className="truncate max-w-xs" title={entry.ipAddress || ''}>{entry.ipAddress}</div>
+                    <div className="truncate max-w-xs text-xs" title={entry.userAgent || ''}>{entry.userAgent}</div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
       {pagination && (
-        <div className="mt-4 flex justify-between items-center">
-          <div className="text-sm text-gray-700">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="text-sm text-muted-foreground">
             Показано {entries.length} из {pagination.total} записей
           </div>
-          <div className="flex space-x-2">
-            <button
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
               onClick={() => setPage(pagination.page - 1)}
               disabled={pagination.page <= 1}
-              className="px-4 py-2 border rounded-md disabled:opacity-50"
             >
               Назад
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => setPage(pagination.page + 1)}
               disabled={pagination.page >= pagination.totalPages}
-              className="px-4 py-2 border rounded-md disabled:opacity-50"
             >
               Вперед
-            </button>
+            </Button>
           </div>
         </div>
       )}

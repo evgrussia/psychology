@@ -1,7 +1,10 @@
 import React from 'react';
 import PageClient from '../PageClient';
 import { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { ContentPlatform } from '@/lib/content';
+import { isFeatureEnabled } from '@/lib/feature-flags';
+import { resolveCanonical, resolveKeywords } from '@/lib/seo';
 
 async function getHowItWorksData() {
   const slug = 'how-it-works';
@@ -28,13 +31,18 @@ async function getHowItWorksData() {
 
 export async function generateMetadata(): Promise<Metadata> {
   const data = await getHowItWorksData();
-  const description = 'Узнайте, как проходит консультация: от записи до первой встречи. Частые вопросы о формате, подготовке и процессе работы.';
+  const description =
+    data.seo_description
+    || 'Узнайте, как проходит консультация: от записи до первой встречи. Частые вопросы о формате, подготовке и процессе работы.';
+  const title = data.seo_title || `${data.title} | Эмоциональный баланс`;
   
   return {
-    title: `${data.title} | Эмоциональный баланс`,
+    title,
     description,
+    keywords: resolveKeywords(data.seo_keywords),
+    alternates: resolveCanonical(data.canonical_url),
     openGraph: {
-      title: `${data.title} | Эмоциональный баланс`,
+      title,
       description,
       type: 'website',
       locale: 'ru_RU',
@@ -42,13 +50,17 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: 'summary',
-      title: `${data.title} | Эмоциональный баланс`,
+      title,
       description,
     },
   };
 }
 
 export default async function HowItWorksPage() {
+  if (!isFeatureEnabled('trust_pages_v1_enabled')) {
+    redirect('/');
+  }
+
   const data = await getHowItWorksData();
 
   return <PageClient slug="how-it-works" data={data} />;

@@ -5,6 +5,23 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { AdminAuthGuard } from '@/components/admin-auth-guard';
 import { useAdminAuth } from '@/components/admin-auth-context';
+import {
+  Alert,
+  AlertDescription,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Textarea,
+} from '@psychology/design-system';
 
 interface RitualStep {
   id: string;
@@ -46,6 +63,7 @@ export default function EditRitualPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [archiving, setArchiving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [previewVersion, setPreviewVersion] = useState<'draft' | 'published'>('draft');
@@ -161,6 +179,33 @@ export default function EditRitualPage() {
     }
   };
 
+  const handleArchive = async () => {
+    if (!definition) return;
+    if (!canEdit) {
+      return;
+    }
+    if (!window.confirm('Архивировать ритуал? Он исчезнет из публичного каталога.')) {
+      return;
+    }
+    setArchiving(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/admin/interactive/rituals/${id}/archive`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.message || 'Не удалось архивировать');
+      }
+      await fetchDefinition();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setArchiving(false);
+    }
+  };
+
   const updateStep = (index: number, field: keyof RitualStep, value: any) => {
     if (!definition?.config) return;
     const steps = [...definition.config.steps];
@@ -183,213 +228,252 @@ export default function EditRitualPage() {
   return (
     <AdminAuthGuard allowedRoles={['owner', 'assistant', 'editor']}>
       {loading ? (
-        <div className="p-8">Загрузка...</div>
+        <Card>
+          <CardContent className="p-8 text-sm text-muted-foreground">Загрузка...</CardContent>
+        </Card>
       ) : error && !definition ? (
-        <div className="p-8 text-red-500">Ошибка: {error}</div>
+        <Alert variant="destructive">
+          <AlertDescription>Ошибка: {error}</AlertDescription>
+        </Alert>
       ) : !definition ? (
-        <div className="p-8">Ритуал не найден</div>
+        <Card>
+          <CardContent className="p-8 text-sm text-muted-foreground">Ритуал не найден</CardContent>
+        </Card>
       ) : (
-        <div className="p-8">
-          <div className="mb-6">
-            <Link href="/interactive/rituals" className="text-blue-600">← Назад к списку</Link>
-            <h1 className="text-2xl font-bold mt-4">Редактирование: {definition.title}</h1>
-            {error && <div className="mt-2 text-red-500">{error}</div>}
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <Button asChild variant="link" className="px-0">
+              <Link href="/interactive/rituals">← Назад к списку</Link>
+            </Button>
+            <h1 className="text-2xl font-semibold text-foreground">Редактирование: {definition.title}</h1>
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
           </div>
 
-      <div className="flex flex-wrap gap-3 mb-6">
-        <button
-          onClick={handleSave}
-          disabled={!canEdit || saving}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-        >
-          {saving ? 'Сохранение...' : 'Сохранить'}
-        </button>
-        {canEdit && definition.status !== 'published' && (
-          <button
-            onClick={handlePublish}
-            disabled={publishing}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-          >
-            {publishing ? 'Публикация...' : 'Опубликовать'}
-          </button>
-        )}
-        <button
-          onClick={() => setShowPreview(!showPreview)}
-          className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-        >
-          {showPreview ? 'Скрыть превью' : 'Показать превью'}
-        </button>
-      </div>
-
-      {showPreview && (
-        <div className="mb-8 p-4 bg-gray-50 rounded border">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-            <h2 className="text-xl font-bold">Превью ритуала</h2>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-muted-foreground">Версия:</span>
-              <select
-                value={previewVersion}
-                onChange={(event) => setPreviewVersion(event.target.value as 'draft' | 'published')}
-                className="rounded border px-2 py-1"
+          <div className="flex flex-wrap gap-3">
+            <Button
+              onClick={handleSave}
+              disabled={!canEdit || saving}
+            >
+              {saving ? 'Сохранение...' : 'Сохранить'}
+            </Button>
+            {canEdit && definition.status !== 'published' && definition.status !== 'archived' && (
+              <Button
+                onClick={handlePublish}
+                disabled={publishing}
+                variant="secondary"
               >
-                <option value="draft">Черновик</option>
-                <option value="published">Опубликовано</option>
-              </select>
-            </div>
+                {publishing ? 'Публикация...' : 'Опубликовать'}
+              </Button>
+            )}
+            {canEdit && definition.status !== 'archived' && (
+              <Button
+                onClick={handleArchive}
+                disabled={archiving}
+                variant="destructive"
+              >
+                {archiving ? 'Архивирование...' : 'Архивировать'}
+              </Button>
+            )}
+            <Button
+              onClick={() => setShowPreview(!showPreview)}
+              variant="outline"
+            >
+              {showPreview ? 'Скрыть превью' : 'Показать превью'}
+            </Button>
           </div>
-          {previewLoading && <div className="text-sm text-muted-foreground">Загрузка превью...</div>}
-          {previewError && <div className="text-sm text-red-500">{previewError}</div>}
-          {previewDefinition?.config && (
-            <div className="bg-white p-6 rounded space-y-4">
-              <h3 className="text-lg font-semibold">{previewDefinition.title}</h3>
-              <p className="text-sm text-gray-700 whitespace-pre-line">{previewDefinition.config.why}</p>
-              <div>
-                <h4 className="font-semibold mb-2">Шаги</h4>
-                <ol className="list-decimal list-inside text-sm text-gray-700 space-y-2">
-                  {previewDefinition.config.steps.map((step) => (
-                    <li key={step.id}>
-                      <div className="font-medium">{step.title}</div>
-                      <div className="whitespace-pre-line text-gray-600">{step.content}</div>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-              {previewDefinition.config.audioMediaAssetId && (
-                <div className="text-sm text-gray-600">
-                  Аудио: {previewDefinition.config.audioMediaAssetId}
+
+          {showPreview && (
+            <Card>
+              <CardHeader className="flex flex-wrap items-center justify-between gap-3">
+                <CardTitle className="text-lg">Превью ритуала</CardTitle>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-muted-foreground">Версия:</span>
+                  <Select
+                    value={previewVersion}
+                    onValueChange={(value) => setPreviewVersion(value as 'draft' | 'published')}
+                  >
+                    <SelectTrigger className="w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">Черновик</SelectItem>
+                      <SelectItem value="published">Опубликовано</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              )}
-            </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {previewLoading && <div className="text-sm text-muted-foreground">Загрузка превью...</div>}
+                {previewError && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{previewError}</AlertDescription>
+                  </Alert>
+                )}
+                {previewDefinition?.config && (
+                  <Card className="border-dashed">
+                    <CardContent className="space-y-4">
+                      <h3 className="text-lg font-semibold text-foreground">{previewDefinition.title}</h3>
+                      <p className="text-sm text-muted-foreground whitespace-pre-line">{previewDefinition.config.why}</p>
+                      <div>
+                        <h4 className="font-semibold text-foreground mb-2">Шаги</h4>
+                        <ol className="list-decimal list-inside text-sm text-muted-foreground space-y-2">
+                          {previewDefinition.config.steps.map((step) => (
+                            <li key={step.id}>
+                              <div className="font-medium text-foreground">{step.title}</div>
+                              <div className="whitespace-pre-line text-muted-foreground">{step.content}</div>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+                      {previewDefinition.config.audioMediaAssetId && (
+                        <div className="text-sm text-muted-foreground">
+                          Аудио: {previewDefinition.config.audioMediaAssetId}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+              </CardContent>
+            </Card>
           )}
-        </div>
-      )}
 
-      <div className="bg-white rounded-lg shadow p-6 space-y-6">
-        <div>
-          <label className="block text-sm font-medium mb-2">Название</label>
-          <input
-            type="text"
-            value={definition.title}
-            onChange={(event) => setDefinition({ ...definition, title: event.target.value })}
-            className="w-full px-3 py-2 border rounded"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-2">Тема (код)</label>
-          <input
-            type="text"
-            value={definition.topicCode || ''}
-            onChange={(event) => setDefinition({ ...definition, topicCode: event.target.value || null })}
-            className="w-full px-3 py-2 border rounded"
-            placeholder="anxiety, stress, etc."
-          />
-        </div>
-
-        {definition.config && (
-          <>
-            <div>
-              <label className="block text-sm font-medium mb-2">Зачем</label>
-              <textarea
-                value={definition.config.why}
-                onChange={(event) => setDefinition({
-                  ...definition,
-                  config: { ...definition.config, why: event.target.value },
-                })}
-                className="w-full px-3 py-2 border rounded"
-                rows={3}
-              />
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium mb-2">Общая длительность (сек)</label>
-                <input
-                  type="number"
-                  value={definition.config.totalDurationSeconds ?? ''}
-                  onChange={(event) => setDefinition({
-                    ...definition,
-                    config: {
-                      ...definition.config,
-                      totalDurationSeconds: event.target.value ? Number(event.target.value) : undefined,
-                    },
-                  })}
-                  className="w-full px-3 py-2 border rounded"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">ID аудио (MediaAsset)</label>
-                <input
+          <Card>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="ritual-title">Название</Label>
+                <Input
+                  id="ritual-title"
                   type="text"
-                  value={definition.config.audioMediaAssetId || ''}
-                  onChange={(event) => setDefinition({
-                    ...definition,
-                    config: {
-                      ...definition.config,
-                      audioMediaAssetId: event.target.value || undefined,
-                    },
-                  })}
-                  className="w-full px-3 py-2 border rounded"
+                  value={definition.title}
+                  onChange={(event) => setDefinition({ ...definition, title: event.target.value })}
                 />
               </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-xl font-bold">Шаги</h2>
-                <button onClick={addStep} className="text-sm text-blue-600">Добавить шаг</button>
+              <div className="space-y-2">
+                <Label htmlFor="ritual-topic">Тема (код)</Label>
+                <Input
+                  id="ritual-topic"
+                  type="text"
+                  value={definition.topicCode || ''}
+                  onChange={(event) => setDefinition({ ...definition, topicCode: event.target.value || null })}
+                  placeholder="anxiety, stress, etc."
+                />
               </div>
-              <div className="space-y-4">
-                {definition.config.steps.map((step, index) => (
-                  <div key={step.id} className="rounded border p-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Шаг {index + 1}</span>
-                      <button
-                        type="button"
-                        onClick={() => removeStep(index)}
-                        className="text-xs text-red-500"
-                      >
-                        Удалить
-                      </button>
+
+              {definition.config && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="ritual-why">Зачем</Label>
+                    <Textarea
+                      id="ritual-why"
+                      value={definition.config.why}
+                      onChange={(event) => setDefinition({
+                        ...definition,
+                        config: { ...definition.config, why: event.target.value },
+                      })}
+                      rows={3}
+                    />
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="ritual-duration">Общая длительность (сек)</Label>
+                      <Input
+                        id="ritual-duration"
+                        type="number"
+                        value={definition.config.totalDurationSeconds ?? ''}
+                        onChange={(event) => setDefinition({
+                          ...definition,
+                          config: {
+                            ...definition.config,
+                            totalDurationSeconds: event.target.value ? Number(event.target.value) : undefined,
+                          },
+                        })}
+                      />
                     </div>
-                    <div className="mt-3 grid gap-3 md:grid-cols-2">
-                      <div>
-                        <label className="block text-sm font-medium mb-1">Заголовок</label>
-                        <input
-                          type="text"
-                          value={step.title}
-                          onChange={(event) => updateStep(index, 'title', event.target.value)}
-                          className="w-full px-3 py-2 border rounded"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-1">Длительность (сек)</label>
-                        <input
-                          type="number"
-                          value={step.durationSeconds ?? ''}
-                          onChange={(event) => updateStep(
-                            index,
-                            'durationSeconds',
-                            event.target.value ? Number(event.target.value) : undefined,
-                          )}
-                          className="w-full px-3 py-2 border rounded"
-                        />
-                      </div>
-                    </div>
-                    <div className="mt-3">
-                      <label className="block text-sm font-medium mb-1">Инструкция</label>
-                      <textarea
-                        value={step.content}
-                        onChange={(event) => updateStep(index, 'content', event.target.value)}
-                        className="w-full px-3 py-2 border rounded"
-                        rows={3}
+                    <div className="space-y-2">
+                      <Label htmlFor="ritual-audio">ID аудио (MediaAsset)</Label>
+                      <Input
+                        id="ritual-audio"
+                        type="text"
+                        value={definition.config.audioMediaAssetId || ''}
+                        onChange={(event) => setDefinition({
+                          ...definition,
+                          config: {
+                            ...definition.config,
+                            audioMediaAssetId: event.target.value || undefined,
+                          },
+                        })}
                       />
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          </>
-        )}
-      </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-xl font-semibold text-foreground">Шаги</h2>
+                      <Button onClick={addStep} variant="outline" size="sm">
+                        Добавить шаг
+                      </Button>
+                    </div>
+                    <div className="space-y-4">
+                      {definition.config.steps.map((step, index) => (
+                        <Card key={step.id}>
+                          <CardContent className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-medium">Шаг {index + 1}</span>
+                              <Button
+                                type="button"
+                                onClick={() => removeStep(index)}
+                                variant="ghost"
+                                size="sm"
+                              >
+                                Удалить
+                              </Button>
+                            </div>
+                            <div className="grid gap-3 md:grid-cols-2">
+                              <div className="space-y-2">
+                                <Label htmlFor={`step-title-${step.id}`}>Заголовок</Label>
+                                <Input
+                                  id={`step-title-${step.id}`}
+                                  type="text"
+                                  value={step.title}
+                                  onChange={(event) => updateStep(index, 'title', event.target.value)}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor={`step-duration-${step.id}`}>Длительность (сек)</Label>
+                                <Input
+                                  id={`step-duration-${step.id}`}
+                                  type="number"
+                                  value={step.durationSeconds ?? ''}
+                                  onChange={(event) => updateStep(
+                                    index,
+                                    'durationSeconds',
+                                    event.target.value ? Number(event.target.value) : undefined,
+                                  )}
+                                />
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`step-content-${step.id}`}>Инструкция</Label>
+                              <Textarea
+                                id={`step-content-${step.id}`}
+                                value={step.content}
+                                onChange={(event) => updateStep(index, 'content', event.target.value)}
+                                rows={3}
+                              />
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
         </div>
       )}
     </AdminAuthGuard>

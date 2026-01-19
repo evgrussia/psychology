@@ -136,7 +136,7 @@ export default function PageClient({ slug, data }: PageClientProps) {
         )}
         <Container className="max-w-4xl relative z-10">
           <div className="flex flex-col md:flex-row gap-12">
-            <div className="flex-1 prose prose-slate dark:prose-invert max-w-none text-muted-foreground">
+            <div className="flex-1">
               <SafeMarkdownRenderer content={data.body_markdown} />
             </div>
             {graphics.spot && (
@@ -198,13 +198,13 @@ export default function PageClient({ slug, data }: PageClientProps) {
                   id: 'confidentiality',
                   title: 'Конфиденциальность',
                   description: 'Ваши данные и история остаются строго между нами.',
-                  image: "/assets/graphics/spot/spot-safe-space-1024x1024.svg"
+                  image: "/assets/graphics/spot/spot-confidentiality-1024x1024.svg"
                 },
                 {
                   id: 'boundaries',
                   title: 'Профессиональные границы',
                   description: 'Работа в рамках этического кодекса и четких договоренностей.',
-                  image: "/assets/graphics/spot/spot-support-connection-1024x1024.svg"
+                  image: "/assets/graphics/spot/spot-boundaries-1024x1024.svg"
                 },
                 {
                   id: 'education',

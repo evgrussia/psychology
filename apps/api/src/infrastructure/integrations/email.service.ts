@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { IEmailService } from '@domain/notifications/services/IEmailService';
+import { IErrorReporter } from '@domain/observability/services/IErrorReporter';
 import nodemailer, { Transporter } from 'nodemailer';
 
 @Injectable()
@@ -11,7 +12,11 @@ export class EmailService implements IEmailService {
   private readonly enabled: boolean;
   private readonly isProduction: boolean;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    @Inject('IErrorReporter')
+    private readonly errorReporter: IErrorReporter,
+  ) {
     this.isProduction = this.configService.get<string>('NODE_ENV') === 'production';
 
     const host = this.configService.get<string>('SMTP_HOST')?.trim();
@@ -44,19 +49,30 @@ export class EmailService implements IEmailService {
 
   async sendEmail(to: string, subject: string, body: string): Promise<void> {
     if (!this.enabled || !this.transporter || !this.fromAddress) {
+      const reason = 'smtp_not_configured';
       if (this.isProduction) {
+        this.errorReporter.captureMessage?.('Email sending failed: SMTP not configured', {
+          source: 'email',
+        });
         throw new Error('Email transport is not configured');
       }
       this.logger.warn('Email skipped because SMTP is not configured');
       return;
     }
 
-    await this.transporter.sendMail({
-      from: this.fromAddress,
-      to,
-      subject,
-      text: body,
-    });
+    try {
+      await this.transporter.sendMail({
+        from: this.fromAddress,
+        to,
+        subject,
+        text: body,
+      });
+    } catch (error: any) {
+      this.errorReporter.captureException(error, {
+        source: 'email',
+      });
+      throw error;
+    }
   }
 
   async sendEmailWithTemplate(

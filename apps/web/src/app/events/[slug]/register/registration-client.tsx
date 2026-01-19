@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Button, Card, Container, Section, Disclaimer } from '@psychology/design-system';
+import { Alert, AlertDescription, Button, Card, Container, Section, Disclaimer } from '@psychology/design-system';
 import { track } from '@/lib/tracking';
 
 type PreferredContact = 'email' | 'telegram' | 'phone';
@@ -74,7 +74,11 @@ export function EventRegistrationClient({ event }: { event: any }) {
             </Card>
           ) : (
             <Card className="p-6 space-y-5">
-              {error && <div className="text-sm text-red-600">{error}</div>}
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Как лучше связаться?</label>

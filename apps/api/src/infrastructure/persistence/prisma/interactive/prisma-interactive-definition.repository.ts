@@ -62,6 +62,23 @@ export class PrismaInteractiveDefinitionRepository implements IInteractiveDefini
     return InteractiveDefinitionMapper.toDomain(def, 'published');
   }
 
+  async findAnyByTypeAndSlug(type: InteractiveType, slug: string): Promise<InteractiveDefinition | null> {
+    const def = await this.prisma.interactiveDefinition.findUnique({
+      where: {
+        interactive_type_slug: {
+          interactive_type: type as unknown as PrismaInteractiveType,
+          slug: slug,
+        },
+      },
+    });
+
+    if (!def) {
+      return null;
+    }
+
+    return InteractiveDefinitionMapper.toDomain(def, 'draft');
+  }
+
   async findAll(filters?: { type?: InteractiveType; status?: InteractiveStatus }): Promise<InteractiveDefinition[]> {
     const where: any = {};
     if (filters?.type) {
@@ -72,6 +89,22 @@ export class PrismaInteractiveDefinitionRepository implements IInteractiveDefini
     }
     const defs = await this.prisma.interactiveDefinition.findMany({ where });
     return defs.map((def) => InteractiveDefinitionMapper.toDomain(def, 'draft'));
+  }
+
+  async create(definition: InteractiveDefinition): Promise<void> {
+    await this.prisma.interactiveDefinition.create({
+      data: {
+        id: definition.id,
+        interactive_type: definition.type as unknown as PrismaInteractiveType,
+        slug: definition.slug,
+        title: definition.title,
+        topic_code: definition.topicCode,
+        status: definition.status as unknown as InteractiveStatus,
+        draft_json: definition.config as any,
+        definition_json: definition.config as any,
+        draft_updated_at: new Date(),
+      },
+    });
   }
 
   async saveDraft(definition: InteractiveDefinition): Promise<void> {

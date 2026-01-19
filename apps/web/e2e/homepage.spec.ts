@@ -21,8 +21,8 @@ test.describe('Homepage', () => {
   test('should navigate to booking page or telegram from hero CTA', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: /Записаться на консультацию|Получить план/i }).first().click();
-    const url = page.url();
-    expect(url.includes('/booking') || url.includes('t.me')).toBeTruthy();
+    await page.waitForURL(/\/booking|t\.me/, { timeout: 20000, waitUntil: 'commit' });
+    expect(page.url()).toMatch(/\/booking|t\.me/);
   });
 
   test('should navigate to topic page when clicking a topic card', async ({ page }) => {

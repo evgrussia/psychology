@@ -5,6 +5,23 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { AdminAuthGuard } from '@/components/admin-auth-guard';
 import { useAdminAuth } from '@/components/admin-auth-context';
+import {
+  Alert,
+  AlertDescription,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Textarea,
+} from '@psychology/design-system';
 
 interface QuizQuestion {
   id: string;
@@ -220,272 +237,299 @@ export default function EditQuizPage() {
   return (
     <AdminAuthGuard allowedRoles={['owner', 'assistant', 'editor']}>
       {loading ? (
-        <div className="p-8">Загрузка...</div>
+        <Card>
+          <CardContent className="p-8 text-sm text-muted-foreground">Загрузка...</CardContent>
+        </Card>
       ) : error && !quiz ? (
-        <div className="p-8 text-red-500">Ошибка: {error}</div>
+        <Alert variant="destructive">
+          <AlertDescription>Ошибка: {error}</AlertDescription>
+        </Alert>
       ) : !quiz ? (
-        <div className="p-8">Квиз не найден</div>
+        <Card>
+          <CardContent className="p-8 text-sm text-muted-foreground">Квиз не найден</CardContent>
+        </Card>
       ) : (
-        <div className="p-8">
-          <div style={{ marginBottom: '20px' }}>
-            <Link href="/interactive/quizzes" style={{ color: '#3498db' }}>← Назад к списку</Link>
-            <h1 className="text-2xl font-bold mt-4">Редактирование: {quiz.title}</h1>
-            {error && <div className="mt-2 text-red-500">{error}</div>}
+        <div className="space-y-6">
+          <div>
+            <Button asChild variant="link" className="px-0">
+              <Link href="/interactive/quizzes">← Назад к списку</Link>
+            </Button>
+            <h1 className="text-2xl font-semibold text-foreground mt-4">Редактирование: {quiz.title}</h1>
+            {error && (
+              <Alert variant="destructive" className="mt-2">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
           </div>
 
-      <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
-        <button
-          onClick={handleSave}
-          disabled={!canEdit || saving}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-        >
-          {saving ? 'Сохранение...' : 'Сохранить'}
-        </button>
-        {canEdit && quiz.status !== 'published' && (
-          <button
-            onClick={handlePublish}
-            disabled={publishing}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-          >
-            {publishing ? 'Публикация...' : 'Опубликовать'}
-          </button>
-        )}
-        <button
-          onClick={() => setShowPreview(!showPreview)}
-          className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-        >
-          {showPreview ? 'Скрыть превью' : 'Показать превью'}
-        </button>
-      </div>
-
-      {showPreview && (
-        <div className="mb-8 p-4 bg-gray-50 rounded border">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-            <h2 className="text-xl font-bold">Превью квиза</h2>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-muted-foreground">Версия:</span>
-              <select
-                value={previewVersion}
-                onChange={(event) => setPreviewVersion(event.target.value as 'draft' | 'published')}
-                className="rounded border px-2 py-1"
-              >
-                <option value="draft">Черновик</option>
-                <option value="published">Опубликовано</option>
-              </select>
-            </div>
+          <div className="flex flex-wrap gap-3">
+            <Button onClick={handleSave} disabled={!canEdit || saving}>
+              {saving ? 'Сохранение...' : 'Сохранить'}
+            </Button>
+            {canEdit && quiz.status !== 'published' && (
+              <Button onClick={handlePublish} disabled={publishing} variant="outline">
+                {publishing ? 'Публикация...' : 'Опубликовать'}
+              </Button>
+            )}
+            <Button onClick={() => setShowPreview(!showPreview)} variant="secondary">
+              {showPreview ? 'Скрыть превью' : 'Показать превью'}
+            </Button>
           </div>
-          {previewLoading && <div className="text-sm text-muted-foreground">Загрузка превью...</div>}
-          {previewError && <div className="text-sm text-red-500">{previewError}</div>}
-          {previewQuiz?.config && (
-            <div className="bg-white p-6 rounded">
-              <h3 className="text-lg font-semibold mb-2">{previewQuiz.title}</h3>
-              <p className="text-sm text-gray-600 mb-4">Вопросов: {previewQuiz.config.questions.length}</p>
-              <div className="space-y-2">
-                {previewQuiz.config.questions.map((q, idx) => (
-                  <div key={q.id} className="p-3 bg-gray-50 rounded">
-                    <p className="font-medium">{idx + 1}. {q.text}</p>
-                    <ul className="mt-2 space-y-1">
-                      {q.options.map((opt, optIdx) => (
-                        <li key={optIdx} className="text-sm text-gray-600">
-                          • {opt.text} (значение: {opt.value})
-                        </li>
-                      ))}
-                    </ul>
+
+          {showPreview && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Превью квиза</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-muted-foreground">Версия:</span>
+                    <Select
+                      value={previewVersion}
+                      onValueChange={(value) => setPreviewVersion(value as 'draft' | 'published')}
+                    >
+                      <SelectTrigger className="w-44">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="draft">Черновик</SelectItem>
+                        <SelectItem value="published">Опубликовано</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                ))}
-              </div>
-              <div className="mt-4 pt-4 border-t">
-                <h4 className="font-semibold mb-2">Пороги:</h4>
-                {previewQuiz.config.thresholds.map((t, idx) => (
-                  <div key={idx} className="text-sm">
-                    {t.level}: {t.minScore} - {t.maxScore}
-                  </div>
-                ))}
-              </div>
-            </div>
+                </div>
+                {previewLoading && <div className="text-sm text-muted-foreground">Загрузка превью...</div>}
+                {previewError && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{previewError}</AlertDescription>
+                  </Alert>
+                )}
+                {previewQuiz?.config && (
+                  <Card>
+                    <CardContent className="space-y-4">
+                      <h3 className="text-lg font-semibold text-foreground">{previewQuiz.title}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Вопросов: {previewQuiz.config.questions.length}
+                      </p>
+                      <div className="space-y-2">
+                        {previewQuiz.config.questions.map((q, idx) => (
+                          <div key={q.id} className="p-3 bg-muted/40 rounded">
+                            <p className="font-medium text-foreground">
+                              {idx + 1}. {q.text}
+                            </p>
+                            <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+                              {q.options.map((opt, optIdx) => (
+                                <li key={optIdx}>
+                                  • {opt.text} (значение: {opt.value})
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="pt-4 border-t border-border">
+                        <h4 className="font-semibold mb-2">Пороги:</h4>
+                        {previewQuiz.config.thresholds.map((t, idx) => (
+                          <div key={idx} className="text-sm text-muted-foreground">
+                            {t.level}: {t.minScore} - {t.maxScore}
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </CardContent>
+            </Card>
           )}
-        </div>
-      )}
 
-      <div className="bg-white rounded-lg shadow p-6 space-y-6">
-        <div>
-          <label className="block text-sm font-medium mb-2">Название</label>
-          <input
-            type="text"
-            value={quiz.title}
-            onChange={(e) => setQuiz({ ...quiz, title: e.target.value })}
-            className="w-full px-3 py-2 border rounded"
-          />
-        </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Параметры</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label>Название</Label>
+                <Input
+                  type="text"
+                  value={quiz.title}
+                  onChange={(e) => setQuiz({ ...quiz, title: e.target.value })}
+                />
+              </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-2">Тема (код)</label>
-          <input
-            type="text"
-            value={quiz.topicCode || ''}
-            onChange={(e) => setQuiz({ ...quiz, topicCode: e.target.value || null })}
-            className="w-full px-3 py-2 border rounded"
-            placeholder="anxiety, burnout, etc."
-          />
-        </div>
+              <div className="space-y-2">
+                <Label>Тема (код)</Label>
+                <Input
+                  type="text"
+                  value={quiz.topicCode || ''}
+                  onChange={(e) => setQuiz({ ...quiz, topicCode: e.target.value || null })}
+                  placeholder="anxiety, burnout, etc."
+                />
+              </div>
 
-        {quiz.config && (
-          <>
-            <div>
-              <h2 className="text-xl font-bold mb-4">Вопросы</h2>
-              {quiz.config.questions.map((question, qIdx) => (
-                <div key={question.id} className="mb-6 p-4 border rounded">
-                  <div className="mb-2">
-                    <label className="block text-sm font-medium mb-1">Текст вопроса {qIdx + 1}</label>
-                    <input
-                      type="text"
-                      value={question.text}
-                      onChange={(e) => updateQuestion(qIdx, 'text', e.target.value)}
-                      className="w-full px-3 py-2 border rounded"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Варианты ответов</label>
-                    {question.options.map((option, optIdx) => (
-                      <div key={optIdx} className="flex gap-2 mb-2">
-                        <input
-                          type="number"
-                          value={option.value}
-                          onChange={(e) => updateQuestionOption(qIdx, optIdx, 'value', parseInt(e.target.value))}
-                          className="w-20 px-2 py-1 border rounded"
-                          placeholder="Значение"
-                        />
-                        <input
-                          type="text"
-                          value={option.text}
-                          onChange={(e) => updateQuestionOption(qIdx, optIdx, 'text', e.target.value)}
-                          className="flex-1 px-3 py-1 border rounded"
-                          placeholder="Текст варианта"
-                        />
+              {quiz.config && (
+                <>
+                  <div className="space-y-4">
+                    <h2 className="text-lg font-semibold text-foreground">Вопросы</h2>
+                    {quiz.config.questions.map((question, qIdx) => (
+                      <div key={question.id} className="rounded border border-border p-4 space-y-3">
+                        <div className="space-y-2">
+                          <Label>Текст вопроса {qIdx + 1}</Label>
+                          <Input
+                            type="text"
+                            value={question.text}
+                            onChange={(e) => updateQuestion(qIdx, 'text', e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Варианты ответов</Label>
+                          {question.options.map((option, optIdx) => (
+                            <div key={optIdx} className="flex gap-2">
+                              <Input
+                                type="number"
+                                value={option.value}
+                                onChange={(e) => updateQuestionOption(qIdx, optIdx, 'value', parseInt(e.target.value))}
+                                className="w-20"
+                                placeholder="Значение"
+                              />
+                              <Input
+                                type="text"
+                                value={option.text}
+                                onChange={(e) => updateQuestionOption(qIdx, optIdx, 'text', e.target.value)}
+                                className="flex-1"
+                                placeholder="Текст варианта"
+                              />
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     ))}
                   </div>
-                </div>
-              ))}
-            </div>
 
-            <div>
-              <h2 className="text-xl font-bold mb-4">Пороги</h2>
-              {quiz.config.thresholds.map((threshold, idx) => (
-                <div key={idx} className="mb-4 p-4 border rounded">
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Уровень</label>
-                      <select
-                        value={threshold.level}
-                        onChange={(e) => updateThreshold(idx, 'level', e.target.value as any)}
-                        className="w-full px-3 py-2 border rounded"
-                      >
-                        <option value="low">Low</option>
-                        <option value="moderate">Moderate</option>
-                        <option value="high">High</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Min Score</label>
-                      <input
-                        type="number"
-                        value={threshold.minScore}
-                        onChange={(e) => updateThreshold(idx, 'minScore', parseInt(e.target.value))}
-                        className="w-full px-3 py-2 border rounded"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Max Score</label>
-                      <input
-                        type="number"
-                        value={threshold.maxScore}
-                        onChange={(e) => updateThreshold(idx, 'maxScore', parseInt(e.target.value))}
-                        className="w-full px-3 py-2 border rounded"
-                      />
-                    </div>
+                  <div className="space-y-4">
+                    <h2 className="text-lg font-semibold text-foreground">Пороги</h2>
+                    {quiz.config.thresholds.map((threshold, idx) => (
+                      <div key={idx} className="rounded border border-border p-4">
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="space-y-2">
+                            <Label>Уровень</Label>
+                            <Select
+                              value={threshold.level}
+                              onValueChange={(value) => updateThreshold(idx, 'level', value as any)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="low">Low</SelectItem>
+                                <SelectItem value="moderate">Moderate</SelectItem>
+                                <SelectItem value="high">High</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Min Score</Label>
+                            <Input
+                              type="number"
+                              value={threshold.minScore}
+                              onChange={(e) => updateThreshold(idx, 'minScore', parseInt(e.target.value))}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Max Score</Label>
+                            <Input
+                              type="number"
+                              value={threshold.maxScore}
+                              onChange={(e) => updateThreshold(idx, 'maxScore', parseInt(e.target.value))}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
-              ))}
-            </div>
 
-            <div>
-              <h2 className="text-xl font-bold mb-4">Результаты</h2>
-              {quiz.config.results.map((result, idx) => (
-                <div key={idx} className="mb-6 p-4 border rounded">
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Уровень</label>
-                    <select
-                      value={result.level}
-                      onChange={(e) => updateResult(idx, 'level', e.target.value as any)}
-                      className="w-full px-3 py-2 border rounded"
-                    >
-                      <option value="low">Low</option>
-                      <option value="moderate">Moderate</option>
-                      <option value="high">High</option>
-                    </select>
+                  <div className="space-y-4">
+                    <h2 className="text-lg font-semibold text-foreground">Результаты</h2>
+                    {quiz.config.results.map((result, idx) => (
+                      <div key={idx} className="rounded border border-border p-4 space-y-3">
+                        <div className="space-y-2">
+                          <Label>Уровень</Label>
+                          <Select
+                            value={result.level}
+                            onValueChange={(value) => updateResult(idx, 'level', value as any)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="low">Low</SelectItem>
+                              <SelectItem value="moderate">Moderate</SelectItem>
+                              <SelectItem value="high">High</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Заголовок</Label>
+                          <Input
+                            type="text"
+                            value={result.title}
+                            onChange={(e) => updateResult(idx, 'title', e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Описание</Label>
+                          <Textarea
+                            value={result.description}
+                            onChange={(e) => updateResult(idx, 'description', e.target.value)}
+                            rows={3}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Рекомендации &quot;Прямо сейчас&quot; (каждая с новой строки)</Label>
+                          <Textarea
+                            value={result.recommendations.now.join('\n')}
+                            onChange={(e) =>
+                              updateResultRecommendation(idx, 'now', e.target.value.split('\n').filter((s) => s.trim()))
+                            }
+                            rows={3}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Рекомендации &quot;На этой неделе&quot; (каждая с новой строки)</Label>
+                          <Textarea
+                            value={result.recommendations.week.join('\n')}
+                            onChange={(e) =>
+                              updateResultRecommendation(idx, 'week', e.target.value.split('\n').filter((s) => s.trim()))
+                            }
+                            rows={3}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Когда обратиться к специалисту</Label>
+                          <Textarea
+                            value={result.recommendations.whenToSeekHelp || ''}
+                            onChange={(e) =>
+                              updateResultRecommendation(idx, 'whenToSeekHelp', e.target.value || undefined)
+                            }
+                            rows={2}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Текст CTA</Label>
+                          <Input
+                            type="text"
+                            value={result.ctaText || ''}
+                            onChange={(e) => updateResult(idx, 'ctaText', e.target.value || undefined)}
+                            placeholder="Получить план в Telegram"
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div className="mb-2">
-                    <label className="block text-sm font-medium mb-1">Заголовок</label>
-                    <input
-                      type="text"
-                      value={result.title}
-                      onChange={(e) => updateResult(idx, 'title', e.target.value)}
-                      className="w-full px-3 py-2 border rounded"
-                    />
-                  </div>
-                  <div className="mb-2">
-                    <label className="block text-sm font-medium mb-1">Описание</label>
-                    <textarea
-                      value={result.description}
-                      onChange={(e) => updateResult(idx, 'description', e.target.value)}
-                      className="w-full px-3 py-2 border rounded"
-                      rows={3}
-                    />
-                  </div>
-                  <div className="mb-2">
-                    <label className="block text-sm font-medium mb-1">Рекомендации &quot;Прямо сейчас&quot; (каждая с новой строки)</label>
-                    <textarea
-                      value={result.recommendations.now.join('\n')}
-                      onChange={(e) => updateResultRecommendation(idx, 'now', e.target.value.split('\n').filter(s => s.trim()))}
-                      className="w-full px-3 py-2 border rounded"
-                      rows={3}
-                    />
-                  </div>
-                  <div className="mb-2">
-                    <label className="block text-sm font-medium mb-1">Рекомендации &quot;На этой неделе&quot; (каждая с новой строки)</label>
-                    <textarea
-                      value={result.recommendations.week.join('\n')}
-                      onChange={(e) => updateResultRecommendation(idx, 'week', e.target.value.split('\n').filter(s => s.trim()))}
-                      className="w-full px-3 py-2 border rounded"
-                      rows={3}
-                    />
-                  </div>
-                  <div className="mb-2">
-                    <label className="block text-sm font-medium mb-1">Когда обратиться к специалисту</label>
-                    <textarea
-                      value={result.recommendations.whenToSeekHelp || ''}
-                      onChange={(e) => updateResultRecommendation(idx, 'whenToSeekHelp', e.target.value || undefined)}
-                      className="w-full px-3 py-2 border rounded"
-                      rows={2}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Текст CTA</label>
-                    <input
-                      type="text"
-                      value={result.ctaText || ''}
-                      onChange={(e) => updateResult(idx, 'ctaText', e.target.value || undefined)}
-                      className="w-full px-3 py-2 border rounded"
-                      placeholder="Получить план в Telegram"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
         </div>
       )}
     </AdminAuthGuard>

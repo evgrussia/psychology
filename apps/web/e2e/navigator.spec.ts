@@ -22,15 +22,23 @@ test.describe('Navigator flow', () => {
 
     await expect(page.locator('text=/экстренн|поддержк|опасн/i').first()).toBeVisible();
 
-    await page.waitForTimeout(2000); // Increased wait time
-    const trackingEvents = await page.evaluate(() => (window as any).__trackedEvents || []);
-    expect(trackingEvents.length).toBeGreaterThan(0); // Ensure some events were tracked
-    expect(trackingEvents.find((e: any) => e.event === 'navigator_start')).toBeDefined();
-    expect(trackingEvents.find((e: any) => e.event === 'navigator_step_completed')).toBeDefined();
-    expect(trackingEvents.find((e: any) => e.event === 'navigator_complete')).toBeDefined();
+    await expect.poll(async () => {
+      const trackingEvents = await page.evaluate(() => (window as any).__trackedEvents || []);
+      return {
+        start: trackingEvents.find((e: any) => e.event === 'navigator_start'),
+        step: trackingEvents.find((e: any) => e.event === 'navigator_step_completed'),
+        complete: trackingEvents.find((e: any) => e.event === 'navigator_complete'),
+        crisis: trackingEvents.find((e: any) => e.event === 'crisis_banner_shown'),
+      };
+    }).toMatchObject({
+      start: expect.anything(),
+      step: expect.anything(),
+      complete: expect.anything(),
+      crisis: expect.anything(),
+    });
 
+    const trackingEvents = await page.evaluate(() => (window as any).__trackedEvents || []);
     const crisisEvent = trackingEvents.find((e: any) => e.event === 'crisis_banner_shown');
-    expect(crisisEvent).toBeDefined();
     expect(crisisEvent?.properties?.trigger_type).toBeDefined();
   });
 });

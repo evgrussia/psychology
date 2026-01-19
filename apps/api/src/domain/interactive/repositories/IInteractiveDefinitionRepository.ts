@@ -12,7 +12,9 @@ export interface IInteractiveDefinitionRepository {
   findPublished(): Promise<InteractiveDefinition[]>;
   findByTopic(topicCode: string): Promise<InteractiveDefinition[]>;
   findByTypeAndSlug(type: InteractiveType, slug: string): Promise<InteractiveDefinition | null>;
+  findAnyByTypeAndSlug(type: InteractiveType, slug: string): Promise<InteractiveDefinition | null>;
   findAll(filters?: { type?: InteractiveType; status?: InteractiveStatus }): Promise<InteractiveDefinition[]>;
+  create(definition: InteractiveDefinition): Promise<void>;
   saveDraft(definition: InteractiveDefinition): Promise<void>;
   publishDraft(definitionId: string, config: InteractiveConfig, actorUserId?: string | null): Promise<number>;
   listVersions(definitionId: string): Promise<InteractiveDefinitionVersion[]>;

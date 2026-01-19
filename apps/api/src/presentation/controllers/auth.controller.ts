@@ -13,9 +13,10 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 import { Response, Request } from 'express';
 import { AdminLoginUseCase } from '../../application/identity/use-cases/AdminLoginUseCase';
 import { ClientLoginUseCase } from '../../application/identity/use-cases/ClientLoginUseCase';
+import { ClientRegisterUseCase } from '../../application/identity/use-cases/ClientRegisterUseCase';
 import { LogoutUseCase } from '../../application/identity/use-cases/LogoutUseCase';
 import { GetCurrentUserUseCase } from '../../application/identity/use-cases/GetCurrentUserUseCase';
-import { AdminLoginDto, ClientLoginDto } from '../../application/identity/dto/login.dto';
+import { AdminLoginDto, ClientLoginDto, ClientRegisterDto } from '../../application/identity/dto/login.dto';
 import { AuthGuard } from '../guards/auth.guard';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
@@ -25,6 +26,7 @@ export class AuthController {
   constructor(
     private readonly adminLoginUseCase: AdminLoginUseCase,
     private readonly clientLoginUseCase: ClientLoginUseCase,
+    private readonly clientRegisterUseCase: ClientRegisterUseCase,
     private readonly logoutUseCase: LogoutUseCase,
     private readonly getCurrentUserUseCase: GetCurrentUserUseCase,
   ) {}
@@ -68,6 +70,33 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const result = await this.clientLoginUseCase.execute({
+      ...dto,
+      userAgent: req.headers['user-agent'],
+      ipAddress: req.ip,
+    });
+
+    res.cookie('sessionId', result.sessionId, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    });
+
+    return result.user;
+  }
+
+  @Post('client/register')
+  @UseGuards(ThrottlerGuard)
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Client registration' })
+  @ApiResponse({ status: 201, description: 'Registration successful' })
+  @ApiResponse({ status: 409, description: 'User already exists' })
+  async clientRegister(
+    @Body() dto: ClientRegisterDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.clientRegisterUseCase.execute({
       ...dto,
       userAgent: req.headers['user-agent'],
       ipAddress: req.ip,

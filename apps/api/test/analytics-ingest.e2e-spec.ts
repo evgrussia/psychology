@@ -6,6 +6,8 @@ import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/infrastructure/database/prisma.service';
 import { BcryptHasher } from '../src/infrastructure/auth/bcrypt-hasher';
 
+import { clearDatabase } from './test-utils';
+
 describe('Analytics Ingest (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
@@ -25,27 +27,7 @@ describe('Analytics Ingest (e2e)', () => {
     prisma = app.get<PrismaService>(PrismaService);
     const hasher = new BcryptHasher();
 
-    await prisma.analyticsEvent.deleteMany();
-    await prisma.leadTimelineEvent.deleteMany();
-    await prisma.leadNote.deleteMany();
-    await prisma.leadIdentity.deleteMany();
-    await prisma.lead.deleteMany();
-    await prisma.session.deleteMany();
-    await prisma.userRole.deleteMany();
-    
-    // Clean up other potential dependencies of User
-    await prisma.questionAnswer.deleteMany();
-    await prisma.ugcModerationAction.deleteMany();
-    await prisma.anonymousQuestion.deleteMany();
-    await prisma.leadNote.deleteMany();
-    await prisma.diaryEntry.deleteMany();
-    await prisma.interactiveRun.deleteMany();
-    await prisma.appointment.deleteMany();
-    await prisma.contentRevision.deleteMany();
-    await prisma.googleCalendarIntegration.deleteMany();
-    
-    await prisma.user.deleteMany();
-    await prisma.role.deleteMany();
+    await clearDatabase(prisma);
 
     await prisma.role.createMany({
       data: [

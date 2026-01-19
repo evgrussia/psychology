@@ -19,14 +19,14 @@ export interface AdminDashboardResponse {
   bookingFunnel: {
     steps: { event: string; count: number }[];
     conversion: { from: string; to: string; rate: number | null }[];
-  };
+  } | null;
   telegram: {
     newSubscriptions: number;
     activeUsers: number;
     stoppedCount: number;
     startedCount: number;
     stopRate: number | null;
-  };
+  } | null;
   interactive: {
     items: {
       id: string;
@@ -61,30 +61,49 @@ export interface AdminDashboardResponse {
     aov: number | null;
     previousGmv: number;
     changePct: number | null;
-  };
+  } | null;
 }
 
 @Injectable()
 export class GetAdminDashboardUseCase {
   constructor(private readonly prisma: PrismaService) {}
 
-  async execute(query: AdminDashboardQuery = {}): Promise<AdminDashboardResponse> {
+  async execute(
+    query: AdminDashboardQuery = {},
+    context: { role?: string } = {},
+  ): Promise<AdminDashboardResponse> {
     const range = this.resolveRange(query);
-    const previousRange = this.shiftRange(range);
+    const role = context.role ?? 'owner';
+    const isAssistant = role === 'assistant';
 
-    const [
-      bookingFunnel,
-      telegram,
-      interactive,
-      meetings,
-      moderation,
-      revenue,
-    ] = await Promise.all([
-      this.getBookingFunnel(range.from, range.to),
-      this.getTelegramStats(range.from, range.to),
+    const [interactive, meetings, moderation] = await Promise.all([
       this.getInteractiveStats(range.from, range.to),
       this.getMeetingStats(range.from, range.to),
       this.getModerationStats(range.from, range.to),
+    ]);
+
+    if (isAssistant) {
+      return {
+        range: {
+          preset: range.preset,
+          from: range.from.toISOString(),
+          to: range.to.toISOString(),
+          label: range.label,
+        },
+        bookingFunnel: null,
+        telegram: null,
+        interactive,
+        meetings,
+        moderation,
+        revenue: null,
+      };
+    }
+
+    const previousRange = this.shiftRange(range);
+
+    const [bookingFunnel, telegram, revenue] = await Promise.all([
+      this.getBookingFunnel(range.from, range.to),
+      this.getTelegramStats(range.from, range.to),
       this.getRevenueStats(range.from, range.to, previousRange.from, previousRange.to),
     ]);
 

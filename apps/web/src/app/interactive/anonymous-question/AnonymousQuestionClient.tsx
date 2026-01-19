@@ -15,6 +15,7 @@ import {
 } from '@psychology/design-system';
 import { track } from '@/lib/tracking';
 import { evaluateCrisisTrigger, type CrisisTriggerType } from '@/lib/interactive';
+import { createTelegramDeepLink } from '@/lib/telegram';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3001/api';
 
@@ -153,6 +154,21 @@ export default function AnonymousQuestionClient() {
     }
   };
 
+  const handleTelegramAnswer = async (questionId: string) => {
+    const { deepLinkId, url } = await createTelegramDeepLink({
+      flow: 'question',
+      tgTarget: 'bot',
+      source: 'question_form',
+      entityId: questionId,
+    });
+    track('cta_tg_click', {
+      tg_target: 'bot',
+      tg_flow: 'question',
+      deep_link_id: deepLinkId,
+    });
+    window.location.href = url;
+  };
+
   if (result) {
     return (
       <Section>
@@ -171,9 +187,16 @@ export default function AnonymousQuestionClient() {
                 Ваш запрос содержит чувствительные темы. Мы обработаем его в приоритетном порядке.
               </Disclaimer>
             )}
-            <Button onClick={() => setResult(null)} variant="outline">
-              Отправить ещё один вопрос
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                onClick={() => void handleTelegramAnswer(result.id)}
+              >
+                Получить ответ в Telegram
+              </Button>
+              <Button onClick={() => setResult(null)} variant="outline">
+                Отправить ещё один вопрос
+              </Button>
+            </div>
           </Card>
         </Container>
       </Section>
@@ -240,7 +263,7 @@ export default function AnonymousQuestionClient() {
           </div>
 
           {hasPii && (
-            <Card className="border-amber-200 bg-amber-50 p-4 text-sm">
+            <Card className="border-warning/30 bg-warning/10 p-4 text-sm">
               <div className="font-medium">В тексте есть личные данные</div>
               <p className="text-muted-foreground">
                 Чтобы сохранить конфиденциальность, пожалуйста, удалите контакты, адрес или паспортные данные.

@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import TopicLandingClient from './TopicLandingClient';
 import { isFeatureEnabled } from '../../../lib/feature-flags';
 import { ContentPlatform } from '@/lib/content';
+import { resolveCanonical, resolveKeywords } from '@/lib/seo';
 
 interface TopicLandingPageProps {
   params: { slug: string };
@@ -21,7 +22,8 @@ export async function generateMetadata({ params }: TopicLandingPageProps): Promi
   return {
     title: `${data.landing?.seoTitle || data.topic.title} | Эмоциональный баланс`,
     description: data.landing?.seoDescription || `Помощь и ресурсы по теме ${data.topic.title}. Узнайте, как справиться с этой проблемой.`,
-    keywords: data.landing?.seoKeywords,
+    keywords: resolveKeywords(data.landing?.seoKeywords),
+    alternates: resolveCanonical(data.landing?.canonicalUrl),
   };
 }
 

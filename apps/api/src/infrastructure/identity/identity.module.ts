@@ -7,6 +7,7 @@ import { PrismaAdminUserRepository } from '../../infrastructure/persistence/pris
 import { PrismaUserProfileRepository } from '../../infrastructure/persistence/prisma/identity/prisma-user-profile.repository';
 import { AdminLoginUseCase } from '../../application/identity/use-cases/AdminLoginUseCase';
 import { ClientLoginUseCase } from '../../application/identity/use-cases/ClientLoginUseCase';
+import { ClientRegisterUseCase } from '../../application/identity/use-cases/ClientRegisterUseCase';
 import { CreateAdminUserInviteUseCase } from '../../application/identity/use-cases/CreateAdminUserInviteUseCase';
 import { LogoutUseCase } from '../../application/identity/use-cases/LogoutUseCase';
 import { GetCurrentUserUseCase } from '../../application/identity/use-cases/GetCurrentUserUseCase';
@@ -54,6 +55,7 @@ import { AuditModule } from '../audit/audit.module';
     BcryptHasher,
     AdminLoginUseCase,
     ClientLoginUseCase,
+    ClientRegisterUseCase,
     CreateAdminUserInviteUseCase,
     LogoutUseCase,
     GetCurrentUserUseCase,
@@ -70,6 +72,7 @@ import { AuditModule } from '../audit/audit.module';
   exports: [
     AdminLoginUseCase,
     ClientLoginUseCase,
+    ClientRegisterUseCase,
     CreateAdminUserInviteUseCase,
     LogoutUseCase,
     GetCurrentUserUseCase,

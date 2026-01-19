@@ -5,6 +5,23 @@ import React from 'react';
 import Link from 'next/link';
 import { AdminAuthGuard } from '@/components/admin-auth-guard';
 import { useAdminAuth } from '@/components/admin-auth-context';
+import {
+  Alert,
+  AlertDescription,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Textarea,
+} from '@psychology/design-system';
 
 type ServiceFormat = 'online' | 'offline' | 'hybrid';
 type ServiceStatus = 'draft' | 'published' | 'archived';
@@ -128,208 +145,202 @@ export default function EditServicePage() {
   return (
     <AdminAuthGuard allowedRoles={['owner', 'assistant']}>
       {loading ? (
-        <div className="p-8">Загрузка...</div>
+        <Card>
+          <CardContent className="p-8 text-sm text-muted-foreground">Загрузка...</CardContent>
+        </Card>
       ) : error && !service ? (
-        <div className="p-8 text-red-500">Ошибка: {error}</div>
+        <Alert variant="destructive">
+          <AlertDescription>Ошибка: {error}</AlertDescription>
+        </Alert>
       ) : !service ? (
-        <div className="p-8">Услуга не найдена</div>
+        <Card>
+          <CardContent className="p-8 text-sm text-muted-foreground">Услуга не найдена</CardContent>
+        </Card>
       ) : (
-        <div className="p-8 space-y-6">
+        <div className="space-y-6">
           <div>
-            <Link href="/services" className="text-indigo-600 hover:text-indigo-900">
-              ← Назад к списку
-            </Link>
-            <h1 className="text-2xl font-bold mt-4">Редактирование услуги</h1>
-            {error && <div className="mt-2 text-red-500">{error}</div>}
+            <Button asChild variant="link" className="px-0">
+              <Link href="/services">← Назад к списку</Link>
+            </Button>
+            <h1 className="text-2xl font-semibold text-foreground mt-4">Редактирование услуги</h1>
+            {error && (
+              <Alert variant="destructive" className="mt-2">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
           </div>
 
-      <div className="flex flex-wrap gap-3">
-        <button
-          onClick={handleSave}
-          disabled={!canEdit || saving}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-        >
-          {saving ? 'Сохранение...' : 'Сохранить'}
-        </button>
-        {canEdit && service.status !== 'published' && (
-          <button
-            onClick={handlePublish}
-            disabled={publishing}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-          >
-            {publishing ? 'Публикация...' : 'Опубликовать'}
-          </button>
-        )}
-        <button
-          onClick={() => router.push(`/services/${service.id}`)}
-          className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-        >
-          Обновить
-        </button>
-      </div>
+          <div className="flex flex-wrap gap-3">
+            <Button onClick={handleSave} disabled={!canEdit || saving}>
+              {saving ? 'Сохранение...' : 'Сохранить'}
+            </Button>
+            {canEdit && service.status !== 'published' && (
+              <Button onClick={handlePublish} disabled={publishing} variant="outline">
+                {publishing ? 'Публикация...' : 'Опубликовать'}
+              </Button>
+            )}
+            <Button onClick={() => router.push(`/services/${service.id}`)} variant="secondary">
+              Обновить
+            </Button>
+          </div>
 
-      <div className="bg-white rounded-lg shadow p-6 space-y-6">
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="block text-sm font-medium mb-2">Slug</label>
-            <input
-              value={service.slug}
-              onChange={(e) => setService({ ...service, slug: e.target.value })}
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Название</label>
-            <input
-              value={service.title}
-              onChange={(e) => setService({ ...service, title: e.target.value })}
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-        </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Параметры</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Slug</Label>
+                  <Input value={service.slug} onChange={(e) => setService({ ...service, slug: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Название</Label>
+                  <Input value={service.title} onChange={(e) => setService({ ...service, title: e.target.value })} />
+                </div>
+              </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-2">Описание (Markdown)</label>
-          <textarea
-            value={service.descriptionMarkdown}
-            onChange={(e) => setService({ ...service, descriptionMarkdown: e.target.value })}
-            className="w-full px-3 py-2 border rounded"
-            rows={8}
-          />
-        </div>
+              <div className="space-y-2">
+                <Label>Описание (Markdown)</Label>
+                <Textarea
+                  value={service.descriptionMarkdown}
+                  onChange={(e) => setService({ ...service, descriptionMarkdown: e.target.value })}
+                  rows={8}
+                />
+              </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <div>
-            <label className="block text-sm font-medium mb-2">Формат</label>
-            <select
-              value={service.format}
-              onChange={(e) => setService({ ...service, format: e.target.value as ServiceFormat })}
-              className="w-full px-3 py-2 border rounded"
-            >
-              <option value="online">online</option>
-              <option value="offline">offline</option>
-              <option value="hybrid">hybrid</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Длительность (мин)</label>
-            <input
-              type="number"
-              min={10}
-              value={service.durationMinutes}
-              onChange={(e) => setService({ ...service, durationMinutes: Number(e.target.value) })}
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Статус</label>
-            <select
-              value={service.status}
-              onChange={(e) => setService({ ...service, status: e.target.value as ServiceStatus })}
-              className="w-full px-3 py-2 border rounded"
-            >
-              <option value="draft">draft</option>
-              <option value="published">published</option>
-              <option value="archived">archived</option>
-            </select>
-          </div>
-        </div>
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="space-y-2">
+                  <Label>Формат</Label>
+                  <Select
+                    value={service.format}
+                    onValueChange={(value) => setService({ ...service, format: value as ServiceFormat })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="online">online</SelectItem>
+                      <SelectItem value="offline">offline</SelectItem>
+                      <SelectItem value="hybrid">hybrid</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Длительность (мин)</Label>
+                  <Input
+                    type="number"
+                    min={10}
+                    value={service.durationMinutes}
+                    onChange={(e) => setService({ ...service, durationMinutes: Number(e.target.value) })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Статус</Label>
+                  <Select
+                    value={service.status}
+                    onValueChange={(value) => setService({ ...service, status: value as ServiceStatus })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">draft</SelectItem>
+                      <SelectItem value="published">published</SelectItem>
+                      <SelectItem value="archived">archived</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
-        {service.format === 'offline' && (
-          <div>
-            <label className="block text-sm font-medium mb-2">Адрес (офлайн)</label>
-            <input
-              value={service.offlineAddress || ''}
-              onChange={(e) => setService({ ...service, offlineAddress: e.target.value })}
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-        )}
+              {service.format === 'offline' && (
+                <div className="space-y-2">
+                  <Label>Адрес (офлайн)</Label>
+                  <Input
+                    value={service.offlineAddress || ''}
+                    onChange={(e) => setService({ ...service, offlineAddress: e.target.value })}
+                  />
+                </div>
+              )}
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <div>
-            <label className="block text-sm font-medium mb-2">Цена (₽)</label>
-            <input
-              type="number"
-              min={0}
-              value={service.priceAmount}
-              onChange={(e) => setService({ ...service, priceAmount: Number(e.target.value) })}
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Депозит (₽)</label>
-            <input
-              type="number"
-              min={0}
-              value={service.depositAmount ?? ''}
-              onChange={(e) =>
-                setService({ ...service, depositAmount: e.target.value === '' ? null : Number(e.target.value) })
-              }
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Тема (topicCode)</label>
-            <input
-              value={service.topicCode || ''}
-              onChange={(e) => setService({ ...service, topicCode: e.target.value || null })}
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-        </div>
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="space-y-2">
+                  <Label>Цена (₽)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={service.priceAmount}
+                    onChange={(e) => setService({ ...service, priceAmount: Number(e.target.value) })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Депозит (₽)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={service.depositAmount ?? ''}
+                    onChange={(e) =>
+                      setService({ ...service, depositAmount: e.target.value === '' ? null : Number(e.target.value) })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Тема (topicCode)</Label>
+                  <Input
+                    value={service.topicCode || ''}
+                    onChange={(e) => setService({ ...service, topicCode: e.target.value || null })}
+                  />
+                </div>
+              </div>
 
-        <div className="grid gap-4 md:grid-cols-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">Отмена без штрафа (ч)</label>
-            <input
-              type="number"
-              min={0}
-              value={service.cancelFreeHours ?? ''}
-              onChange={(e) =>
-                setService({ ...service, cancelFreeHours: e.target.value === '' ? null : Number(e.target.value) })
-              }
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Отмена с частичным штрафом (ч)</label>
-            <input
-              type="number"
-              min={0}
-              value={service.cancelPartialHours ?? ''}
-              onChange={(e) =>
-                setService({ ...service, cancelPartialHours: e.target.value === '' ? null : Number(e.target.value) })
-              }
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Перенос минимум (ч)</label>
-            <input
-              type="number"
-              min={0}
-              value={service.rescheduleMinHours ?? ''}
-              onChange={(e) =>
-                setService({ ...service, rescheduleMinHours: e.target.value === '' ? null : Number(e.target.value) })
-              }
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Перенос максимум (раз)</label>
-            <input
-              type="number"
-              min={0}
-              value={service.rescheduleMaxCount ?? ''}
-              onChange={(e) =>
-                setService({ ...service, rescheduleMaxCount: e.target.value === '' ? null : Number(e.target.value) })
-              }
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-        </div>
-      </div>
+              <div className="grid gap-4 md:grid-cols-4">
+                <div className="space-y-2">
+                  <Label>Отмена без штрафа (ч)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={service.cancelFreeHours ?? ''}
+                    onChange={(e) =>
+                      setService({ ...service, cancelFreeHours: e.target.value === '' ? null : Number(e.target.value) })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Отмена с частичным штрафом (ч)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={service.cancelPartialHours ?? ''}
+                    onChange={(e) =>
+                      setService({ ...service, cancelPartialHours: e.target.value === '' ? null : Number(e.target.value) })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Перенос минимум (ч)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={service.rescheduleMinHours ?? ''}
+                    onChange={(e) =>
+                      setService({ ...service, rescheduleMinHours: e.target.value === '' ? null : Number(e.target.value) })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Перенос максимум (раз)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={service.rescheduleMaxCount ?? ''}
+                    onChange={(e) =>
+                      setService({ ...service, rescheduleMaxCount: e.target.value === '' ? null : Number(e.target.value) })
+                    }
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
     </AdminAuthGuard>

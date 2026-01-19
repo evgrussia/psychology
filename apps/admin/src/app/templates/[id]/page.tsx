@@ -5,6 +5,23 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { AdminAuthGuard } from '@/components/admin-auth-guard';
 import MarkdownEditor from '@/components/MarkdownEditor';
+import {
+  Alert,
+  AlertDescription,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@psychology/design-system';
 
 interface TemplateVersion {
   id: string;
@@ -180,7 +197,9 @@ export default function TemplateEditorPage() {
   if (loading) {
     return (
       <AdminAuthGuard allowedRoles={['owner', 'assistant']}>
-        <div className="text-sm text-muted-foreground">Загрузка...</div>
+        <Card>
+          <CardContent className="p-4 text-sm text-muted-foreground">Загрузка...</CardContent>
+        </Card>
       </AdminAuthGuard>
     );
   }
@@ -188,9 +207,9 @@ export default function TemplateEditorPage() {
   if (error || !template) {
     return (
       <AdminAuthGuard allowedRoles={['owner', 'assistant']}>
-        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-          {error || 'Шаблон не найден'}
-        </div>
+        <Alert variant="destructive">
+          <AlertDescription>{error || 'Шаблон не найден'}</AlertDescription>
+        </Alert>
       </AdminAuthGuard>
     );
   }
@@ -200,91 +219,104 @@ export default function TemplateEditorPage() {
       <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <Link href="/templates" className="text-primary">
-              ← Назад к списку
-            </Link>
-            <h1 className="mt-2 text-2xl font-semibold">{template.name}</h1>
+            <Button asChild variant="link" className="px-0">
+              <Link href="/templates">← Назад к списку</Link>
+            </Button>
+            <h1 className="mt-2 text-2xl font-semibold text-foreground">{template.name}</h1>
             <div className="text-sm text-muted-foreground">
               {template.category} · {template.channel} · {template.language}
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button
-              className="rounded-md border px-3 py-2 text-sm"
+            <Button
+              variant="outline"
               onClick={() => handleActivate(selectedVersionId)}
               disabled={activating || !selectedVersionId}
             >
               Активировать выбранную
-            </button>
+            </Button>
             {template.active_version_id && (
-              <button
-                className="rounded-md border px-3 py-2 text-sm"
+              <Button
+                variant="outline"
                 onClick={() => handleActivate(null)}
                 disabled={activating}
               >
                 Деактивировать
-              </button>
+              </Button>
             )}
           </div>
         </div>
 
         {activeVersion && (
-          <div className="rounded-lg border bg-white p-4 text-sm">
-            Активная версия: v{activeVersion.version} · {new Date(activeVersion.created_at).toLocaleString('ru-RU')}
-          </div>
+          <Card>
+            <CardContent className="p-4 text-sm text-muted-foreground">
+              Активная версия: v{activeVersion.version} · {new Date(activeVersion.created_at).toLocaleString('ru-RU')}
+            </CardContent>
+          </Card>
         )}
 
         <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-          <div className="space-y-4 rounded-lg border bg-white p-4">
-            <div>
-              <label className="text-sm text-muted-foreground">Версии</label>
-              <select
-                value={selectedVersionId ?? ''}
-                onChange={(event) => {
-                  const versionId = event.target.value;
-                  setSelectedVersionId(versionId);
-                  const version = template.versions.find((item) => item.id === versionId);
-                  if (version) {
-                    setSubject(version.subject || '');
-                    setBodyMarkdown(version.body_markdown);
-                  }
-                }}
-                className="mt-2 w-full rounded-md border px-3 py-2 text-sm"
-              >
-                {template.versions.map((version) => (
-                  <option key={version.id} value={version.id}>
-                    v{version.version} · {new Date(version.created_at).toLocaleString('ru-RU')}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              {template.versions.map((version) => (
-                <div key={version.id} className="flex items-center justify-between rounded-md border px-3 py-2 text-xs">
-                  <span>v{version.version}</span>
-                  <button className="text-primary" onClick={() => handleRollback(version.id)}>
-                    Откатить
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-4 rounded-lg border bg-white p-4">
-            {template.channel === 'email' && (
-              <div>
-                <label className="text-sm text-muted-foreground">Тема письма</label>
-                <input
-                  className="mt-2 w-full rounded-md border px-3 py-2 text-sm"
-                  value={subject}
-                  onChange={(event) => setSubject(event.target.value)}
-                />
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Версии</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Версия</Label>
+                <Select
+                  value={selectedVersionId ?? ''}
+                  onValueChange={(value) => {
+                    const versionId = value;
+                    setSelectedVersionId(versionId);
+                    const version = template.versions.find((item) => item.id === versionId);
+                    if (version) {
+                      setSubject(version.subject || '');
+                      setBodyMarkdown(version.body_markdown);
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {template.versions.map((version) => (
+                      <SelectItem key={version.id} value={version.id}>
+                        v{version.version} · {new Date(version.created_at).toLocaleString('ru-RU')}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            )}
-            <div>
-              <label className="text-sm text-muted-foreground">Тело сообщения</label>
-              <div className="mt-3">
+
+              <div className="space-y-2">
+                {template.versions.map((version) => (
+                  <div key={version.id} className="flex items-center justify-between rounded-md border px-3 py-2 text-xs">
+                    <span>v{version.version}</span>
+                    <Button variant="link" size="sm" className="px-0" onClick={() => handleRollback(version.id)}>
+                      Откатить
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Контент</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {template.channel === 'email' && (
+                <div className="space-y-2">
+                  <Label>Тема письма</Label>
+                  <Input
+                    value={subject}
+                    onChange={(event) => setSubject(event.target.value)}
+                  />
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label>Тело сообщения</Label>
                 <MarkdownEditor
                   value={bodyMarkdown}
                   onChange={(value) => setBodyMarkdown(value)}
@@ -292,40 +324,45 @@ export default function TemplateEditorPage() {
                   height="420px"
                 />
               </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <button
-                className="rounded-md bg-primary px-4 py-2 text-sm text-white disabled:opacity-50"
-                onClick={handleSaveVersion}
-                disabled={saving || !bodyMarkdown.trim()}
-              >
-                {saving ? 'Сохраняем...' : 'Сохранить новую версию'}
-              </button>
-              <button
-                className="rounded-md border px-4 py-2 text-sm"
-                onClick={handlePreview}
-                disabled={previewLoading}
-              >
-                {previewLoading ? 'Превью...' : 'Превью'}
-              </button>
-            </div>
-          </div>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  onClick={handleSaveVersion}
+                  disabled={saving || !bodyMarkdown.trim()}
+                >
+                  {saving ? 'Сохраняем...' : 'Сохранить новую версию'}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handlePreview}
+                  disabled={previewLoading}
+                >
+                  {previewLoading ? 'Превью...' : 'Превью'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {previewError && <div className="text-sm text-red-500">{previewError}</div>}
+        {previewError && (
+          <Alert variant="destructive">
+            <AlertDescription>{previewError}</AlertDescription>
+          </Alert>
+        )}
         {preview && (
-          <div className="rounded-lg border bg-white p-4 space-y-3 text-sm">
-            {preview.subject && (
+          <Card>
+            <CardContent className="space-y-3 text-sm">
+              {preview.subject && (
+                <div>
+                  <div className="text-xs text-muted-foreground">Тема</div>
+                  <div className="font-medium text-foreground">{preview.subject}</div>
+                </div>
+              )}
               <div>
-                <div className="text-xs text-muted-foreground">Тема</div>
-                <div className="font-medium">{preview.subject}</div>
+                <div className="text-xs text-muted-foreground">Сообщение</div>
+                <div className="whitespace-pre-line text-foreground">{preview.body}</div>
               </div>
-            )}
-            <div>
-              <div className="text-xs text-muted-foreground">Сообщение</div>
-              <div className="whitespace-pre-line">{preview.body}</div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         )}
       </div>
     </AdminAuthGuard>

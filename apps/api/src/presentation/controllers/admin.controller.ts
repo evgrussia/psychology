@@ -31,11 +31,13 @@ export class AdminController {
   @ApiResponse({ status: 200, description: 'Return dashboard data' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   async getDashboard(
+    @Request() req: any,
     @Query('range') range?: string,
     @Query('from') from?: string,
     @Query('to') to?: string,
   ) {
-    return this.getAdminDashboardUseCase.execute({ range, from, to });
+    const actorRole = req.user?.roles?.[0] || 'owner';
+    return this.getAdminDashboardUseCase.execute({ range, from, to }, { role: actorRole });
   }
 
   @Get('settings')

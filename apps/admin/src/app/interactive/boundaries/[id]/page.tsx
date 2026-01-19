@@ -5,6 +5,24 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { AdminAuthGuard } from '@/components/admin-auth-guard';
 import { useAdminAuth } from '@/components/admin-auth-context';
+import {
+  Alert,
+  AlertDescription,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Checkbox,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Textarea,
+} from '@psychology/design-system';
 
 interface BoundaryScriptVariant {
   variant_id: string;
@@ -296,306 +314,351 @@ export default function EditBoundariesPage() {
   return (
     <AdminAuthGuard allowedRoles={['owner', 'assistant', 'editor']}>
       {loading ? (
-        <div className="p-8">Загрузка...</div>
+        <Card>
+          <CardContent className="p-8 text-sm text-muted-foreground">Загрузка...</CardContent>
+        </Card>
       ) : error && !definition ? (
-        <div className="p-8 text-red-500">Ошибка: {error}</div>
+        <Alert variant="destructive">
+          <AlertDescription>Ошибка: {error}</AlertDescription>
+        </Alert>
       ) : !definition ? (
-        <div className="p-8">Интерактив не найден</div>
+        <Card>
+          <CardContent className="p-8 text-sm text-muted-foreground">Интерактив не найден</CardContent>
+        </Card>
       ) : (
-        <div className="p-8">
-          <div className="mb-6">
-            <Link href="/interactive/boundaries" className="text-blue-600">← Назад к списку</Link>
-            <h1 className="text-2xl font-bold mt-4">Редактирование: {definition.title}</h1>
-            {error && <div className="mt-2 text-red-500">{error}</div>}
+        <div className="space-y-6">
+          <div>
+            <Button asChild variant="link" className="px-0">
+              <Link href="/interactive/boundaries">← Назад к списку</Link>
+            </Button>
+            <h1 className="text-2xl font-semibold text-foreground mt-4">Редактирование: {definition.title}</h1>
+            {error && (
+              <Alert variant="destructive" className="mt-2">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
           </div>
 
-      <div className="flex flex-wrap gap-3 mb-6">
-        <button
-          onClick={handleSave}
-          disabled={!canEdit || saving}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-        >
-          {saving ? 'Сохранение...' : 'Сохранить'}
-        </button>
-        {canEdit && definition.status !== 'published' && (
-          <button
-            onClick={handlePublish}
-            disabled={publishing}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-          >
-            {publishing ? 'Публикация...' : 'Опубликовать'}
-          </button>
-        )}
-        <button
-          onClick={() => setShowPreview(!showPreview)}
-          className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-        >
-          {showPreview ? 'Скрыть превью' : 'Показать превью'}
-        </button>
-      </div>
-
-      {showPreview && (
-        <div className="mb-8 p-4 bg-gray-50 rounded border">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-            <h2 className="text-xl font-bold">Превью скриптов</h2>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-muted-foreground">Версия:</span>
-              <select
-                value={previewVersion}
-                onChange={(event) => setPreviewVersion(event.target.value as 'draft' | 'published')}
-                className="rounded border px-2 py-1"
-              >
-                <option value="draft">Черновик</option>
-                <option value="published">Опубликовано</option>
-              </select>
-            </div>
+          <div className="flex flex-wrap gap-3">
+            <Button onClick={handleSave} disabled={!canEdit || saving}>
+              {saving ? 'Сохранение...' : 'Сохранить'}
+            </Button>
+            {canEdit && definition.status !== 'published' && (
+              <Button onClick={handlePublish} disabled={publishing} variant="outline">
+                {publishing ? 'Публикация...' : 'Опубликовать'}
+              </Button>
+            )}
+            <Button onClick={() => setShowPreview(!showPreview)} variant="secondary">
+              {showPreview ? 'Скрыть превью' : 'Показать превью'}
+            </Button>
           </div>
-          {previewLoading && <div className="text-sm text-muted-foreground">Загрузка превью...</div>}
-          {previewError && <div className="text-sm text-red-500">{previewError}</div>}
-          {previewDefinition?.config && (
-            <div className="bg-white p-6 rounded space-y-4">
-              <h3 className="text-lg font-semibold">{previewDefinition.title}</h3>
-              <div>
-                <h4 className="font-semibold mb-2">Сценарии</h4>
-                <ul className="text-sm text-gray-700 list-disc list-inside">
-                  {previewDefinition.config.scenarios.map((scenario) => (
-                    <li key={scenario.id}>{scenario.name}</li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Матрица</h4>
-                <div className="space-y-3 text-sm">
-                  {previewDefinition.config.matrix.map((item, idx) => (
-                    <div key={idx} className="rounded border p-3">
-                      <div className="font-medium">
-                        {previewDefinition.config.scenarios.find((s) => s.id === item.scenario_id)?.name || item.scenario_id} ·{' '}
-                        {previewDefinition.config.tones.find((t) => t.id === item.tone_id)?.name || item.tone_id} ·{' '}
-                        {previewDefinition.config.goals.find((g) => g.id === item.goal_id)?.name || item.goal_id}
-                      </div>
-                      <ul className="mt-2 list-disc list-inside text-gray-600">
-                        {item.variants.map((variant) => (
-                          <li key={variant.variant_id}>{variant.text}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Блок безопасности</h4>
-                <p className="text-sm text-gray-700 whitespace-pre-line">{previewDefinition.config.safety_block.text}</p>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
 
-      <div className="bg-white rounded-lg shadow p-6 space-y-6">
-        <div>
-          <label className="block text-sm font-medium mb-2">Название</label>
-          <input
-            type="text"
-            value={definition.title}
-            onChange={(event) => setDefinition({ ...definition, title: event.target.value })}
-            className="w-full px-3 py-2 border rounded"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-2">Тема (код)</label>
-          <input
-            type="text"
-            value={definition.topicCode || ''}
-            onChange={(event) => setDefinition({ ...definition, topicCode: event.target.value || null })}
-            className="w-full px-3 py-2 border rounded"
-            placeholder="boundaries, relationships, etc."
-          />
-        </div>
-
-        {definition.config && (
-          <>
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-xl font-bold">Сценарии</h2>
-                <button onClick={addScenario} disabled={!canEdit} className="text-sm text-blue-600">Добавить</button>
-              </div>
-              <div className="space-y-3">
-                {definition.config.scenarios.map((scenario, index) => (
-                  <div key={scenario.id} className="rounded border p-3">
-                    <div className="grid gap-3 md:grid-cols-2">
-                      <div>
-                        <label className="block text-sm font-medium mb-1">Название</label>
-                        <input
-                          type="text"
-                          value={scenario.name}
-                          onChange={(event) => updateScenario(index, 'name', event.target.value)}
-                          className="w-full px-3 py-2 border rounded"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-1">Описание</label>
-                        <input
-                          type="text"
-                          value={scenario.description || ''}
-                          onChange={(event) => updateScenario(index, 'description', event.target.value)}
-                          className="w-full px-3 py-2 border rounded"
-                        />
-                      </div>
-                    </div>
-                    <label className="mt-3 flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={Boolean(scenario.is_unsafe)}
-                        onChange={(event) => updateScenario(index, 'is_unsafe', event.target.checked)}
-                      />
-                      Сценарий требует блока безопасности
-                    </label>
+          {showPreview && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Превью скриптов</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-muted-foreground">Версия:</span>
+                    <Select
+                      value={previewVersion}
+                      onValueChange={(value) => setPreviewVersion(value as 'draft' | 'published')}
+                    >
+                      <SelectTrigger className="w-44">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="draft">Черновик</SelectItem>
+                        <SelectItem value="published">Опубликовано</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-xl font-bold">Тон</h2>
-                  <button onClick={addTone} disabled={!canEdit} className="text-sm text-blue-600">Добавить</button>
                 </div>
-                <div className="space-y-2">
-                  {definition.config.tones.map((tone, index) => (
-                    <input
-                      key={tone.id}
-                      type="text"
-                      value={tone.name}
-                      onChange={(event) => updateTone(index, event.target.value)}
-                      className="w-full px-3 py-2 border rounded"
-                    />
-                  ))}
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-xl font-bold">Цели</h2>
-                  <button onClick={addGoal} disabled={!canEdit} className="text-sm text-blue-600">Добавить</button>
-                </div>
-                <div className="space-y-2">
-                  {definition.config.goals.map((goal, index) => (
-                    <input
-                      key={goal.id}
-                      type="text"
-                      value={goal.name}
-                      onChange={(event) => updateGoal(index, event.target.value)}
-                      className="w-full px-3 py-2 border rounded"
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-xl font-bold">Матрица вариантов</h2>
-                <button onClick={addMatrixItem} disabled={!canEdit} className="text-sm text-blue-600">Добавить комбинацию</button>
-              </div>
-              <div className="space-y-4">
-                {definition.config.matrix.map((item, matrixIndex) => (
-                  <div key={`${item.scenario_id}-${item.tone_id}-${item.goal_id}-${matrixIndex}`} className="rounded border p-4">
-                    <div className="grid gap-3 md:grid-cols-3 mb-3">
+                {previewLoading && <div className="text-sm text-muted-foreground">Загрузка превью...</div>}
+                {previewError && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{previewError}</AlertDescription>
+                  </Alert>
+                )}
+                {previewDefinition?.config && (
+                  <Card>
+                    <CardContent className="space-y-4">
+                      <h3 className="text-lg font-semibold text-foreground">{previewDefinition.title}</h3>
                       <div>
-                        <label className="block text-sm font-medium mb-1">Сценарий</label>
-                        <select
-                          value={item.scenario_id}
-                          onChange={(event) => updateMatrixItem(matrixIndex, 'scenario_id', event.target.value)}
-                          className="w-full px-3 py-2 border rounded"
-                        >
-                          {definition.config.scenarios.map((scenario) => (
-                            <option key={scenario.id} value={scenario.id}>{scenario.name || scenario.id}</option>
+                        <h4 className="font-semibold mb-2">Сценарии</h4>
+                        <ul className="text-sm text-muted-foreground list-disc list-inside">
+                          {previewDefinition.config.scenarios.map((scenario) => (
+                            <li key={scenario.id}>{scenario.name}</li>
                           ))}
-                        </select>
+                        </ul>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-1">Тон</label>
-                        <select
-                          value={item.tone_id}
-                          onChange={(event) => updateMatrixItem(matrixIndex, 'tone_id', event.target.value)}
-                          className="w-full px-3 py-2 border rounded"
-                        >
-                          {definition.config.tones.map((tone) => (
-                            <option key={tone.id} value={tone.id}>{tone.name || tone.id}</option>
+                        <h4 className="font-semibold mb-2">Матрица</h4>
+                        <div className="space-y-3 text-sm">
+                          {previewDefinition.config.matrix.map((item, idx) => (
+                            <div key={idx} className="rounded border border-border p-3">
+                              <div className="font-medium text-foreground">
+                                {previewDefinition.config.scenarios.find((s) => s.id === item.scenario_id)?.name || item.scenario_id} ·{' '}
+                                {previewDefinition.config.tones.find((t) => t.id === item.tone_id)?.name || item.tone_id} ·{' '}
+                                {previewDefinition.config.goals.find((g) => g.id === item.goal_id)?.name || item.goal_id}
+                              </div>
+                              <ul className="mt-2 list-disc list-inside text-muted-foreground">
+                                {item.variants.map((variant) => (
+                                  <li key={variant.variant_id}>{variant.text}</li>
+                                ))}
+                              </ul>
+                            </div>
                           ))}
-                        </select>
+                        </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-1">Цель</label>
-                        <select
-                          value={item.goal_id}
-                          onChange={(event) => updateMatrixItem(matrixIndex, 'goal_id', event.target.value)}
-                          className="w-full px-3 py-2 border rounded"
-                        >
-                          {definition.config.goals.map((goal) => (
-                            <option key={goal.id} value={goal.id}>{goal.name || goal.id}</option>
-                          ))}
-                        </select>
+                        <h4 className="font-semibold mb-2">Блок безопасности</h4>
+                        <p className="text-sm text-muted-foreground whitespace-pre-line">
+                          {previewDefinition.config.safety_block.text}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Параметры</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label>Название</Label>
+                <Input
+                  type="text"
+                  value={definition.title}
+                  onChange={(event) => setDefinition({ ...definition, title: event.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Тема (код)</Label>
+                <Input
+                  type="text"
+                  value={definition.topicCode || ''}
+                  onChange={(event) => setDefinition({ ...definition, topicCode: event.target.value || null })}
+                  placeholder="boundaries, relationships, etc."
+                />
+              </div>
+
+              {definition.config && (
+                <>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-lg font-semibold text-foreground">Сценарии</h2>
+                      <Button onClick={addScenario} disabled={!canEdit} variant="link" size="sm" className="px-0">
+                        Добавить
+                      </Button>
+                    </div>
+                    <div className="space-y-3">
+                      {definition.config.scenarios.map((scenario, index) => (
+                        <div key={scenario.id} className="rounded border border-border p-3">
+                          <div className="grid gap-3 md:grid-cols-2">
+                            <div className="space-y-2">
+                              <Label>Название</Label>
+                              <Input
+                                type="text"
+                                value={scenario.name}
+                                onChange={(event) => updateScenario(index, 'name', event.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Описание</Label>
+                              <Input
+                                type="text"
+                                value={scenario.description || ''}
+                                onChange={(event) => updateScenario(index, 'description', event.target.value)}
+                              />
+                            </div>
+                          </div>
+                          <label className="mt-3 flex items-center gap-2 text-sm">
+                            <Checkbox
+                              checked={Boolean(scenario.is_unsafe)}
+                              onCheckedChange={(checked) => updateScenario(index, 'is_unsafe', Boolean(checked))}
+                            />
+                            Сценарий требует блока безопасности
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-lg font-semibold text-foreground">Тон</h2>
+                        <Button onClick={addTone} disabled={!canEdit} variant="link" size="sm" className="px-0">
+                          Добавить
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        {definition.config.tones.map((tone, index) => (
+                          <Input
+                            key={tone.id}
+                            type="text"
+                            value={tone.name}
+                            onChange={(event) => updateTone(index, event.target.value)}
+                          />
+                        ))}
                       </div>
                     </div>
                     <div className="space-y-3">
-                      {item.variants.map((variant, variantIndex) => (
-                        <div key={variant.variant_id} className="rounded border p-3">
-                          <div className="flex items-center justify-between">
-                            <label className="text-sm font-medium">Variant ID</label>
-                            <button
-                              type="button"
-                              onClick={() => removeVariant(matrixIndex, variantIndex)}
-                              disabled={!canEdit}
-                              className="text-xs text-red-500"
-                            >
-                              Удалить
-                            </button>
-                          </div>
-                          <input
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-lg font-semibold text-foreground">Цели</h2>
+                        <Button onClick={addGoal} disabled={!canEdit} variant="link" size="sm" className="px-0">
+                          Добавить
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        {definition.config.goals.map((goal, index) => (
+                          <Input
+                            key={goal.id}
                             type="text"
-                            value={variant.variant_id}
-                            onChange={(event) => updateVariant(matrixIndex, variantIndex, 'variant_id', event.target.value)}
-                            className="w-full px-3 py-2 border rounded mt-1"
+                            value={goal.name}
+                            onChange={(event) => updateGoal(index, event.target.value)}
                           />
-                          <label className="block text-sm font-medium mt-3 mb-1">Текст</label>
-                          <textarea
-                            value={variant.text}
-                            onChange={(event) => updateVariant(matrixIndex, variantIndex, 'text', event.target.value)}
-                            className="w-full px-3 py-2 border rounded"
-                            rows={2}
-                          />
-                        </div>
-                      ))}
-                      <button
-                        type="button"
-                        onClick={() => addVariant(matrixIndex)}
-                        disabled={!canEdit}
-                        className="text-sm text-blue-600"
-                      >
-                        Добавить вариант
-                      </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
 
-            <div>
-              <h2 className="text-xl font-bold mb-3">Блок безопасности</h2>
-              <textarea
-                value={definition.config.safety_block.text}
-                onChange={(event) => setDefinition({
-                  ...definition,
-                  config: { ...definition.config, safety_block: { text: event.target.value } },
-                })}
-                className="w-full px-3 py-2 border rounded"
-                rows={3}
-              />
-            </div>
-          </>
-        )}
-      </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-lg font-semibold text-foreground">Матрица вариантов</h2>
+                      <Button onClick={addMatrixItem} disabled={!canEdit} variant="link" size="sm" className="px-0">
+                        Добавить комбинацию
+                      </Button>
+                    </div>
+                    <div className="space-y-4">
+                      {definition.config.matrix.map((item, matrixIndex) => (
+                        <div key={`${item.scenario_id}-${item.tone_id}-${item.goal_id}-${matrixIndex}`} className="rounded border border-border p-4">
+                          <div className="grid gap-3 md:grid-cols-3">
+                            <div className="space-y-2">
+                              <Label>Сценарий</Label>
+                              <Select
+                                value={item.scenario_id}
+                                onValueChange={(value) => updateMatrixItem(matrixIndex, 'scenario_id', value)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {definition.config.scenarios.map((scenario) => (
+                                    <SelectItem key={scenario.id} value={scenario.id}>
+                                      {scenario.name || scenario.id}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Тон</Label>
+                              <Select
+                                value={item.tone_id}
+                                onValueChange={(value) => updateMatrixItem(matrixIndex, 'tone_id', value)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {definition.config.tones.map((tone) => (
+                                    <SelectItem key={tone.id} value={tone.id}>
+                                      {tone.name || tone.id}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Цель</Label>
+                              <Select
+                                value={item.goal_id}
+                                onValueChange={(value) => updateMatrixItem(matrixIndex, 'goal_id', value)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {definition.config.goals.map((goal) => (
+                                    <SelectItem key={goal.id} value={goal.id}>
+                                      {goal.name || goal.id}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <div className="space-y-3 mt-3">
+                            {item.variants.map((variant, variantIndex) => (
+                              <div key={variant.variant_id} className="rounded border border-border p-3">
+                                <div className="flex items-center justify-between">
+                                  <Label>Variant ID</Label>
+                                  <Button
+                                    type="button"
+                                    onClick={() => removeVariant(matrixIndex, variantIndex)}
+                                    disabled={!canEdit}
+                                    variant="link"
+                                    size="sm"
+                                    className="px-0 text-destructive"
+                                  >
+                                    Удалить
+                                  </Button>
+                                </div>
+                                <Input
+                                  type="text"
+                                  value={variant.variant_id}
+                                  onChange={(event) => updateVariant(matrixIndex, variantIndex, 'variant_id', event.target.value)}
+                                  className="mt-1"
+                                />
+                                <Label className="mt-3">Текст</Label>
+                                <Textarea
+                                  value={variant.text}
+                                  onChange={(event) => updateVariant(matrixIndex, variantIndex, 'text', event.target.value)}
+                                  rows={2}
+                                />
+                              </div>
+                            ))}
+                            <Button
+                              type="button"
+                              onClick={() => addVariant(matrixIndex)}
+                              disabled={!canEdit}
+                              variant="link"
+                              size="sm"
+                              className="px-0"
+                            >
+                              Добавить вариант
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h2 className="text-lg font-semibold text-foreground">Блок безопасности</h2>
+                    <Textarea
+                      value={definition.config.safety_block.text}
+                      onChange={(event) =>
+                        setDefinition({
+                          ...definition,
+                          config: { ...definition.config, safety_block: { text: event.target.value } },
+                        })
+                      }
+                      rows={3}
+                    />
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
         </div>
       )}
     </AdminAuthGuard>

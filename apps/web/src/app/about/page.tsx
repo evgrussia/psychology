@@ -1,7 +1,10 @@
 import React from 'react';
 import PageClient from '../PageClient';
 import { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { ContentPlatform } from '@/lib/content';
+import { isFeatureEnabled } from '@/lib/feature-flags';
+import { resolveCanonical, resolveKeywords } from '@/lib/seo';
 
 async function getAboutPageData() {
   const slug = 'about';
@@ -31,13 +34,18 @@ async function getAboutPageData() {
 
 export async function generateMetadata(): Promise<Metadata> {
   const data = await getAboutPageData();
-  const description = 'Узнайте больше о психологе, подходе к работе, образовании и принципах конфиденциальности. Профессиональная помощь с тревогой, выгоранием и поиском баланса.';
+  const description =
+    data.seo_description
+    || 'Узнайте больше о психологе, подходе к работе, образовании и принципах конфиденциальности. Профессиональная помощь с тревогой, выгоранием и поиском баланса.';
+  const title = data.seo_title || `${data.title} | Эмоциональный баланс`;
   
   return {
-    title: `${data.title} | Эмоциональный баланс`,
+    title,
     description,
+    keywords: resolveKeywords(data.seo_keywords),
+    alternates: resolveCanonical(data.canonical_url),
     openGraph: {
-      title: `${data.title} | Эмоциональный баланс`,
+      title,
       description,
       type: 'website',
       locale: 'ru_RU',
@@ -45,13 +53,17 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: 'summary',
-      title: `${data.title} | Эмоциональный баланс`,
+      title,
       description,
     },
   };
 }
 
 export default async function AboutPage() {
+  if (!isFeatureEnabled('trust_pages_v1_enabled')) {
+    redirect('/');
+  }
+
   const data = await getAboutPageData();
 
   return <PageClient slug="about" data={data} />;

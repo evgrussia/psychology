@@ -5,6 +5,8 @@ import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/infrastructure/database/prisma.service';
 import * as cookieParser from 'cookie-parser';
 
+import { clearDatabase } from './test-utils';
+
 describe('Rituals (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
@@ -28,19 +30,7 @@ describe('Rituals (e2e)', () => {
   });
 
   beforeEach(async () => {
-    await prisma.ugcModerationAction.deleteMany({});
-    await prisma.questionAnswer.deleteMany({});
-    await prisma.anonymousQuestion.deleteMany({});
-    await prisma.interactiveRun.deleteMany({});
-    await prisma.interactiveDefinitionVersion.deleteMany({});
-    await prisma.curatedItem.deleteMany({});
-    await prisma.interactiveDefinition.deleteMany({});
-    await prisma.mediaAsset.deleteMany({});
-    await prisma.messageTemplateVersion.deleteMany({});
-    await prisma.messageTemplate.deleteMany({});
-    await prisma.session.deleteMany({});
-    await prisma.userRole.deleteMany({});
-    await prisma.user.deleteMany({});
+    await clearDatabase(prisma);
     // Don't delete topics here to avoid parallel test conflicts
   });
 

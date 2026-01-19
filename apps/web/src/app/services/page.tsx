@@ -77,9 +77,10 @@ export default async function ServicesPage() {
                       {service.price_amount} ₽
                     </div>
                   </div>
-                  <div className="prose prose-slate dark:prose-invert mb-8 max-w-none text-muted-foreground line-clamp-4">
-                    <SafeMarkdownRenderer content={service.description_markdown} />
-                  </div>
+                  <SafeMarkdownRenderer
+                    className="mb-8 line-clamp-4"
+                    content={service.description_markdown}
+                  />
                   
                   <div className="mt-auto pt-6 border-t flex flex-wrap gap-4">
                     <Button asChild variant="outline" className="flex-1">

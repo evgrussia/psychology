@@ -30,9 +30,10 @@ test.describe('Events flow', () => {
     await expect(page).toHaveURL(new RegExp(eventHref || '/events/'));
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
-    await page.waitForTimeout(500);
-    const eventsTracked = await page.evaluate(() => (window as any).__trackedEvents || []);
-    expect(eventsTracked.find((e: any) => e.event === 'event_viewed')).toBeDefined();
+    await expect.poll(async () => {
+      const eventsTracked = await page.evaluate(() => (window as any).__trackedEvents || []);
+      return eventsTracked.find((e: any) => e.event === 'event_viewed');
+    }).toBeDefined();
 
     await page.getByRole('link', { name: /зарегистрироваться/i }).click();
     await expect(page).toHaveURL(/\/events\/.*\/register/);
@@ -40,8 +41,9 @@ test.describe('Events flow', () => {
     await page.getByLabel(/контакт/i).fill('test@example.com');
     await page.getByRole('button', { name: /отправить/i }).click();
 
-    await page.waitForTimeout(1000);
-    const afterRegisterEvents = await page.evaluate(() => (window as any).__trackedEvents || []);
-    expect(afterRegisterEvents.find((e: any) => e.event === 'event_registered')).toBeDefined();
+    await expect.poll(async () => {
+      const afterRegisterEvents = await page.evaluate(() => (window as any).__trackedEvents || []);
+      return afterRegisterEvents.find((e: any) => e.event === 'event_registered');
+    }).toBeDefined();
   });
 });

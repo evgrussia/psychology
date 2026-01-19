@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button, Card, Input, Label } from '@psychology/design-system';
 import { Container, Section } from '@psychology/design-system';
 
@@ -84,6 +85,13 @@ export default function LoginPage() {
               {isSubmitting ? 'Входим...' : 'Войти'}
             </Button>
           </form>
+
+          <div className="text-center text-sm text-muted-foreground">
+            Нет аккаунта?{' '}
+            <Link href="/signup" className="text-primary underline-offset-4 hover:underline">
+              Зарегистрироваться
+            </Link>
+          </div>
         </Card>
       </Container>
     </Section>

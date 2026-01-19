@@ -15,8 +15,10 @@ import { TelegramUpdatesService } from './telegram-updates.service';
 import { HandleTelegramUpdateUseCase } from '@application/telegram/use-cases/HandleTelegramUpdateUseCase';
 import { StartOnboardingUseCase } from '@application/telegram/use-cases/StartOnboardingUseCase';
 import { SendPlanMessageUseCase } from '@application/telegram/use-cases/SendPlanMessageUseCase';
+import { ProcessTelegramScheduledMessagesUseCase } from '@application/telegram/use-cases/ProcessTelegramScheduledMessagesUseCase';
 import { TrackingService } from '../tracking/tracking.service';
 import { AnalyticsModule } from '../analytics/analytics.module';
+import { TelegramSchedulerService } from './telegram-scheduler.service';
 
 @Module({
   imports: [DatabaseModule, CommonModule, HttpModule, AnalyticsModule],
@@ -43,7 +45,9 @@ import { AnalyticsModule } from '../analytics/analytics.module';
     HandleTelegramUpdateUseCase,
     StartOnboardingUseCase,
     SendPlanMessageUseCase,
+    ProcessTelegramScheduledMessagesUseCase,
     TelegramUpdatesService,
+    TelegramSchedulerService,
     DeepLinkCleanupScheduler,
     TelegramServiceGuard,
     TrackingService,

@@ -1,4 +1,5 @@
 import { TelegramFlow, TelegramFrequency, TelegramSessionState } from '../value-objects/TelegramEnums';
+import { TelegramSeriesType } from '../value-objects/TelegramSeriesType';
 
 export interface ConciergePreferences {
   format?: string | null;
@@ -15,6 +16,10 @@ export interface TelegramSessionProps {
   topicCode: string | null;
   frequency: TelegramFrequency | null;
   conciergePreferences: ConciergePreferences | null;
+  seriesType: TelegramSeriesType | null;
+  seriesStep: number | null;
+  nextSendAt: Date | null;
+  lastMessageKey: string | null;
   isActive: boolean;
   startedAt: Date;
   updatedAt: Date;
@@ -46,6 +51,10 @@ export class TelegramSession {
       topicCode: params.topicCode,
       frequency: null,
       conciergePreferences: null,
+      seriesType: null,
+      seriesStep: null,
+      nextSendAt: null,
+      lastMessageKey: null,
       isActive: true,
       startedAt: now,
       updatedAt: now,
@@ -88,6 +97,22 @@ export class TelegramSession {
 
   get conciergePreferences(): ConciergePreferences | null {
     return this.props.conciergePreferences;
+  }
+
+  get seriesType(): TelegramSeriesType | null {
+    return this.props.seriesType;
+  }
+
+  get seriesStep(): number | null {
+    return this.props.seriesStep;
+  }
+
+  get nextSendAt(): Date | null {
+    return this.props.nextSendAt;
+  }
+
+  get lastMessageKey(): string | null {
+    return this.props.lastMessageKey;
   }
 
   get isActive(): boolean {

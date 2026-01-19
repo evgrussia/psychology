@@ -3,6 +3,7 @@ import PageClient from '../../PageClient';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { ContentPlatform } from '@/lib/content';
+import { resolveCanonical, resolveKeywords } from '@/lib/seo';
 
 const ALLOWED_LEGAL_SLUGS = [
   'privacy',
@@ -59,10 +60,14 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   if (!ALLOWED_LEGAL_SLUGS.includes(slug)) return {};
 
   const data = await getLegalPageData(slug);
+  const description = data.seo_description || `Юридическая информация: ${data.title}`;
+  const title = data.seo_title || `${data.title} | Эмоциональный баланс`;
   
   return {
-    title: `${data.title} | Эмоциональный баланс`,
-    description: `Юридическая информация: ${data.title}`,
+    title,
+    description,
+    keywords: resolveKeywords(data.seo_keywords),
+    alternates: resolveCanonical(data.canonical_url),
     robots: 'noindex, follow',
   };
 }

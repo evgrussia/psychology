@@ -85,9 +85,11 @@ export const AdminPermissions = {
   interactive: {
     list: ['owner', 'assistant', 'editor'],
     get: ['owner', 'assistant', 'editor'],
+    create: ['owner', 'editor'],
     update: ['owner', 'editor'],
     publish: ['owner', 'editor'],
     publishDraft: ['owner', 'editor'],
+    archive: ['owner', 'editor'],
   },
   glossary: {
     list: ['owner', 'assistant', 'editor'],
