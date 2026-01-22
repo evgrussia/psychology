@@ -51,3 +51,14 @@ backups/
 
 # Web app public assets (copied from root assets/ during build)
 apps/web/public/assets
+
+# Test reports and results
+**/playwright-report/
+**/test-results/
+**/coverage/
+**/.nyc_output/
+**/junit.xml
+**/test-results.xml
+
+# Test environment variables
+test_vars.env

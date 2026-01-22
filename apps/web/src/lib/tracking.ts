@@ -33,8 +33,12 @@ const FORBIDDEN_FIELDS = [
   'note',
 ];
 
-const EMAIL_PATTERN = /[^\s@]+@[^\s@]+\.[^\s@]+/i;
-const PHONE_PATTERN = /(?:\+?\d[\d\s\-().]{8,}\d)/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
+const PHONE_PATTERN = /^\+?[\d\s\-()]{7,15}$/;
+
+function isUUID(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+}
 
 // Генерация стабильного anonymous_id
 export function getAnonymousId(): string {
@@ -86,6 +90,8 @@ function validateProperties(properties: TrackProperties): { valid: boolean; viol
   function checkValue(value: any, currentPath: string): void {
     if (typeof value === 'string') {
       const trimmed = value.trim();
+      if (isUUID(trimmed)) return;
+
       if (EMAIL_PATTERN.test(trimmed)) {
         violations.push(`${currentPath}:email`);
       }
