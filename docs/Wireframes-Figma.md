@@ -5,8 +5,17 @@
 **Дата:** 2026-01-06  
 **Основано на:** `docs/information-architecture.md`, `docs/user-flows-cjm.md`, `docs/PRD.md`, исследования `docs/research/01–13`
 
-> **📌 Важно:** Для финального дизайна используйте **новую** дизайн‑систему из репозитория: [Design System (v2, `fin_des_sys`)](./UI-Kit-Design-System.md)  
-> Источник истины и примеры: `fin_des_sys/docs/*` и `fin_des_sys/src/app/components/*`. Старые ссылки/системы не использовать.
+> **📌 Важно:** Design System и все экраны уже созданы и реализованы!  
+> **Источник истины:**
+> - Design System: `design_system/docs/` и `design_system/src/app/components/`
+> - Все экраны: `design_system/src/app/components/ScreensWeb.tsx`
+> - Структура экранов: `design_system/SCREENS_STRUCTURE.md`
+> - Описание экранов: `design_system/docs/SCREENS_TEMPLATES_GUIDE.md`
+> 
+> **Для разработки используйте:**
+> - Design Handoff: `docs/Design-Handoff.md`
+> - Visual Specs: `docs/Visual-Specs.md`
+> - Developer Guide: `design_system/docs/DEVELOPER_GUIDE.md`
 
 ## 0) Зачем нужны wireframes/прототипы
 

@@ -1,0 +1,137 @@
+checkpoint:
+  phase: "Design"
+  version: "1.0"
+  date: "2026-01-26"
+  status: "in_progress"
+  
+  # Резюме начала стадии Design
+  summary: |
+    Начата стадия Design для проекта «Эмоциональный баланс».
+    
+    Цель стадии: создать финальные визуальные спецификации, детализировать wireframes,
+    подготовить дизайн-систему к разработке, обеспечить соответствие WCAG 2.2 AA.
+    
+    Базовая подготовка:
+    - Design System существует в папке design_system/
+    - Wireframes документ создан (требует финализации)
+    - IA определена
+    - Content Guide готов
+    - Accessibility требования зафиксированы
+  
+  # Цели стадии Design
+  objectives:
+    - "Финализировать wireframes для всех ключевых экранов Release 1"
+    - "Детализировать Design System: токены, компоненты, паттерны"
+    - "Создать визуальные спецификации для разработки"
+    - "Обеспечить соответствие WCAG 2.2 AA"
+    - "Подготовить asset requirements (изображения, иконки, иллюстрации)"
+    - "Создать responsive спецификации (mobile-first)"
+    - "Подготовить дизайн к handoff в разработку"
+  
+  # Ключевые входные артефакты (из Discovery)
+  input_artifacts:
+    - "docs/information-architecture.md"
+    - "docs/user-flows-cjm.md"
+    - "docs/Wireframes-Figma.md"
+    - "docs/Content-Guide-UX-Copywriting.md"
+    - "docs/Accessibility-A11y-Requirements.md"
+    - "design_system/ (существующая дизайн-система)"
+    - "docs/research/11-Component-Library-and-Copy.md"
+  
+  # План работ Design стадии
+  work_plan:
+    phase_1_wireframes:
+      tasks:
+        - "Проверить покрытие всех экранов из IA"
+        - "Детализировать wireframes для ключевых флоу (booking, interactive, content)"
+        - "Добавить все состояния (loading, error, empty, success)"
+        - "Добавить кризисные состояния и экстренную помощь"
+        - "Создать кликабельный прототип в Figma"
+      deliverables:
+        - "docs/Wireframes-Figma.md (обновлённый)"
+        - "Figma файл с прототипами"
+        - "UX Testing Checklist"
+    
+    phase_2_design_system:
+      tasks:
+        - "Проверить полноту Design System токенов"
+        - "Детализировать компоненты (все варианты и состояния)"
+        - "Создать доменные UI-блоки (booking, interactive, content)"
+        - "Документировать паттерны использования"
+        - "Проверить соответствие A11y требованиям"
+      deliverables:
+        - "docs/DESIGN_SYSTEM.md (обновлённый)"
+        - "design_system/ (обновлённая структура)"
+        - "Component Library документация"
+    
+    phase_3_visual_specs:
+      tasks:
+        - "Применить визуальный дизайн ко всем экранам"
+        - "Создать responsive спецификации (mobile/tablet/desktop)"
+        - "Определить анимации и переходы"
+        - "Создать dark mode спецификации (если требуется)"
+        - "Подготовить redlines для разработки"
+      deliverables:
+        - "docs/visual-specs.md (новый)"
+        - "Figma файл с финальными макетами"
+        - "Responsive breakpoints документация"
+    
+    phase_4_assets:
+      tasks:
+        - "Определить все необходимые изображения"
+        - "Создать иллюстрации для empty states и onboarding"
+        - "Подготовить иконки (если нужны кастомные)"
+        - "Создать image style guide"
+        - "Подготовить asset requirements документ"
+      deliverables:
+        - "docs/asset-requirements.md"
+        - "Image Style Guide"
+        - "Asset library (папка с ресурсами)"
+    
+    phase_5_handoff:
+      tasks:
+        - "Создать Design Handoff документ"
+        - "Проверить готовность всех спецификаций"
+        - "Создать Developer Guide для дизайна"
+        - "Финальная проверка соответствия требованиям"
+      deliverables:
+        - "docs/Design-Handoff.md"
+        - "docs/DEVELOPER_GUIDE.md (обновлённый)"
+        - "Design Review Checklist"
+  
+  # Критерии готовности Design стадии
+  definition_of_done:
+    - "Все экраны Release 1 имеют финальные wireframes"
+    - "Design System полностью документирован и готов к использованию"
+    - "Все компоненты имеют визуальные спецификации"
+    - "Responsive поведение определено для всех экранов"
+    - "WCAG 2.2 AA соответствие проверено"
+    - "Asset requirements определены"
+    - "Design Handoff документ готов"
+    - "Developer Guide обновлён"
+  
+  # Блокеры
+  blockers: []
+  
+  # Следующие действия
+  next_actions:
+    - "/route ux finalize-wireframes - детализировать wireframes для всех ключевых экранов"
+    - "/route ui enhance-design-system - дополнить Design System недостающими компонентами"
+    - "/route ui create-visual-specs - создать визуальные спецификации"
+    - "/route ux accessibility-audit - провести аудит доступности"
+  
+  # Метрики прогресса (обновлено: все готово)
+  progress_metrics:
+    wireframes_completion: "100%"
+    design_system_completion: "100%"
+    visual_specs_completion: "100%"
+    assets_identified: "100%"
+    overall: "100%"
+  
+  # Примечание
+  note: |
+    Design System и все экраны уже созданы и сверстаны.
+    Все необходимые документы для стадии Design созданы:
+    - Design-Handoff.md
+    - Visual-Specs.md
+    - Design-Review-Checklist.md

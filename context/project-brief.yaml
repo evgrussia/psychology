@@ -1,0 +1,251 @@
+project_brief:
+  name: "Эмоциональный баланс"
+  version: "1.0"
+  created: "2026-01-26"
+  status: "ready_for_design_and_development"
+  
+  # One-liner
+  goal: "Персональный сайт психолога «Эмоциональный баланс» — тёплое онлайн‑пространство поддержки: мини‑диагностики, упражнения, дневники, контент и мягкие воронки, которые приводят к записи на консультацию и подписке на Telegram в эмпатичном, безопасном тоне без давления."
+  
+  # Целевая аудитория
+  target_users:
+    primary_segments:
+      - "Острое состояние (тревога/паника/конфликт) — нужен быстрый безопасный первый шаг"
+      - "Хроническая усталость/выгорание — нужен ориентир + план микро‑шагов"
+      - "Отношения и границы — нужна поддержка без директивности"
+      - "Самооценка/самокритика — нужен тихий формат (дневники)"
+      - "Самопознание/профилактика — нужен интересный вход (квиз/ресурсы)"
+    
+    key_needs:
+      - "Снизить напряжение/дать ясность за 1–10 минут"
+      - "Понять подходит ли специалист"
+      - "Получить следующий шаг без давления и стыда"
+  
+  # Область работ
+  scope:
+    in:
+      - "Главная как путь клиента (карточки состояний + быстрый старт)"
+      - "Профиль психолога (доверие, кодекс, FAQ)"
+      - "Услуги и продуктовая линейка"
+      - "Запись и оплата (календарь, анкета, согласия, депозит)"
+      - "Личный кабинет клиента (встречи, дневники, материалы)"
+      - "Контент‑медиа (блог, ресурсы, SEO)"
+      - "Интерактивные модули (диагностики, квизы, дневники, челленджи)"
+      - "Telegram‑экосистема (бот, deep links, перелив трафика)"
+      - "Админ‑панель психолога (CRM, расписание, контент, аналитика)"
+      - "LangChain‑агенты (навигация, консьерж записи, контент‑редактор)"
+    
+    out:
+      - "Медицинские диагнозы и лечение"
+      - "Экстренная психологическая помощь (только редирект на специализированные службы)"
+      - "Групповая терапия в MVP (планируется в Release 2)"
+  
+  # Ограничения и принципы
+  constraints:
+    - "Privacy by design: минимизация данных, явные согласия, управление данными пользователем"
+    - "152‑ФЗ: обработка персональных данных, политика конфиденциальности"
+    - "Дисклеймеры: не медицинская услуга, не диагноз, не экстренная помощь"
+    - "Кризисный режим: при триггерах — экстренная помощь и безопасная навигация"
+    - "Бережный тон: эмпатичный, безопасный, без давления, не директивно"
+    - "Clean Architecture + DDD: бизнес‑правила в домене, зависимости направлены внутрь"
+  
+  # Технологический стек (из документации)
+  tech_stack:
+    backend: "Django (требование зафиксировано)"
+    frontend: "TBD (рекомендуется React/Next.js)"
+    database: "PostgreSQL"
+    ai_framework: "LangChain/LangGraph для AI‑агентов"
+    messaging: "Telegram Bot API"
+    analytics: "Event‑based tracking (TBD конкретный инструмент)"
+    payment: "ЮKassa"
+    calendar: "Google Calendar API"
+  
+  # Ключевые метрики успеха
+  kpis:
+    primary:
+      - "visit → booking_start → booking_paid → booking_confirmed"
+      - "visit → tg_subscribe_confirmed"
+      - "start_quiz → complete_quiz (completion rate)"
+      - "save_resource / export_pdf (возвращаемость)"
+      - "retention: D1/D7/D30 по ЛК/дневникам и Telegram"
+      - "no-show rate"
+  
+  # Текущая фаза проекта
+  current_phase: "architecture_completed_ready_for_development"
+  
+  phase_status:
+    discovery: "completed"
+    research: "completed"
+    architecture: "completed"
+    specifications: "completed"
+    design: "completed"
+    development: "pending"
+  
+  # Полный реестр артефактов (61 документ)
+  key_artifacts:
+    # === STRATEGY & PRODUCT ===
+    strategy:
+      - "docs/Vision-Product-brief.md"
+      - "docs/PRD.md"
+      - "docs/PRD-Appendix-Competitive-Matrix.md"
+      - "docs/Roadmap-Backlog.md"
+    
+    # === RESEARCH (15 документов) ===
+    research:
+      index: "docs/research/README.md"
+      coverage_matrix: "docs/Research-Coverage-Matrix.md"
+      documents:
+        - "docs/research/01-IA-and-UserJourneys.md"         # Карта сайта, навигация, user journeys
+        - "docs/research/02-Audience-Personas-JTBD.md"      # Персоны, JTBD, сегменты
+        - "docs/research/03-Content-SEO-and-Editorial.md"   # Контент-стратегия, SEO
+        - "docs/research/04-Interactive-Modules.md"         # Квизы, дневники, челленджи
+        - "docs/research/05-Booking-Payment-ClientCabinet.md"  # Запись, оплата, ЛК
+        - "docs/research/06-Telegram-Ecosystem.md"          # TG бот, deep links, воронки
+        - "docs/research/07-Trust-SocialProof-Profile.md"   # Профиль психолога, доверие
+        - "docs/research/08-Admin-CRM-Analytics.md"         # Админка, CRM, аналитика
+        - "docs/research/09-AI-Agents-Safety.md"            # Безопасность AI, кризис-хендлинг
+        - "docs/research/10-Legal-Privacy-Compliance-RU.md" # 152-ФЗ, приватность, согласия
+        - "docs/research/11-Component-Library-and-Copy.md"  # UI компоненты, микрокопирайтинг
+        - "docs/research/12-Community-and-Events.md"        # Мероприятия, комьюнити
+        - "docs/research/13-Competitive-Research-Psychology-Portals.md"  # Конкуренты
+        - "docs/research/13-Competitive-Research-Integration-Map.md"     # Интеграционная карта
+    
+    # === UX & CONTENT ===
+    ux_content:
+      - "docs/information-architecture.md"
+      - "docs/user-flows-cjm.md"
+      - "docs/User-Stories-JTBD-Acceptance-Criteria.md"
+      - "docs/Content-Guide-UX-Copywriting.md"
+      - "docs/UGC-Moderation-Rules.md"
+      - "docs/Wireframes-Figma.md"
+    
+    # === ARCHITECTURE ===
+    architecture:
+      system:
+        - "docs/Архитектурный-обзор.md"
+        - "docs/Диаграммы-C4-Sequence-Deployment.md"
+        - "docs/Technical-Decisions.md"
+        - "docs/NFR-SLO-SLI-Performance-Security-Scalability.md"
+      domain:
+        - "docs/Domain-Model-Specification.md"
+        - "docs/Модель-данных.md"
+      adrs:
+        - "docs/architecture/adrs/ADR-001-backend-framework-django.md"
+        - "docs/architecture/adrs/ADR-002-architecture-pattern-clean-architecture-ddd.md"
+        - "docs/architecture/adrs/ADR-003-database-postgresql.md"
+        - "docs/architecture/adrs/ADR-004-ai-framework-langchain.md"
+        - "docs/architecture/adrs/ADR-005-payment-provider-yookassa.md"
+      security:
+        - "docs/security/threat-model.md"
+        - "docs/security/security-requirements.md"
+      api:
+        - "docs/api/api-contracts.md"
+        - "docs/Telegram-Deep-Links-Schema.md"
+    
+    # === SPECIFICATIONS ===
+    specifications:
+      product:
+        - "docs/Interactive-Modules-Matrix.md"
+        - "docs/Формулы-метрик.md"
+      analytics:
+        - "docs/Tracking-Plan.md"
+        - "docs/AB-Experiments-Plan.md"
+    
+    # === DESIGN SYSTEM ===
+    design:
+      main:
+        - "docs/DESIGN_SYSTEM.md"
+        - "docs/TOKENS.md"
+        - "docs/Visual-Specs.md"
+      accessibility:
+        - "docs/ACCESSIBILITY.md"
+        - "docs/Accessibility-A11y-Requirements.md"
+      development:
+        - "docs/DEVELOPER_GUIDE.md"
+        - "docs/SCREENS_TEMPLATES_GUIDE.md"
+        - "docs/Design-Handoff.md"
+      process:
+        - "docs/Design-Phase-Plan.md"
+        - "docs/Design-Review-Checklist.md"
+    
+    # === DESIGN SYSTEM IMPLEMENTATION ===
+    design_system_impl:
+      docs:
+        - "design_system/docs/README.md"
+        - "design_system/docs/DESIGN_SYSTEM.md"
+        - "design_system/docs/TOKENS.md"
+        - "design_system/docs/ACCESSIBILITY.md"
+        - "design_system/docs/DEVELOPER_GUIDE.md"
+        - "design_system/docs/SCREENS_TEMPLATES_GUIDE.md"
+      components: "design_system/src/app/components/ (55+ TSX файлов)"
+  
+  # Открытые вопросы (не блокирующие старт)
+  open_questions:
+    - "Точные формулировки вопросов QZ-01/02 (валидация психологом) — не блокирует технологический старт"
+    - "Выбор frontend-фреймворка (рекомендуется React/Next.js)"
+    - "Выбор инструмента аналитики (event-based, без PII)"
+  
+  # Следующие шаги
+  next_steps:
+    immediate:
+      - "Начать стадию Development: настройка Django-проекта"
+      - "Создание структуры проекта согласно Clean Architecture + DDD"
+      - "Реализация Domain Layer (Aggregates, Entities, Value Objects)"
+      - "Настройка инфраструктуры разработки (CI/CD, тестирование)"
+    
+    short_term:
+      - "Реализация Infrastructure Layer (Django ORM, внешние интеграции)"
+      - "Реализация Application Layer (Use Cases)"
+      - "Реализация Presentation Layer (Django REST Framework API)"
+      - "Интеграция Design System в frontend проект"
+      - "Интеграция с Telegram Bot API"
+      - "Настройка аналитики и tracking"
+      - "Разработка LangChain‑агентов"
+  
+  # Источники истины (по областям)
+  source_of_truth:
+    # Product
+    product_requirements: "docs/PRD.md"
+    product_vision: "docs/Vision-Product-brief.md"
+    roadmap: "docs/Roadmap-Backlog.md"
+    user_stories: "docs/User-Stories-JTBD-Acceptance-Criteria.md"
+    
+    # Research
+    research_index: "docs/research/README.md"
+    research_coverage: "docs/Research-Coverage-Matrix.md"
+    
+    # Architecture
+    architecture: "docs/Архитектурный-обзор.md"
+    domain_model: "docs/Domain-Model-Specification.md"
+    data_model: "docs/Модель-данных.md"
+    api_contracts: "docs/api/api-contracts.md"
+    technical_decisions: "docs/Technical-Decisions.md"
+    nfr: "docs/NFR-SLO-SLI-Performance-Security-Scalability.md"
+    
+    # Security
+    threat_model: "docs/security/threat-model.md"
+    security_requirements: "docs/security/security-requirements.md"
+    
+    # UX & Content
+    information_architecture: "docs/information-architecture.md"
+    user_flows: "docs/user-flows-cjm.md"
+    content_guide: "docs/Content-Guide-UX-Copywriting.md"
+    
+    # Design System
+    design_system: "docs/DESIGN_SYSTEM.md"
+    design_tokens: "docs/TOKENS.md"
+    accessibility: "docs/Accessibility-A11y-Requirements.md"
+    design_handoff: "docs/Design-Handoff.md"
+    developer_guide: "docs/DEVELOPER_GUIDE.md"
+    
+    # Analytics
+    tracking: "docs/Tracking-Plan.md"
+    experiments: "docs/AB-Experiments-Plan.md"
+    metrics: "docs/Формулы-метрик.md"
+    
+    # Interactive Modules
+    interactive_modules: "docs/Interactive-Modules-Matrix.md"
+    
+    # Telegram
+    telegram_ecosystem: "docs/research/06-Telegram-Ecosystem.md"
+    telegram_deep_links: "docs/Telegram-Deep-Links-Schema.md"

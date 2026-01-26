@@ -1,0 +1,312 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Spacing Scale - 8pt Grid */
+  --space-0: 0px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 9999px;
+
+  /* Elevation (shadows) */
+  --elevation-0: none;
+  --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --elevation-2: 0 4px 6px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --elevation-3: 0 10px 15px rgba(0, 0, 0, 0.08), 0 4px 6px rgba(0, 0, 0, 0.06);
+  --elevation-4: 0 20px 25px rgba(0, 0, 0, 0.08), 0 10px 10px rgba(0, 0, 0, 0.04);
+
+  /* Typography */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-size: 16px;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Light Theme Colors - Спокойная поддерживающая палитра */
+  --background: #F8FAFB;
+  --foreground: #1A1D2E;
+  --card: #FFFFFF;
+  --card-foreground: #1A1D2E;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A1D2E;
+
+  /* Primary - бирюзовый, вдохновлённый психологическими сервисами */
+  --primary: #17A2B8;
+  --primary-foreground: #FFFFFF;
+  --primary-hover: #138496;
+
+  /* Secondary - тёплый коралловый акцент */
+  --secondary: #FFF5F2;
+  --secondary-foreground: #1A1D2E;
+  --secondary-hover: #FFE9E3;
+
+  /* Accent - мягкий мятный */
+  --accent: #E6F7F9;
+  --accent-foreground: #1A1D2E;
+
+  /* Muted - приглушённые элементы */
+  --muted: #F5F7F9;
+  --muted-foreground: #64748B;
+
+  /* Semantic Colors */
+  --success: #0FA968;
+  --success-foreground: #FFFFFF;
+  --warning: #F59E42;
+  --warning-foreground: #1A1D2E;
+  --danger: #E74C3C;
+  --danger-foreground: #FFFFFF;
+  --destructive: #E74C3C;
+  --destructive-foreground: #FFFFFF;
+  --info: #17A2B8;
+  --info-foreground: #FFFFFF;
+
+  /* UI Elements */
+  --border: #E2E8F0;
+  --input: #FFFFFF;
+  --input-background: #F8FAFC;
+  --input-border: #CBD5E1;
+  --switch-background: #CBD5E1;
+  --ring: #17A2B8;
+
+  /* Focus State - WCAG 2.2 AA compliant */
+  --focus: #17A2B8;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+
+  /* Chart Colors */
+  --chart-1: #17A2B8;
+  --chart-2: #0FA968;
+  --chart-3: #F59E42;
+  --chart-4: #9B59B6;
+  --chart-5: #FF8C69;
+
+  /* Sidebar */
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #1A1D2E;
+  --sidebar-primary: #17A2B8;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F5F7F9;
+  --sidebar-accent-foreground: #1A1D2E;
+  --sidebar-border: #E2E8F0;
+  --sidebar-ring: #17A2B8;
+
+  /* Legacy radius for compatibility */
+  --radius: 0.75rem;
+}
+
+.dark {
+  /* Dark Theme Colors */
+  --background: #0F1419;
+  --foreground: #F9FAFB;
+  --card: #1A1F2E;
+  --card-foreground: #F9FAFB;
+  --popover: #1A1F2E;
+  --popover-foreground: #F9FAFB;
+
+  /* Primary - более яркий бирюзовый для тёмного фона */
+  --primary: #4ECDC4;
+  --primary-foreground: #0F1419;
+  --primary-hover: #5DD9D0;
+
+  /* Secondary - мягкий коралловый */
+  --secondary: #2A2834;
+  --secondary-foreground: #F9FAFB;
+  --secondary-hover: #342F3E;
+
+  /* Accent - тёмный мятный */
+  --accent: #1E2F32;
+  --accent-foreground: #F9FAFB;
+
+  /* Muted */
+  --muted: #1E2838;
+  --muted-foreground: #94A3B8;
+
+  /* Semantic Colors - adjusted for dark theme */
+  --success: #2DD4BF;
+  --success-foreground: #0F1419;
+  --warning: #FBA94C;
+  --warning-foreground: #0F1419;
+  --danger: #FB7185;
+  --danger-foreground: #0F1419;
+  --destructive: #FB7185;
+  --destructive-foreground: #0F1419;
+  --info: #4ECDC4;
+  --info-foreground: #0F1419;
+
+  /* UI Elements */
+  --border: #2D3748;
+  --input: #1A1F2E;
+  --input-background: #1E2838;
+  --input-border: #3F495A;
+  --switch-background: #475569;
+  --ring: #4ECDC4;
+
+  /* Focus */
+  --focus: #4ECDC4;
+
+  /* Elevation (shadows for dark) */
+  --elevation-0: none;
+  --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --elevation-2: 0 4px 6px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+  --elevation-3: 0 10px 15px rgba(0, 0, 0, 0.3), 0 4px 6px rgba(0, 0, 0, 0.2);
+  --elevation-4: 0 20px 25px rgba(0, 0, 0, 0.3), 0 10px 10px rgba(0, 0, 0, 0.15);
+
+  /* Chart Colors - adjusted for dark */
+  --chart-1: #4ECDC4;
+  --chart-2: #2DD4BF;
+  --chart-3: #FBA94C;
+  --chart-4: #C084FC;
+  --chart-5: #FB7185;
+
+  /* Sidebar */
+  --sidebar: #1A1F2E;
+  --sidebar-foreground: #F9FAFB;
+  --sidebar-primary: #4ECDC4;
+  --sidebar-primary-foreground: #0F1419;
+  --sidebar-accent: #252A38;
+  --sidebar-accent-foreground: #F9FAFB;
+  --sidebar-border: #2D3748;
+  --sidebar-ring: #4ECDC4;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-input-border: var(--input-border);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-focus: var(--focus);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-pill: var(--radius-pill);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-family);
+  }
+
+  /**
+  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
+  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
+  */
+
+  html {
+    font-size: var(--font-size);
+  }
+
+  h1 {
+    font-weight: var(--font-weight-bold);
+    line-height: 1.25;
+  }
+
+  h2 {
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.25;
+  }
+
+  h3 {
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.5;
+  }
+
+  h4 {
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  label {
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button {
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  input {
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+  }
+
+  /* Focus states - WCAG 2.2 AA */
+  *:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  /* Minimum touch target size for mobile - WCAG 2.2 AA */
+  button, a, input[type="checkbox"], input[type="radio"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  @media (min-width: 768px) {
+    button, a {
+      min-height: unset;
+      min-width: unset;
+    }
+  }
+}
