@@ -1,0 +1,176 @@
+## Контекст проекта: «Эмоциональный баланс»
+
+Персональный сайт психолога — тёплое онлайн‑пространство поддержки с интерактивами, записью, личным кабинетом, Telegram-экосистемой и админ-панелью.
+
+### Источники истины проекта
+
+При работе над проектом **обязательно** сверяйся с документами:
+
+| Область | Источник истины |
+|---------|-----------------|
+| **Требования** | `docs/PRD.md`, `docs/User-Stories-JTBD-Acceptance-Criteria.md` |
+| **Архитектура** | `docs/Архитектурный-обзор.md`, `docs/Technical-Decisions.md` |
+| **Доменная модель** | `docs/Domain-Model-Specification.md`, `docs/Модель-данных.md` |
+| **API** | `docs/api/api-contracts.md` |
+| **Дизайн** | `docs/Design-Handoff.md`, `design_system/docs/DEVELOPER_GUIDE.md` |
+| **Контент/тон** | `docs/Content-Guide-UX-Copywriting.md` |
+| **Интерактивы** | `docs/Interactive-Modules-Matrix.md` |
+| **Безопасность** | `docs/security/threat-model.md`, `docs/security/security-requirements.md` |
+| **Аналитика** | `docs/Tracking-Plan.md` |
+| **Research** | `docs/research/README.md` (индекс 14 исследований) |
+
+### Текущая фаза: Development
+
+План разработки: `docs/Development-Phase-Plan.md`
+
+Технические спецификации фаз:
+- Phase 1: `docs/Phase-1-Technical-Specification.md`
+- Phase 2: `docs/Phase-2-Domain-Layer-Technical-Specification.md`
+- Phase 3: `docs/Phase-3-Infrastructure-Technical-Specs.md`
+- Phase 4: `docs/Phase-4-Application-Layer-Specification.md`
+- Phase 5: `docs/api/Phase5-Presentation-Layer-API-Specification.md`
+- Phase 7: `docs/Phase-7-Integration-Testing-Specification.md`
+- Phase 8: `docs/Phase-8-Deployment-GoLive-Technical-Spec.md`
+
+---
+
+## Технологический стек (зафиксирован)
+
+```yaml
+backend:
+  framework: Django
+  architecture: Clean Architecture + DDD
+  api: Django REST Framework
+  database: PostgreSQL
+  testing: pytest + pytest-django
+  
+frontend:
+  framework: React/Next.js (TBD)
+  design_system: design_system/src/components/
+  styling: Tailwind CSS v4 + CSS Custom Properties
+  
+integrations:
+  payments: ЮKassa
+  messaging: Telegram Bot API
+  ai: LangChain/LangGraph (Release 2)
+  
+analytics: Event-based (без PII)
+```
+
+---
+
+## Структура проекта (Clean Architecture + DDD)
+
+```
+backend/
+├── config/                    # Django settings
+├── domain/                    # Domain Layer (DDD)
+│   ├── booking/               # Aggregate: Booking
+│   ├── interactive/           # Aggregate: Quiz, Diary, Challenge
+│   ├── content/               # Aggregate: Article, Resource
+│   ├── payments/              # Aggregate: Payment
+│   ├── identity/              # Aggregate: User, Client
+│   └── ...                    
+├── application/               # Application Layer (Use Cases)
+├── infrastructure/            # Infrastructure Layer
+│   ├── persistence/           # Django ORM, Repositories
+│   └── external/              # Integrations
+├── presentation/              # Presentation Layer (API)
+│   └── api/v1/
+└── shared/                    # Shared Kernel
+```
+
+---
+
+## Принципы контента и тона (КРИТИЧНО)
+
+### Бережный тон
+- Эмпатично, без давления, не директивно
+- **Запрещены** формулировки: "лечим", "диагноз", "гарантируем результат", "всё будет хорошо"
+- **Рекомендуется**: "часто помогает", "может быть полезно", "если откликается"
+- CTA без давления: объясняй пользу, а не требуй действия
+
+### Дисклеймеры (обязательны)
+- На всех интерактивах: "Это не диагноз и не замена консультации специалиста"
+- В контенте: "Материал носит информационный характер"
+- При любых упоминаниях здоровья: "Не является медицинской услугой"
+
+### Кризисная обработка (КРИТИЧНО для безопасности)
+При обнаружении **кризисных триггеров** (суицидальные мысли, самоповреждение, острый кризис):
+1. **Немедленно** показывать блок экстренной помощи
+2. **Отключить** все "прогревающие" CTA и marketing-элементы
+3. **Предоставить** контакты экстренных служб (телефон доверия, скорая)
+4. **Никогда** не предлагать "записаться на консультацию" в кризисном состоянии
+
+### Возрастное ограничение
+Продукт **только для 18+** — это должно быть отражено в согласиях, UI, контенте.
+
+---
+
+## Privacy by Design (152-ФЗ)
+
+### Минимизация данных
+- Интерактивы работают **без обязательного ввода контакта**
+- Свободный текст пользователя **не обязателен** для получения результата
+- Аналитика **без PII** (персонально идентифицируемой информации)
+
+### Согласия (раздельные)
+- Обработка персональных данных
+- Получение коммуникаций (email, Telegram)
+- Публикация отзывов (если применимо)
+
+### Управление данными пользователем
+- Скачать свои данные
+- Удалить аккаунт
+- Отозвать согласия
+
+---
+
+## Команды проекта (специфичные)
+
+В дополнение к базовым командам системы:
+
+- `/domain <bounded-context>` — показать спецификацию доменного контекста из Domain-Model-Specification.md
+- `/api <endpoint>` — показать контракт API из api-contracts.md
+- `/phase <N>` — показать техническую спецификацию фазы разработки
+- `/interactive <module-id>` — показать спецификацию интерактивного модуля из Interactive-Modules-Matrix.md
+- `/tone-check` — проверить текст на соответствие бережному тону
+- `/crisis-check` — проверить наличие кризисной обработки в компоненте
+
+---
+
+## Quality Gates проекта
+
+### Для кода
+- [ ] Соответствует Clean Architecture + DDD
+- [ ] Тесты написаны (coverage ≥80%)
+- [ ] Нет нарушений security requirements
+- [ ] Privacy by design соблюден
+
+### Для контента
+- [ ] Бережный тон соблюден
+- [ ] Дисклеймеры присутствуют
+- [ ] Кризисная обработка предусмотрена (где применимо)
+- [ ] Возрастное ограничение указано
+
+### Для интерактивов
+- [ ] Работает без обязательного ввода контакта
+- [ ] Результат доступен без сохранения PII
+- [ ] Кризисные триггеры обрабатываются
+- [ ] Дисклеймер "не диагноз" на старте и результате
+
+---
+
+## Роутинг задач (уточнение для проекта)
+
+| Тип задачи | Агент | Дополнительный контекст |
+|------------|-------|-------------------------|
+| Доменная логика (Entities, Value Objects) | `coder` | → `docs/Domain-Model-Specification.md` |
+| Use Cases | `coder` | → `docs/Phase-4-Application-Layer-Specification.md` |
+| API endpoints | `coder` | → `docs/api/api-contracts.md` |
+| UI компоненты | `coder` | → `design_system/docs/DEVELOPER_GUIDE.md` |
+| Контент/UX copy | `content` | → `docs/Content-Guide-UX-Copywriting.md` |
+| Интерактивы (логика) | `coder` + `content` | → `docs/Interactive-Modules-Matrix.md` |
+| AI-агенты | `ai-agents` | → `.cursor/skills/langchain-development/SKILL.md` |
+| Security | `security` | → `docs/security/*.md` |
+| Аналитика/события | `analytics` | → `docs/Tracking-Plan.md` |
