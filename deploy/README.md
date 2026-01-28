@@ -63,7 +63,7 @@ sudo nginx -t && sudo systemctl reload nginx
 ```
 Или: `sudo bash /var/www/psychology/deploy/apply-nginx-balance.sh`
 
-Nginx: `/` и статика SPA → 127.0.0.1:8082 (frontend), `/api/`, `/admin/`, `/health/`, `/static/`, `/media/` → 127.0.0.1:8001 (backend).
+Nginx: `/` и статика SPA → 127.0.0.1:8082 (frontend; на сервере при занятом 8082 использовать 8084), `/api/`, `/admin/`, `/health/`, `/static/`, `/media/` → 127.0.0.1:8001 (backend).
 
 Перед деплоем создаётся бэкап БД в `$PROJECT_PATH/backups/`. Откат: см. [.cursor/skills/vps-deploy/SKILL.md](../.cursor/skills/vps-deploy/SKILL.md) и `backend/infrastructure/deploy/restore_postgres.sh`.
 
