@@ -169,4 +169,37 @@
 
 ---
 
+## 6. Как создать пользователя для админки
+
+Вход в админку разрешён только пользователям с ролью **owner**, **assistant** или **editor**. Создать такого пользователя можно management-командой:
+
+```bash
+cd backend
+python manage.py create_admin_user <email> '<пароль>' [--role owner|assistant|editor] [--grant-consent]
+```
+
+**Примеры:**
+
+```bash
+# Владелец (полный доступ) — по умолчанию
+python manage.py create_admin_user admin@example.com 'SecurePass123!'
+
+# Ассистент (встречи, лиды)
+python manage.py create_admin_user assistant@example.com 'SecurePass123!' --role assistant
+
+# Редактор (контент, модерация)
+python manage.py create_admin_user editor@example.com 'SecurePass123!' --role editor
+
+# С выдачей согласия на обработку ПДн (для полного доступа к кабинету и т.д.)
+python manage.py create_admin_user admin@example.com 'SecurePass123!' --grant-consent
+```
+
+**Пароль:** минимум 12 символов, заглавная и строчная буквы, цифра, спецсимвол (как при регистрации).
+
+**Существующий пользователь:** если email уже есть в системе, команда обновит ему роль и пароль (удобно для «повышения» обычного пользователя до админа).
+
+После создания войдите на сайте под этим email и паролем и откройте раздел «Админка» (или «Демо: Админка» в футере).
+
+---
+
 *Документ создан: Orchestrator Agent*
