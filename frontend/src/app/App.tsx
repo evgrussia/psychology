@@ -32,7 +32,9 @@ import QuizResultPage from '@/app/components/QuizResultPage';
 import QuizCrisisPage from '@/app/components/QuizCrisisPage';
 import NavigatorStartPage from '@/app/components/NavigatorStartPage';
 
+import { Toaster } from 'sonner';
 import type { Service, Slot } from '@/api/types/booking';
+import type { QuizQuestion, QuizResultData } from '@/api/types/interactive';
 
 type Page = 'home' | 'about' | 'how-it-works' | 'privacy-policy' | 'consent' | 'terms' | 'disclaimer' | '404' | 'consultations' | 'resources' | 'help' | 'cookies' | 'topics' | 'topic-detail' | 'blog' | 'blog-article' | 'resources-list' | 'emergency' | 'booking' | 'booking-slot' | 'booking-form' | 'cabinet' | 'cabinet-appointments' | 'cabinet-diary' | 'cabinet-materials' | 'login' | 'register' | 'quiz-start' | 'quiz-progress' | 'quiz-result' | 'quiz-crisis' | 'navigator';
 
@@ -49,6 +51,12 @@ export default function App() {
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [selectedBookingFormat, setSelectedBookingFormat] = useState<'online' | 'offline'>('online');
+  const [quizRunData, setQuizRunData] = useState<{
+    runId: string;
+    questions: QuizQuestion[];
+    slug: string;
+  } | null>(null);
+  const [quizResultData, setQuizResultData] = useState<QuizResultData | null>(null);
 
   const navigateTo = (page: Page) => {
     setCurrentPage(page);
@@ -62,6 +70,12 @@ export default function App() {
       setCurrentPage('login');
     }
   }, [isAuthenticated, isLoading, currentPage]);
+
+  useEffect(() => {
+    if (currentPage === 'quiz-progress' && !quizRunData) {
+      setCurrentPage('quiz-start');
+    }
+  }, [currentPage, quizRunData]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -602,10 +616,15 @@ export default function App() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <QuizStartPage onStart={() => navigateTo('quiz-progress')} />
+              <QuizStartPage
+                onStarted={(data) => {
+                  setQuizRunData(data);
+                  navigateTo('quiz-progress');
+                }}
+              />
             </motion.div>
           )}
-          {currentPage === 'quiz-progress' && (
+          {currentPage === 'quiz-progress' && quizRunData && (
             <motion.div
               key="quiz-progress"
               initial={{ opacity: 0, y: 20 }}
@@ -614,8 +633,14 @@ export default function App() {
               transition={{ duration: 0.3 }}
             >
               <QuizProgressPage
+                runId={quizRunData.runId}
+                questions={quizRunData.questions}
+                quizSlug={quizRunData.slug}
                 onBack={() => navigateTo('quiz-start')}
-                onComplete={() => navigateTo('quiz-result')}
+                onComplete={(result) => {
+                  setQuizResultData(result);
+                  navigateTo('quiz-result');
+                }}
                 onCrisis={() => navigateTo('quiz-crisis')}
               />
             </motion.div>
@@ -628,7 +653,14 @@ export default function App() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <QuizResultPage onBackToHome={() => navigateTo('home')} />
+              <QuizResultPage
+                result={quizResultData}
+                onBackToHome={() => {
+                  setQuizResultData(null);
+                  setQuizRunData(null);
+                  navigateTo('home');
+                }}
+              />
             </motion.div>
           )}
           {currentPage === 'quiz-crisis' && (
@@ -880,6 +912,7 @@ export default function App() {
           </div>
         </div>
       </footer>
+      <Toaster theme="light" position="top-center" richColors />
     </div>
   );
 }

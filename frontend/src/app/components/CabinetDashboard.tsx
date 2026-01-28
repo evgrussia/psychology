@@ -1,12 +1,20 @@
+import { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Calendar, BookOpen, FileText, ArrowRight, Clock, TrendingUp, Heart, Sparkles, LogOut } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { trackEvent } from '@/api/endpoints/tracking';
 
 interface CabinetDashboardProps {
   onNavigate?: (page: string) => void;
 }
 
 export default function CabinetDashboard({ onNavigate }: CabinetDashboardProps) {
-  const userName = 'Анна';
+  const { user } = useAuth();
+  const userName = user?.display_name ?? user?.email ?? 'Пользователь';
+
+  useEffect(() => {
+    trackEvent('page_view', { page: 'cabinet', user_id: user?.id ?? undefined });
+  }, [user?.id]);
 
   const stats = [
     {

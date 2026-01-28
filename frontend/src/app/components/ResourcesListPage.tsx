@@ -4,6 +4,7 @@ import { Headphones, FileText, Play, CheckSquare, Sparkles, ArrowRight, Mail, Fi
 import { getResources } from '@/api/endpoints/content';
 import type { ResourceListItem, Pagination } from '@/api/types/content';
 import { ApiError } from '@/api/client';
+import { showApiError } from '@/lib/errorToast';
 
 interface ResourcesListPageProps {
   onNavigateToResource?: (slug: string) => void;
@@ -68,6 +69,7 @@ export default function ResourcesListPage({ onNavigateToResource }: ResourcesLis
       setResources(response.data);
       setPagination(response.pagination);
     } catch (err) {
+      showApiError(err);
       if (err instanceof ApiError) {
         setError(err.message);
       } else {

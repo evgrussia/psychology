@@ -4,6 +4,7 @@ import { Calendar as CalendarIcon, Clock, Video, MapPin, ChevronLeft, ChevronRig
 import { getSlots } from '@/api/endpoints/booking';
 import type { Service, Slot } from '@/api/types/booking';
 import { ApiError } from '@/api/client';
+import { showApiError } from '@/lib/errorToast';
 
 function formatPrice(amount: number): string {
   return new Intl.NumberFormat('ru-RU', { style: 'decimal', maximumFractionDigits: 0 }).format(amount) + ' ₽';
@@ -86,6 +87,7 @@ export default function BookingSlotPage({ serviceId, service, onContinue, onBack
         setSelectedSlot(null);
       })
       .catch((err) => {
+        showApiError(err);
         setError(err instanceof ApiError ? err.message : 'Не удалось загрузить слоты');
       })
       .finally(() => setLoading(false));

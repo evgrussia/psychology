@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Calendar, Clock, Video, MapPin, CheckCircle2, ArrowRight, HelpCircle, Loader2, AlertCircle } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import { getServices } from '@/api/endpoints/booking';
+import { trackEvent } from '@/api/endpoints/tracking';
 import type { Service } from '@/api/types/booking';
 import { ApiError } from '@/api/client';
+import { showApiError } from '@/lib/errorToast';
 
 const GRADIENT_MAP: Record<string, { gradient: string; bgGradient: string }> = {
   online: { gradient: 'from-[#A8B5FF] to-[#C8F5E8]', bgGradient: 'from-[#A8B5FF]/5 to-[#C8F5E8]/5' },
@@ -26,9 +29,14 @@ interface BookingServicePageProps {
 }
 
 export default function BookingServicePage({ onSelectService }: BookingServicePageProps) {
+  const { user } = useAuth();
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    trackEvent('booking_started', { page: 'booking', user_id: user?.id ?? undefined });
+  }, [user?.id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -41,6 +49,7 @@ export default function BookingServicePage({ onSelectService }: BookingServicePa
       })
       .catch((err) => {
         if (!cancelled) {
+          showApiError(err);
           setError(err instanceof ApiError ? err.message : 'Не удалось загрузить услуги');
         }
       })

@@ -11,9 +11,15 @@ SECRET_KEY = os.environ['SECRET_KEY']
 DEBUG = False
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'example.com,www.example.com,api.example.com').split(',')
 
+# За прокси (nginx) доверяем X-Forwarded-Proto, иначе SECURE_SSL_REDIRECT даёт бесконечный редирект
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+# Django 4+: иначе форма входа админки по HTTPS даёт 403 CSRF
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://balance-space.ru,https://www.balance-space.ru').split(',')
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True

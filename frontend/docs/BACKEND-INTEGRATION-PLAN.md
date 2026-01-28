@@ -328,17 +328,17 @@ export async function request<T>(
 18. ✅ CabinetMaterials → GET resources и articles.
 19. ✅ Защита экранов кабинета: при неавторизованном пользователе — редирект на логин.
 
-### Фаза 5 — Квизы
+### Фаза 5 — Квизы ✅ ЗАВЕРШЕНО
 
-20. `api/endpoints/interactive.ts` + типы (quizzes, start, submit).
-21. QuizStartPage: GET quizzes, POST start; передача run_id, questions, slug в следующий экран.
-22. QuizProgressPage: рендер по questions, сбор answers, POST submit; переход на result/crisis.
-23. QuizResultPage: отображение данных из ответа submit.
+20. ✅ `api/endpoints/interactive.ts` + типы (quizzes, start, submit).
+21. ✅ QuizStartPage: GET quizzes, POST start; передача run_id, questions, slug в следующий экран.
+22. ✅ QuizProgressPage: рендер по questions, сбор answers, POST submit; переход на result/crisis.
+23. ✅ QuizResultPage: отображение данных из ответа submit.
 
-### Фаза 6 — Дополнительно
+### Фаза 6 — Дополнительно ✅ ЗАВЕРШЕНО
 
-24. Tracking: хелпер `trackEvent(...)` и вызовы на ключевых экранах (главная, квиз, запись, кабинет).
-25. Единая обработка ошибок в UI (тосты или inline-сообщения).
+24. ✅ Tracking: хелпер `trackEvent(...)` и вызовы на ключевых экранах (главная, квиз, запись, кабинет).
+25. ✅ Единая обработка ошибок в UI (тосты или inline-сообщения).
 26. Опционально: React Query для кэширования списков и деталей.
 
 ---
@@ -362,12 +362,12 @@ export async function request<T>(
 | 13 | CabinetAppointments | GET /cabinet/appointments/ | ✅ Подключено |
 | 14 | CabinetDiary | GET cabinet/diaries, POST interactive/diaries | ✅ Подключено |
 | 15 | CabinetMaterials | GET /content/resources/ и articles | ✅ Подключено |
-| 16 | QuizStartPage | GET /interactive/quizzes/, POST .../start/ | Подключить |
-| 17 | QuizProgressPage | POST .../submit/ (данные со start) | Подключить |
-| 18 | QuizResultPage | Данные из submit | Подключить |
-| 19 | QuizCrisisPage | — | Статика |
+| 16 | QuizStartPage | GET /interactive/quizzes/, POST .../start/ | ✅ Подключено |
+| 17 | QuizProgressPage | POST .../submit/ (данные со start) | ✅ Подключено |
+| 18 | QuizResultPage | Данные из submit | ✅ Подключено |
+| 19 | QuizCrisisPage | — | ✅ Статика |
 | 20 | NavigatorStartPage | Опционально GET /content/topics/ | По желанию |
-| 21 | Tracking | POST /tracking/events | Подключить на ключевых экранах |
+| 21 | Tracking | POST /tracking/events | ✅ Подключено на ключевых экранах |
 
 ---
 

@@ -1,16 +1,40 @@
 import { motion } from 'motion/react';
 import { CheckCircle2, Info, ArrowRight, Heart, BookOpen, MessageCircle, Download } from 'lucide-react';
+import type { QuizResultData } from '@/api/types/interactive';
 
 interface QuizResultPageProps {
+  result: QuizResultData | null;
   onBackToHome?: () => void;
 }
 
-export default function QuizResultPage({ onBackToHome }: QuizResultPageProps) {
-  // Mock result - in real app this would be calculated
-  const score = 12; // 0-27 scale
-  const severity = 'Умеренная депрессия';
-  const severityColor = 'from-[#FFD4B5] to-[#FFC97F]';
-  const severityBg = 'from-[#FFD4B5]/10 to-[#FFC97F]/10';
+function levelToSeverity(level: string): { label: string; color: string; bg: string } {
+  const l = level.toLowerCase();
+  if (l.includes('minimal') || l.includes('none') || l === '0') return { label: 'Минимальные симптомы', color: 'from-[#7FD99A] to-[#C8F5E8]', bg: 'from-[#7FD99A]/10 to-[#C8F5E8]/10' };
+  if (l.includes('mild') || l.includes('light') || l === '1') return { label: 'Лёгкая депрессия', color: 'from-[#C8F5E8] to-[#A8B5FF]', bg: 'from-[#C8F5E8]/10 to-[#A8B5FF]/10' };
+  if (l.includes('moderate') || l.includes('moderat')) return { label: 'Умеренная депрессия', color: 'from-[#FFD4B5] to-[#FFC97F]', bg: 'from-[#FFD4B5]/10 to-[#FFC97F]/10' };
+  if (l.includes('severe') || l.includes('heavy')) return { label: 'Тяжёлая депрессия', color: 'from-[#FF9A9A] to-[#FFC97F]', bg: 'from-[#FF9A9A]/10 to-[#FFC97F]/10' };
+  return { label: level, color: 'from-[#FFD4B5] to-[#FFC97F]', bg: 'from-[#FFD4B5]/10 to-[#FFC97F]/10' };
+}
+
+export default function QuizResultPage({ result, onBackToHome }: QuizResultPageProps) {
+  const severity = result ? levelToSeverity(result.level) : { label: '—', color: 'from-[#FFD4B5] to-[#FFC97F]', bg: 'from-[#FFD4B5]/10 to-[#FFC97F]/10' };
+  const recommendations = result?.recommendations ?? [];
+
+  if (!result) {
+    return (
+      <section className="px-4 sm:px-6 lg:px-8 pt-32 pb-16">
+        <div className="max-w-3xl mx-auto text-center">
+          <p className="text-[#718096] mb-6">Результат недоступен. Пройдите тест заново.</p>
+          <button
+            onClick={onBackToHome}
+            className="px-8 py-4 rounded-xl border-2 border-gray-200 text-[#2D3748] font-medium hover:border-[#A8B5FF] hover:bg-[#A8B5FF]/5 transition-all"
+          >
+            Вернуться на главную
+          </button>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <>
@@ -39,48 +63,21 @@ export default function QuizResultPage({ onBackToHome }: QuizResultPageProps) {
         </div>
       </section>
 
-      {/* Score Card */}
+      {/* Result Card */}
       <section className="px-4 sm:px-6 lg:px-8 pb-12 sm:pb-16">
         <div className="max-w-3xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className={`bg-gradient-to-br ${severityBg} border-2 border-[#FFD4B5]/30 rounded-2xl sm:rounded-3xl p-8 sm:p-12 text-center`}
+            className={`bg-gradient-to-br ${severity.bg} border-2 border-[#FFD4B5]/30 rounded-2xl sm:rounded-3xl p-8 sm:p-12 text-center`}
           >
-            <div className={`inline-block px-4 py-2 rounded-xl bg-gradient-to-r ${severityColor} text-white font-medium text-sm mb-6`}>
-              {severity}
+            <div className={`inline-block px-4 py-2 rounded-xl bg-gradient-to-r ${severity.color} text-white font-medium text-sm mb-6`}>
+              {severity.label}
             </div>
-            
-            <div className="mb-6">
-              <div className="text-6xl sm:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#FFD4B5] to-[#FFC97F] mb-2">
-                {score}
-              </div>
-              <p className="text-sm text-[#718096]">из 27 баллов</p>
-            </div>
-
-            {/* Score Scale */}
-            <div className="max-w-md mx-auto">
-              <div className="h-3 bg-white rounded-full overflow-hidden mb-3">
-                <div
-                  className={`h-full bg-gradient-to-r ${severityColor}`}
-                  style={{ width: `${(score / 27) * 100}%` }}
-                />
-              </div>
-              <div className="flex justify-between text-xs text-[#718096]">
-                <span>0</span>
-                <span>9</span>
-                <span>14</span>
-                <span>19</span>
-                <span>27</span>
-              </div>
-              <div className="flex justify-between text-xs text-[#718096] mt-1">
-                <span>Нет</span>
-                <span>Лёгкая</span>
-                <span>Умеренная</span>
-                <span>Тяжёлая</span>
-              </div>
-            </div>
+            {result.profile && (
+              <p className="text-sm text-[#718096] mb-4">{result.profile}</p>
+            )}
           </motion.div>
         </div>
       </section>
@@ -127,35 +124,13 @@ export default function QuizResultPage({ onBackToHome }: QuizResultPageProps) {
 
             <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 mb-6">
               <h3 className="text-lg sm:text-xl font-semibold text-[#2D3748] mb-4">
-                Умеренная депрессия (10-14 баллов)
+                {severity.label}
               </h3>
               <div className="space-y-4 text-base text-[#718096] leading-relaxed">
                 <p>
-                  Ваши симптомы указывают на умеренную депрессию. Это означает, что вы испытываете 
-                  заметные симптомы, которые влияют на вашу повседневную жизнь, но они не настолько 
-                  тяжёлые, чтобы полностью лишить вас возможности функционировать.
+                  Результат показывает выраженность симптомов за последние 2 недели. 
+                  Только квалифицированный специалист может поставить диагноз и подобрать лечение.
                 </p>
-                <p>
-                  На этом уровне депрессии часто встречаются:
-                </p>
-                <ul className="space-y-2 ml-4">
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#FFD4B5] mt-1">•</span>
-                    <span>Сниженное настроение большую часть времени</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#FFD4B5] mt-1">•</span>
-                    <span>Потеря интереса к обычным занятиям</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#FFD4B5] mt-1">•</span>
-                    <span>Проблемы со сном или аппетитом</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#FFD4B5] mt-1">•</span>
-                    <span>Снижение энергии и концентрации</span>
-                  </li>
-                </ul>
               </div>
             </div>
           </motion.div>
@@ -174,6 +149,21 @@ export default function QuizResultPage({ onBackToHome }: QuizResultPageProps) {
               Рекомендации
             </h2>
 
+            {recommendations.length > 0 ? (
+              <ul className="space-y-4">
+                {recommendations.map((rec, i) => (
+                  <li
+                    key={i}
+                    className="bg-gradient-to-r from-[#A8B5FF]/5 to-[#C8F5E8]/5 border border-[#A8B5FF]/20 rounded-2xl p-6 flex items-start gap-4"
+                  >
+                    <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#A8B5FF] to-[#C8F5E8] flex items-center justify-center flex-shrink-0 text-white font-bold">
+                      {i + 1}
+                    </span>
+                    <p className="text-base text-[#2D3748] leading-relaxed pt-1">{rec}</p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
             <div className="space-y-4">
               <div className="bg-gradient-to-r from-[#A8B5FF]/5 to-[#C8F5E8]/5 border border-[#A8B5FF]/20 rounded-2xl p-6">
                 <div className="flex items-start gap-4">
@@ -238,6 +228,7 @@ export default function QuizResultPage({ onBackToHome }: QuizResultPageProps) {
                 </div>
               </div>
             </div>
+            )}
           </motion.div>
         </div>
       </section>

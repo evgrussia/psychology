@@ -4,6 +4,7 @@ import { Brain, Heart, Zap, Users, Shield, Sparkles, Cloud, Target, TrendingUp, 
 import { getTopics } from '@/api/endpoints/content';
 import type { Topic } from '@/api/types/content';
 import { ApiError } from '@/api/client';
+import { showApiError } from '@/lib/errorToast';
 
 interface TopicsHubPageProps {
   onNavigateToTopic?: (slug: string) => void;
@@ -59,6 +60,7 @@ export default function TopicsHubPage({ onNavigateToTopic, onNavigateToQuiz, onN
       const response = await getTopics();
       setTopics(response.data);
     } catch (err) {
+      showApiError(err);
       if (err instanceof ApiError) {
         setError(err.message);
       } else {

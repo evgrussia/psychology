@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Calendar, Clock, Video, MapPin, MoreVertical, X, RefreshCw, ExternalLink, ChevronLeft, CalendarPlus, Loader2, AlertCircle } from 'lucide-react';
 import * as cabinetApi from '@/api/endpoints/cabinet';
 import type { CabinetAppointment } from '@/api/types/cabinet';
+import { showApiError } from '@/lib/errorToast';
 
 interface CabinetAppointmentsProps {
   onBack?: () => void;
@@ -39,7 +40,10 @@ export default function CabinetAppointments({ onBack, onNavigateToBooking }: Cab
         if (!cancelled) setAppointments(res.data ?? []);
       })
       .catch((err) => {
-        if (!cancelled) setError(err?.message ?? 'Не удалось загрузить встречи');
+        if (!cancelled) {
+          showApiError(err);
+          setError(err?.message ?? 'Не удалось загрузить встречи');
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);

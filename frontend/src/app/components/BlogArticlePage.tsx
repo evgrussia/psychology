@@ -4,6 +4,7 @@ import { Calendar, Clock, User, Tag, ArrowLeft, ArrowRight, Heart, Share2, Refre
 import { getArticleBySlug } from '@/api/endpoints/content';
 import type { Article } from '@/api/types/content';
 import { ApiError } from '@/api/client';
+import { showApiError } from '@/lib/errorToast';
 
 interface BlogArticlePageProps {
   slug?: string | null;
@@ -126,9 +127,11 @@ export default function BlogArticlePage({ slug, onBack, onNavigateToArticle }: B
         if (err.status === 404) {
           setNotFound(true);
         } else {
+          showApiError(err);
           setError(err.message);
         }
       } else {
+        showApiError(err);
         setError('Не удалось загрузить статью. Попробуйте позже.');
       }
     } finally {

@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Shield, Info, Loader2, CheckCircle2, AlertCi
 import { createAppointment } from '@/api/endpoints/booking';
 import type { Service, Slot, Appointment } from '@/api/types/booking';
 import { ApiError } from '@/api/client';
+import { showApiError } from '@/lib/errorToast';
 
 function getTimezone(): string {
   try {
@@ -147,6 +148,7 @@ export default function BookingFormPage({
       });
       setAppointmentResult(res.data);
     } catch (err) {
+      showApiError(err);
       setSubmitError(err instanceof ApiError ? err.message : 'Не удалось создать запись');
     } finally {
       setSubmitting(false);

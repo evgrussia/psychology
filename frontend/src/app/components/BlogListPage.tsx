@@ -4,6 +4,7 @@ import { BookOpen, Calendar, Clock, User, ArrowRight, Search, Mail, RefreshCw, C
 import { getArticles } from '@/api/endpoints/content';
 import type { ArticleListItem, Pagination } from '@/api/types/content';
 import { ApiError } from '@/api/client';
+import { showApiError } from '@/lib/errorToast';
 
 interface BlogListPageProps {
   onNavigateToArticle?: (slug: string) => void;
@@ -79,6 +80,7 @@ export default function BlogListPage({ onNavigateToArticle }: BlogListPageProps)
       setArticles(response.data);
       setPagination(response.pagination);
     } catch (err) {
+      showApiError(err);
       if (err instanceof ApiError) {
         setError(err.message);
       } else {

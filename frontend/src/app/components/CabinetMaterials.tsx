@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { FileText, BookOpen, Headphones, Video, Download, ExternalLink, Filter, ChevronLeft, Sparkles, Loader2, AlertCircle } from 'lucide-react';
 import * as contentApi from '@/api/endpoints/content';
 import type { ArticleListItem, ResourceListItem } from '@/api/types/content';
+import { showApiError } from '@/lib/errorToast';
 
 interface CabinetMaterialsProps {
   onBack?: () => void;
@@ -90,7 +91,10 @@ export default function CabinetMaterials({ onBack, onNavigateToArticle, onNaviga
         setMaterials(items);
       })
       .catch((err) => {
-        if (!cancelled) setError(err?.message ?? 'Не удалось загрузить материалы');
+        if (!cancelled) {
+          showApiError(err);
+          setError(err?.message ?? 'Не удалось загрузить материалы');
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);

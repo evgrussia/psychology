@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { BookOpen, Plus, Heart, Brain, Edit3, Trash2, Download, Filter, ChevronLeft, Lock, Loader2, AlertCircle } from 'lucide-react';
 import * as cabinetApi from '@/api/endpoints/cabinet';
 import type { DiaryEntry } from '@/api/types/cabinet';
+import { showApiError } from '@/lib/errorToast';
 
 interface CabinetDiaryProps {
   onBack?: () => void;
@@ -85,7 +86,8 @@ export default function CabinetDiary({ onBack }: CabinetDiaryProps) {
       setShowNewForm(false);
       loadEntries();
     } catch (err) {
-      setCreateError(err?.message ?? 'Не удалось создать запись');
+      showApiError(err);
+      setCreateError(err instanceof Error ? err.message : 'Не удалось создать запись');
     } finally {
       setSubmitting(false);
     }

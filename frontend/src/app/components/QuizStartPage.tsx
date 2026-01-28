@@ -1,11 +1,83 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { ClipboardList, Clock, Shield, AlertCircle, Info, Phone, MessageCircle, ChevronRight } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { getQuizzes, startQuiz } from '@/api/endpoints/interactive';
+import { trackEvent } from '@/api/endpoints/tracking';
+import type { QuizListItem, QuizQuestion } from '@/api/types/interactive';
+import { PHQ9_FALLBACK_QUESTIONS } from '@/api/types/interactive';
+import { ApiError } from '@/api/client';
+import { showApiError } from '@/lib/errorToast';
 
-interface QuizStartPageProps {
-  onStart?: () => void;
+export interface QuizStartedData {
+  runId: string;
+  questions: QuizQuestion[];
+  slug: string;
 }
 
-export default function QuizStartPage({ onStart }: QuizStartPageProps) {
+interface QuizStartPageProps {
+  onStarted?: (data: QuizStartedData) => void;
+}
+
+const PHQ9_OPTION_LABELS = ['Ни разу', 'Несколько дней', 'Больше половины дней', 'Почти каждый день'];
+
+export default function QuizStartPage({ onStarted }: QuizStartPageProps) {
+  const { user } = useAuth();
+  const [quizzes, setQuizzes] = useState<QuizListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [starting, setStarting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getQuizzes()
+      .then((res) => {
+        if (!cancelled) setQuizzes(res.data ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setQuizzes([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  const selectedQuiz = quizzes.length > 0 ? quizzes[0] : null;
+  const slug = selectedQuiz?.slug ?? 'phq-9';
+  const title = selectedQuiz?.title ?? 'Оценка депрессии (PHQ-9)';
+  const estimatedMinutes = selectedQuiz?.estimated_time_minutes ?? 5;
+
+  const handleStart = async () => {
+    if (!onStarted) return;
+    setError(null);
+    setStarting(true);
+    try {
+      const data = await startQuiz(slug);
+      const runId = data.run_id;
+      let questions: QuizQuestion[] = (data.questions && data.questions.length > 0)
+        ? data.questions
+        : [...PHQ9_FALLBACK_QUESTIONS];
+      if (questions.some((q) => !q.options || q.options.length === 0)) {
+        questions = questions.map((q, i) => ({
+          ...q,
+          options: q.options ?? PHQ9_OPTION_LABELS,
+        }));
+      }
+      trackEvent('quiz_started', { page: 'quiz-start', user_id: user?.id ?? undefined, properties: { quiz_slug: slug } });
+      onStarted({ runId, questions, slug });
+    } catch (e) {
+      showApiError(e);
+      if (e instanceof ApiError) {
+        setError(e.message || 'Не удалось начать тест');
+      } else {
+        setError('Проверьте подключение и попробуйте снова');
+      }
+    } finally {
+      setStarting(false);
+    }
+  };
+
   return (
     <>
       {/* Hero Section */}
@@ -24,12 +96,12 @@ export default function QuizStartPage({ onStart }: QuizStartPageProps) {
             </div>
             
             <h1 className="text-[32px] sm:text-4xl lg:text-5xl font-bold text-[#2D3748] mb-4 leading-tight">
-              Оценка депрессии (PHQ-9)
+              {loading ? 'Загрузка…' : title}
             </h1>
             
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#A8B5FF]/10 text-sm font-medium text-[#2D3748]">
               <Clock className="w-4 h-4 text-[#A8B5FF]" />
-              9 вопросов • 3-5 минут
+              {loading ? '…' : `9 вопросов • ${estimatedMinutes} мин`}
             </div>
           </motion.div>
         </div>
@@ -244,11 +316,15 @@ export default function QuizStartPage({ onStart }: QuizStartPageProps) {
             viewport={{ once: true }}
             className="sticky bottom-0 sm:static bg-white sm:bg-transparent py-4 sm:py-0 -mx-4 px-4 sm:mx-0 sm:px-0 border-t sm:border-0 border-gray-100"
           >
+            {error && (
+              <p className="text-sm text-red-600 text-center mb-3">{error}</p>
+            )}
             <button
-              onClick={onStart}
-              className="w-full px-8 py-4 rounded-xl bg-gradient-to-r from-[#A8B5FF] to-[#C8F5E8] text-white text-base sm:text-lg font-medium shadow-[0_8px_24px_-4px_rgba(168,181,255,0.4)] hover:shadow-[0_12px_32px_-4px_rgba(168,181,255,0.5)] active:scale-[0.98] transition-all"
+              onClick={handleStart}
+              disabled={loading || starting}
+              className="w-full px-8 py-4 rounded-xl bg-gradient-to-r from-[#A8B5FF] to-[#C8F5E8] text-white text-base sm:text-lg font-medium shadow-[0_8px_24px_-4px_rgba(168,181,255,0.4)] hover:shadow-[0_12px_32px_-4px_rgba(168,181,255,0.5)] active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Начать тест
+              {starting ? 'Запуск…' : 'Начать тест'}
             </button>
             <p className="text-xs text-center text-[#718096] mt-3">
               Нажимая кнопку, вы подтверждаете, что ознакомились с предупреждениями

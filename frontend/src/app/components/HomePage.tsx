@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { trackEvent } from '@/api/endpoints/tracking';
 import { 
   Heart, 
   Phone, 
@@ -25,6 +26,10 @@ interface HomePageProps {
 
 export default function HomePage({ onNavigateToQuiz, onNavigateToNavigator }: HomePageProps) {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  useEffect(() => {
+    trackEvent('page_view', { page: 'home' });
+  }, []);
 
   return (
     <>
