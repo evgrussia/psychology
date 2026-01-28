@@ -54,7 +54,15 @@ ssh user@your-server 'sudo bash /tmp/bootstrap-server.sh'
 - **frontend** (SPA): порт 8082, раздача Vite-сборки через nginx в контейнере.
 - **backend** (Django API): порт 8001 (на сервере при занятом 8000 — в compose задать `8001:8000`).
 
-После `docker compose -f docker-compose.prod.yml up -d --build` применить nginx:
+Запуск: переменные `DB_PASSWORD`, `DB_NAME`, `DB_USER` подставляются в compose из файла. Используйте **`--env-file .env.production`**:
+
+```bash
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
+```
+
+Без `--env-file .env.production` нужен файл `.env` в каталоге проекта с хотя бы `DB_PASSWORD=...`.
+
+После запуска контейнеров применить nginx:
 
 **На сервере (с sudo):**
 ```bash

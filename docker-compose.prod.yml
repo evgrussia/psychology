@@ -1,6 +1,6 @@
 # Референс для production-подобного запуска (frontend + backend + PostgreSQL + Redis).
-# Использование: docker compose -f docker-compose.prod.yml up -d
-# Переменные: .env.production (DB_NAME, DB_USER, DB_PASSWORD, REDIS_HOST, SECRET_KEY, ALLOWED_HOSTS).
+# Использование: docker compose --env-file .env.production -f docker-compose.prod.yml up -d
+# Переменные для подстановки (DB_NAME, DB_USER, DB_PASSWORD) берутся из --env-file; без него нужен .env с DB_PASSWORD.
 # Host nginx: / и /assets/ → frontend:8082, /api/ /admin/ /health/ /static/ /media/ → backend:8001.
 
 services:
