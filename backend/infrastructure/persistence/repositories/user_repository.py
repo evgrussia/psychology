@@ -128,6 +128,22 @@ class DjangoUserRepository(IUserRepository):
             return UserModel.objects.get(id=user_id)
         except UserModel.DoesNotExist:
             return None
+
+    def get_mfa_secret_encrypted(self, user_id: UUID) -> Optional[str]:
+        """Получить зашифрованный MFA secret пользователя."""
+        try:
+            model = UserModel.objects.get(id=user_id)
+            return model.mfa_secret_encrypted
+        except UserModel.DoesNotExist:
+            return None
+
+    def set_mfa_secret(self, user_id: UUID, encrypted_secret: str) -> None:
+        """Установить зашифрованный MFA secret."""
+        UserModel.objects.filter(id=user_id).update(mfa_secret_encrypted=encrypted_secret)
+
+    def set_mfa_enabled(self, user_id: UUID, enabled: bool) -> None:
+        """Включить или выключить MFA для пользователя."""
+        UserModel.objects.filter(id=user_id).update(mfa_enabled=enabled)
     
     def get_user_roles(self, user_id: UUID) -> List[str]:
         """Получить коды ролей пользователя."""

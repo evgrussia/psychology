@@ -1,10 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'motion/react';
-import { Headphones, FileText, Play, CheckSquare, Sparkles, ArrowRight, Mail, Filter, RefreshCw, type LucideIcon } from 'lucide-react';
+import { Headphones, FileText, Play, CheckSquare, Sparkles, ArrowRight, Mail, Filter, RefreshCw, Heart, Loader2, type LucideIcon } from 'lucide-react';
 import { getResources } from '@/api/endpoints/content';
+import * as cabinetApi from '@/api/endpoints/cabinet';
 import type { ResourceListItem, Pagination } from '@/api/types/content';
+import type { FavoriteItem } from '@/api/types/cabinet';
 import { ApiError } from '@/api/client';
 import { showApiError } from '@/lib/errorToast';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ResourcesListPageProps {
   onNavigateToResource?: (slug: string) => void;
@@ -52,11 +55,49 @@ function ResourceSkeleton() {
 }
 
 export default function ResourcesListPage({ onNavigateToResource }: ResourcesListPageProps) {
+  const { isAuthenticated } = useAuth();
   const [activeFilter, setActiveFilter] = useState('all');
   const [resources, setResources] = useState<ResourceListItem[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
+  const [togglingSlug, setTogglingSlug] = useState<string | null>(null);
+
+  const fetchFavorites = useCallback(() => {
+    if (!isAuthenticated) return;
+    setFavoriteLoading(true);
+    cabinetApi.getFavorites().then((res) => setFavorites(res.data ?? [])).catch(() => {}).finally(() => setFavoriteLoading(false));
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (isAuthenticated) fetchFavorites();
+    else setFavorites([]);
+  }, [isAuthenticated, fetchFavorites]);
+
+  const isFavorite = (slug: string) => favorites.some((f) => f.resource_type === 'resource' && f.resource_id === slug);
+
+  const handleToggleFavorite = useCallback(async (e: React.MouseEvent, slug: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isAuthenticated) return;
+    const fav = favorites.find((f) => f.resource_type === 'resource' && f.resource_id === slug);
+    setTogglingSlug(slug);
+    try {
+      if (fav) {
+        await cabinetApi.removeFavorite(fav.id);
+        setFavorites((prev) => prev.filter((f) => f.id !== fav.id));
+      } else {
+        const res = await cabinetApi.addFavorite({ resource_type: 'resource', resource_id: slug });
+        setFavorites((prev) => [...prev, res.data]);
+      }
+    } catch (err) {
+      showApiError(err);
+    } finally {
+      setTogglingSlug(null);
+    }
+  }, [isAuthenticated, favorites]);
 
   const fetchResources = useCallback(async (type?: string) => {
     setLoading(true);
@@ -283,45 +324,67 @@ export default function ResourcesListPage({ onNavigateToResource }: ResourcesLis
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: index * 0.05 }}
+                    className="group relative bg-white border-2 border-gray-100 rounded-2xl p-6 text-left hover:border-transparent hover:shadow-[0_8px_24px_-4px_rgba(127,217,154,0.2)] transition-all duration-300"
                   >
+                    {/* Gradient Background on Hover */}
+                    <div className={`absolute inset-0 bg-gradient-to-br ${metadata.bgGradient} opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl pointer-events-none`} />
                     <button
+                      type="button"
                       onClick={() => onNavigateToResource?.(resource.slug)}
-                      className="group w-full h-full bg-white border-2 border-gray-100 rounded-2xl p-6 text-left hover:border-transparent hover:shadow-[0_8px_24px_-4px_rgba(127,217,154,0.2)] transition-all duration-300"
-                    >
-                      {/* Gradient Background on Hover */}
-                      <div className={`absolute inset-0 bg-gradient-to-br ${metadata.bgGradient} opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl`} />
-                      
-                      <div className="relative">
-                        {/* Icon & Type */}
-                        <div className="flex items-center justify-between mb-4">
-                          <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${metadata.gradient} flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform`}>
-                            <IconComponent className="w-6 h-6 text-white" />
-                          </div>
-                          <span className={`px-3 py-1 rounded-lg bg-gradient-to-r ${metadata.gradient} bg-opacity-10 text-xs font-medium`}>
-                            {metadata.label}
-                          </span>
+                      className="absolute inset-0 w-full h-full rounded-2xl z-0"
+                      aria-label={`Открыть ${resource.title}`}
+                    />
+                    <div className="relative z-10 pointer-events-none">
+                      <div className="pointer-events-auto flex items-center justify-end mb-2">
+                        {isAuthenticated && (
+                          <button
+                            type="button"
+                            onClick={(e) => handleToggleFavorite(e, resource.slug)}
+                            disabled={togglingSlug === resource.slug || favoriteLoading}
+                            className={`p-2 rounded-lg transition-colors ${
+                              isFavorite(resource.slug)
+                                ? 'text-[#FFB5C5] hover:bg-[#FFB5C5]/10'
+                                : 'text-[#718096] hover:bg-[#A8B5FF]/10 hover:text-[#A8B5FF]'
+                            }`}
+                            title={isFavorite(resource.slug) ? 'Уже в аптечке' : 'В аптечку'}
+                          >
+                            {togglingSlug === resource.slug ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Heart className={`w-4 h-4 ${isFavorite(resource.slug) ? 'fill-current' : ''}`} />
+                            )}
+                          </button>
+                        )}
+                      </div>
+                      {/* Icon & Type */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${metadata.gradient} flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform`}>
+                          <IconComponent className="w-6 h-6 text-white" />
                         </div>
+                        <span className={`px-3 py-1 rounded-lg bg-gradient-to-r ${metadata.gradient} bg-opacity-10 text-xs font-medium`}>
+                          {metadata.label}
+                        </span>
+                      </div>
 
-                        {/* Title */}
-                        <h3 className="text-lg sm:text-xl font-semibold text-[#2D3748] mb-2 leading-snug group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-[#7FD99A] group-hover:to-[#C8F5E8] transition-all">
-                          {resource.title}
-                        </h3>
+                      {/* Title */}
+                      <h3 className="text-lg sm:text-xl font-semibold text-[#2D3748] mb-2 leading-snug group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-[#7FD99A] group-hover:to-[#C8F5E8] transition-all">
+                        {resource.title}
+                      </h3>
 
-                        {/* Description */}
-                        <p className="text-sm text-[#718096] leading-relaxed mb-4">
-                          {resource.description}
-                        </p>
+                      {/* Description */}
+                      <p className="text-sm text-[#718096] leading-relaxed mb-4">
+                        {resource.description}
+                      </p>
 
-                        {/* Duration & CTA */}
-                        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                          <span className="text-sm text-[#718096]">{resource.duration || '—'}</span>
-                          <div className="flex items-center gap-2 text-sm font-medium text-[#7FD99A] group-hover:gap-3 transition-all">
-                            <span>Открыть</span>
-                            <ArrowRight className="w-4 h-4" />
-                          </div>
+                      {/* Duration & CTA */}
+                      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                        <span className="text-sm text-[#718096]">{resource.duration || '—'}</span>
+                        <div className="flex items-center gap-2 text-sm font-medium text-[#7FD99A] group-hover:gap-3 transition-all">
+                          <span>Открыть</span>
+                          <ArrowRight className="w-4 h-4" />
                         </div>
                       </div>
-                    </button>
+                    </div>
                   </motion.div>
                 );
               })}

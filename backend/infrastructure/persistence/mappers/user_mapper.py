@@ -43,7 +43,8 @@ class UserMapper:
             status=UserStatus(model.status),
             roles=domain_roles,
             consents=domain_consents,
-            created_at=model.created_at
+            created_at=model.created_at,
+            mfa_enabled=getattr(model, 'mfa_enabled', False)
         )
     
     @staticmethod
@@ -56,4 +57,5 @@ class UserMapper:
             'telegram_user_id': user.telegram_user_id,
             'display_name': user.display_name,
             'status': user.status.value,
+            'mfa_enabled': getattr(user, 'mfa_enabled', False),
         }

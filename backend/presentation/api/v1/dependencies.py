@@ -15,6 +15,7 @@ from infrastructure.persistence.repositories.crm.lead_repository import Postgres
 from infrastructure.persistence.repositories.interactive.interactive_definition_repository import PostgresInteractiveDefinitionRepository
 from infrastructure.persistence.repositories.interactive.interactive_run_repository import PostgresInteractiveRunRepository
 from infrastructure.persistence.repositories.client_cabinet.diary_repository import PostgresDiaryEntryRepository
+from infrastructure.persistence.repositories.client_cabinet.favorite_repository import PostgresFavoriteRepository
 from infrastructure.persistence.repositories.consent_repository import DjangoConsentRepository
 
 from infrastructure.persistence.repositories.content.content_repository import PostgresContentItemRepository
@@ -48,12 +49,20 @@ from application.content.use_cases.get_resource import GetResourceUseCase
 from application.identity.use_cases.register_user import RegisterUserUseCase
 from application.identity.use_cases.authenticate_user import AuthenticateUserUseCase
 from application.identity.use_cases.grant_consent import GrantConsentUseCase
+from application.identity.use_cases.revoke_consent import RevokeConsentUseCase
+from application.identity.use_cases.setup_mfa import SetupMfaUseCase
+from application.identity.use_cases.verify_mfa import VerifyMfaUseCase
 from application.interactive.use_cases.start_interactive_run import StartInteractiveRunUseCase
 from application.interactive.use_cases.complete_interactive_run import CompleteInteractiveRunUseCase
 from application.client_cabinet.use_cases.create_diary_entry import CreateDiaryEntryUseCase
+from application.client_cabinet.use_cases.update_diary_entry import UpdateDiaryEntryUseCase
+from application.client_cabinet.use_cases.delete_diary_entry import DeleteDiaryEntryUseCase
 from application.client_cabinet.use_cases.get_client_appointments import GetClientAppointmentsUseCase
 from application.client_cabinet.use_cases.export_diary_to_pdf import ExportDiaryToPdfUseCase
 from application.client_cabinet.use_cases.delete_user_data import DeleteUserDataUseCase
+from application.client_cabinet.use_cases.list_favorites import ListFavoritesUseCase
+from application.client_cabinet.use_cases.add_favorite import AddFavoriteUseCase
+from application.client_cabinet.use_cases.remove_favorite import RemoveFavoriteUseCase
 from application.interactive.use_cases.get_boundary_scripts import GetBoundaryScriptsUseCase
 from application.payments.use_cases.handle_payment_webhook import HandlePaymentWebhookUseCase
 from application.booking.use_cases.confirm_payment import ConfirmPaymentUseCase
@@ -61,6 +70,8 @@ from application.telegram.use_cases.handle_telegram_webhook import HandleTelegra
 
 from application.admin.use_cases.get_leads_list import GetLeadsListUseCase
 from application.ugc_moderation.use_cases.submit_question import SubmitQuestionUseCase
+from application.audit.use_cases.log_audit_event import LogAuditEventUseCase
+from infrastructure.persistence.repositories.audit_log_repository import DjangoAuditLogRepository
 
 # Domain
 from domain.identity.value_objects.email import Email
@@ -78,6 +89,7 @@ _lead_repository = None
 _interactive_definition_repository = None
 _interactive_run_repository = None
 _diary_entry_repository = None
+_favorite_repository = None
 _consent_repository = None
 _content_item_repository = None
 _moderation_item_repository = None
@@ -170,6 +182,14 @@ def get_diary_entry_repository() -> PostgresDiaryEntryRepository:
     return _diary_entry_repository
 
 
+def get_favorite_repository() -> PostgresFavoriteRepository:
+    """Получить экземпляр Favorite Repository."""
+    global _favorite_repository
+    if _favorite_repository is None:
+        _favorite_repository = PostgresFavoriteRepository()
+    return _favorite_repository
+
+
 def get_consent_repository() -> DjangoConsentRepository:
     """Получить экземпляр Consent Repository."""
     global _consent_repository
@@ -226,7 +246,7 @@ def get_password_service() -> PasswordService:
     return _password_service
 
 
-def get_encryption_service() -> EncryptionService:
+def get_encryption_service():
     """Получить экземпляр Encryption Service."""
     global _encryption_service
     if _encryption_service is None:
@@ -321,6 +341,30 @@ def get_grant_consent_use_case() -> GrantConsentUseCase:
     )
 
 
+def get_revoke_consent_use_case() -> RevokeConsentUseCase:
+    """Получить экземпляр RevokeConsentUseCase."""
+    return RevokeConsentUseCase(
+        consent_repository=get_consent_repository(),
+        event_bus=get_event_bus(),
+    )
+
+
+def get_setup_mfa_use_case() -> SetupMfaUseCase:
+    """Получить экземпляр SetupMfaUseCase."""
+    return SetupMfaUseCase(
+        user_repository=get_sync_user_repository(),
+        encryption_service=get_encryption_service(),
+    )
+
+
+def get_verify_mfa_use_case() -> VerifyMfaUseCase:
+    """Получить экземпляр VerifyMfaUseCase."""
+    return VerifyMfaUseCase(
+        user_repository=get_sync_user_repository(),
+        encryption_service=get_encryption_service(),
+    )
+
+
 def get_start_interactive_run_use_case() -> StartInteractiveRunUseCase:
     """Получить экземпляр StartInteractiveRunUseCase."""
     return StartInteractiveRunUseCase(
@@ -347,6 +391,24 @@ def get_create_diary_entry_use_case() -> CreateDiaryEntryUseCase:
         diary_entry_repository=get_diary_entry_repository(),
         user_repository=get_user_repository(),
         encryption_service=EncryptionService(),
+        event_bus=get_event_bus(),
+    )
+
+
+def get_update_diary_entry_use_case() -> UpdateDiaryEntryUseCase:
+    """Получить экземпляр UpdateDiaryEntryUseCase."""
+    return UpdateDiaryEntryUseCase(
+        diary_entry_repository=get_diary_entry_repository(),
+        user_repository=get_user_repository(),
+        encryption_service=get_encryption_service(),
+    )
+
+
+def get_delete_diary_entry_use_case() -> DeleteDiaryEntryUseCase:
+    """Получить экземпляр DeleteDiaryEntryUseCase."""
+    return DeleteDiaryEntryUseCase(
+        diary_entry_repository=get_diary_entry_repository(),
+        user_repository=get_user_repository(),
         event_bus=get_event_bus(),
     )
 
@@ -384,6 +446,30 @@ def get_delete_user_data_use_case() -> DeleteUserDataUseCase:
         diary_entry_repository=get_diary_entry_repository(),
         interactive_run_repository=get_interactive_run_repository(),
         event_bus=get_event_bus(),
+    )
+
+
+def get_list_favorites_use_case() -> ListFavoritesUseCase:
+    """Получить экземпляр ListFavoritesUseCase."""
+    return ListFavoritesUseCase(
+        favorite_repository=get_favorite_repository(),
+        user_repository=get_user_repository(),
+    )
+
+
+def get_add_favorite_use_case() -> AddFavoriteUseCase:
+    """Получить экземпляр AddFavoriteUseCase."""
+    return AddFavoriteUseCase(
+        favorite_repository=get_favorite_repository(),
+        user_repository=get_user_repository(),
+    )
+
+
+def get_remove_favorite_use_case() -> RemoveFavoriteUseCase:
+    """Получить экземпляр RemoveFavoriteUseCase."""
+    return RemoveFavoriteUseCase(
+        favorite_repository=get_favorite_repository(),
+        user_repository=get_user_repository(),
     )
 
 
@@ -464,6 +550,11 @@ def get_submit_question_use_case() -> SubmitQuestionUseCase:
     )
 
 
+def get_log_audit_event_use_case() -> LogAuditEventUseCase:
+    """Получить экземпляр LogAuditEventUseCase для аудит-логирования админских действий."""
+    return LogAuditEventUseCase(audit_repository=DjangoAuditLogRepository())
+
+
 class SyncUserRepositoryWrapper:
     """Синхронная обертка для асинхронного репозитория пользователей."""
     
@@ -491,6 +582,18 @@ class SyncUserRepositoryWrapper:
     def get_django_model(self, user_id):
         """Получить Django модель пользователя (для JWT генерации)."""
         return self._async_repo.get_django_model(user_id)
+
+    def get_mfa_secret_encrypted(self, user_id):
+        """Получить зашифрованный MFA secret."""
+        return self._async_repo.get_mfa_secret_encrypted(user_id)
+
+    def set_mfa_secret(self, user_id, encrypted_secret: str) -> None:
+        """Установить зашифрованный MFA secret."""
+        return self._async_repo.set_mfa_secret(user_id, encrypted_secret)
+
+    def set_mfa_enabled(self, user_id, enabled: bool) -> None:
+        """Включить/выключить MFA."""
+        return self._async_repo.set_mfa_enabled(user_id, enabled)
         
     def get_user_roles(self, user_id):
         """Получить роли пользователя (синхронный метод)."""

@@ -1,0 +1,33 @@
+checkpoint:
+  version: "1.0"
+  date: "2026-01-28"
+  status: "ADMIN-PANEL-SPEC-CREATED"
+  summary: |
+    Зафиксирована спецификация админ-панели психолога: максимально возможный набор 
+    инструментов по ведению пациентов (research 08). Текущее состояние: фронтенд админки 
+    отсутствует; бэкенд даёт только списки (appointments, leads, content, moderation). 
+    Use cases (record outcome, create slot, publish, moderate, answer) есть, но не все 
+    выставлены в API. Спецификация разбита на 5 фаз; Фаза 1 (MVP) — дашборд, встречи 
+    с исходом, лиды, контент, модерация + недостающие endpoints.
+  
+  artifacts_created:
+    - "docs/Admin-Panel-Spec.md"
+    - "context/checkpoints/CP-Admin-Panel-Spec-20260128.yaml"
+  
+  key_decisions:
+    - "Админка — отдельный layout с проверкой ролей (owner/assistant/editor)."
+    - "Фаза 1: дашборд + встречи (с формой «Исход встречи») + лиды + контент + модерация."
+    - "Backend: добавить endpoints record_outcome, moderate, answer (и при необходимости publish)."
+  
+  next_actions:
+    - "Architect/Dev: описать в api-contracts.md admin actions (record_outcome, moderate, answer)."
+    - "Coder: реализовать backend endpoints для record_outcome, moderate, answer."
+    - "Coder: реализовать фронтенд — AdminLayout, дашборд, встречи, лиды, контент, модерация + api/endpoints/admin.ts."
+    - "UX (опционально): уточнить флоу карточки лида и формы исхода встречи."
+    - "Review/QA: верификация Фазы 1 по docs/Admin-Panel-Spec.md."
+  
+  blockers: []
+
+---
+*Чекпоинт создан: Orchestrator Agent*
+---

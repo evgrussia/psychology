@@ -13,6 +13,7 @@ from .views import (
     moderation,
     admin,
     webhooks,
+    telegram as telegram_views,
     tracking,
     health as health_views,
 )
@@ -41,6 +42,7 @@ router.register(r'content/topics', content.TopicsViewSet, basename='topic')
 # Client Cabinet
 router.register(r'cabinet/appointments', cabinet.CabinetAppointmentViewSet, basename='cabinet-appointment')
 router.register(r'cabinet/diaries', cabinet.CabinetDiaryViewSet, basename='cabinet-diary')
+router.register(r'cabinet/favorites', cabinet.CabinetFavoritesViewSet, basename='cabinet-favorites')
 router.register(r'cabinet/exports', cabinet.ExportViewSet, basename='export')
 
 # Payments
@@ -61,10 +63,14 @@ urlpatterns = [
     # Auth endpoints (non-viewset)
     path('auth/refresh/', auth.RefreshTokenView.as_view(), name='token-refresh'),
     path('auth/logout/', auth.LogoutView.as_view(), name='token-logout'),
+    path('auth/mfa/setup/', auth.MfaSetupView.as_view(), name='mfa-setup'),
+    path('auth/mfa/verify/', auth.MfaVerifyView.as_view(), name='mfa-verify'),
     
     # Webhooks
     path('webhooks/yookassa/', webhooks.YooKassaWebhookView.as_view(), name='yookassa-webhook'),
     path('webhooks/telegram/', webhooks.TelegramWebhookView.as_view(), name='telegram-webhook'),
+    # Telegram: отписка от уведомлений (FR-TG-5)
+    path('telegram/unsubscribe/', telegram_views.UnsubscribeTelegramView.as_view(), name='telegram-unsubscribe'),
     
     # Special endpoints
     path('booking/services/<uuid:service_id>/slots/', booking.ServiceSlotsView.as_view(), name='service-slots'),

@@ -1,10 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'motion/react';
-import { Calendar, Clock, User, Tag, ArrowLeft, ArrowRight, Heart, Share2, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Calendar, Clock, User, Tag, ArrowLeft, ArrowRight, Heart, Share2, RefreshCw, AlertTriangle, Loader2 } from 'lucide-react';
 import { getArticleBySlug } from '@/api/endpoints/content';
+import * as cabinetApi from '@/api/endpoints/cabinet';
 import type { Article } from '@/api/types/content';
+import type { FavoriteItem } from '@/api/types/cabinet';
 import { ApiError } from '@/api/client';
 import { showApiError } from '@/lib/errorToast';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface BlogArticlePageProps {
   slug?: string | null;
@@ -103,10 +106,51 @@ function renderContent(content: string) {
 }
 
 export default function BlogArticlePage({ slug, onBack, onNavigateToArticle }: BlogArticlePageProps) {
+  const { isAuthenticated } = useAuth();
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
+  const [favoriteToggling, setFavoriteToggling] = useState(false);
+
+  const currentFavorite = slug
+    ? favorites.find((f) => f.resource_type === 'article' && f.resource_id === slug)
+    : undefined;
+
+  const fetchFavorites = useCallback(() => {
+    if (!isAuthenticated) return;
+    setFavoriteLoading(true);
+    cabinetApi
+      .getFavorites()
+      .then((res) => setFavorites(res.data ?? []))
+      .catch(() => {})
+      .finally(() => setFavoriteLoading(false));
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (isAuthenticated) fetchFavorites();
+    else setFavorites([]);
+  }, [isAuthenticated, fetchFavorites]);
+
+  const handleToggleFavorite = useCallback(async () => {
+    if (!slug || !isAuthenticated) return;
+    setFavoriteToggling(true);
+    try {
+      if (currentFavorite) {
+        await cabinetApi.removeFavorite(currentFavorite.id);
+        setFavorites((prev) => prev.filter((f) => f.id !== currentFavorite.id));
+      } else {
+        const res = await cabinetApi.addFavorite({ resource_type: 'article', resource_id: slug });
+        setFavorites((prev) => [...prev, res.data]);
+      }
+    } catch (err) {
+      showApiError(err);
+    } finally {
+      setFavoriteToggling(false);
+    }
+  }, [slug, isAuthenticated, currentFavorite]);
 
   const fetchArticle = useCallback(async () => {
     if (!slug) {
@@ -299,7 +343,29 @@ export default function BlogArticlePage({ slug, onBack, onNavigateToArticle }: B
                 <Calendar className="w-4 h-4" />
                 <span>{formatDate(article.published_at)}</span>
               </div>
-              <button className="ml-auto flex items-center gap-2 text-[#718096] hover:text-[#A8B5FF] transition-colors">
+              {isAuthenticated && (
+                <button
+                  type="button"
+                  onClick={handleToggleFavorite}
+                  disabled={favoriteToggling || favoriteLoading}
+                  className={`flex items-center gap-2 transition-colors rounded-lg px-3 py-1.5 ${
+                    currentFavorite
+                      ? 'text-[#FFB5C5] hover:bg-[#FFB5C5]/10'
+                      : 'text-[#718096] hover:text-[#A8B5FF] hover:bg-[#A8B5FF]/5'
+                  }`}
+                  title={currentFavorite ? 'Уже в аптечке' : 'В аптечку'}
+                >
+                  {favoriteToggling ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Heart className={`w-4 h-4 ${currentFavorite ? 'fill-current' : ''}`} />
+                  )}
+                  <span className="hidden sm:inline">
+                    {currentFavorite ? 'Уже в аптечке' : 'В аптечку'}
+                  </span>
+                </button>
+              )}
+              <button className="flex items-center gap-2 text-[#718096] hover:text-[#A8B5FF] transition-colors rounded-lg px-3 py-1.5 hover:bg-[#A8B5FF]/5">
                 <Share2 className="w-4 h-4" />
                 <span className="hidden sm:inline">Поделиться</span>
               </button>

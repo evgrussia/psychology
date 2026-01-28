@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Heart, Mail, Lock, Eye, EyeOff, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
+import { Heart, Mail, Lock, Eye, EyeOff, AlertCircle, Loader2, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ApiError } from '@/api/client';
+import * as authApi from '@/api/endpoints/auth';
 
 interface LoginPageProps {
   onNavigateToRegister?: () => void;
@@ -11,21 +12,25 @@ interface LoginPageProps {
 }
 
 export default function LoginPage({ onNavigateToRegister, onNavigateToCabinet, onNavigateToHome }: LoginPageProps) {
-  const { login } = useAuth();
+  const { login, pendingMfaUser, mfaVerify, clearPendingMfa } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [mfaCode, setMfaCode] = useState('');
+  const [mfaSetupResult, setMfaSetupResult] = useState<{ provisioning_uri: string; secret: string } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
     try {
-      await login({ email, password });
-      onNavigateToCabinet?.();
+      const result = await login({ email, password });
+      if (result?.mfaRequired !== true) {
+        onNavigateToCabinet?.();
+      }
     } catch (err) {
       const message =
         err instanceof ApiError && (err.status === 401 || err.code === 'UNAUTHORIZED')
@@ -33,6 +38,50 @@ export default function LoginPage({ onNavigateToRegister, onNavigateToCabinet, o
           : err instanceof ApiError
             ? err.message
             : 'Ошибка входа. Попробуйте снова.';
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleMfaSetup = async () => {
+    setError('');
+    setIsLoading(true);
+    try {
+      const res = await authApi.mfaSetup();
+      const data = res?.data;
+      if (data?.provisioning_uri && data?.secret) {
+        setMfaSetupResult({ provisioning_uri: data.provisioning_uri, secret: data.secret });
+      }
+    } catch (err) {
+      const message =
+        err instanceof ApiError ? err.message : 'Не удалось настроить 2FA. Попробуйте снова.';
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleMfaSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (mfaCode.length !== 6) {
+      setError('Введите 6-значный код');
+      return;
+    }
+    setIsLoading(true);
+    try {
+      await mfaVerify(mfaCode);
+      setMfaCode('');
+      setMfaSetupResult(null);
+      onNavigateToCabinet?.();
+    } catch (err) {
+      const message =
+        err instanceof ApiError && (err.status === 401 || err.code === 'UNAUTHORIZED')
+          ? 'Неверный или просроченный код. Попробуйте снова.'
+          : err instanceof ApiError
+            ? err.message
+            : 'Ошибка проверки кода. Попробуйте снова.';
       setError(message);
     } finally {
       setIsLoading(false);
@@ -64,7 +113,100 @@ export default function LoginPage({ onNavigateToRegister, onNavigateToCabinet, o
           transition={{ duration: 0.6 }}
           className="w-full max-w-md"
         >
-          {/* Card */}
+          {/* MFA Step: ввод кода 2FA */}
+          {pendingMfaUser ? (
+            <div className="bg-white border border-gray-200 rounded-3xl p-6 sm:p-10 shadow-[0_8px_32px_-4px_rgba(168,181,255,0.15)]">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#A8B5FF] to-[#C8F5E8] flex items-center justify-center mx-auto mb-6 shadow-[0_8px_24px_-4px_rgba(168,181,255,0.4)]">
+                <ShieldCheck className="w-8 h-8 text-white" />
+              </div>
+              <div className="text-center mb-8">
+                <h1 className="text-2xl sm:text-3xl font-bold text-[#2D3748] mb-2">
+                  Код из приложения 2FA
+                </h1>
+                <p className="text-base text-[#718096]">
+                  {mfaSetupResult
+                    ? 'Добавьте ключ в приложение и введите код'
+                    : 'Введите 6-значный код для входа'}
+                </p>
+              </div>
+              {mfaSetupResult && (
+                <div className="mb-6 p-4 rounded-xl bg-[#A8B5FF]/10 border border-[#A8B5FF]/30">
+                  <p className="text-sm font-medium text-[#2D3748] mb-2">Ключ для ручного ввода:</p>
+                  <p className="text-sm text-[#718096] font-mono break-all">{mfaSetupResult.secret}</p>
+                </div>
+              )}
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3"
+                >
+                  <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-red-800">Ошибка</p>
+                    <p className="text-sm text-red-600 mt-1">{error}</p>
+                  </div>
+                </motion.div>
+              )}
+              <form onSubmit={handleMfaSubmit} className="space-y-5">
+                <div>
+                  <label htmlFor="mfa-code" className="block text-sm font-medium text-[#2D3748] mb-2">
+                    Код
+                  </label>
+                  <input
+                    id="mfa-code"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    value={mfaCode}
+                    onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ''))}
+                    placeholder="000000"
+                    className="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 focus:border-[#A8B5FF] focus:outline-none text-[#2D3748] text-center text-xl tracking-[0.5em] placeholder:text-gray-400"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isLoading || mfaCode.length !== 6}
+                  className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-[#A8B5FF] to-[#C8F5E8] text-white font-medium shadow-[0_8px_24px_-4px_rgba(168,181,255,0.4)] hover:shadow-[0_12px_32px_-4px_rgba(168,181,255,0.5)] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Проверка...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Подтвердить</span>
+                      <ArrowRight className="w-5 h-5" />
+                    </>
+                  )}
+                </button>
+              </form>
+              <div className="mt-6 text-center space-y-2">
+                {!mfaSetupResult && (
+                  <p>
+                    <button
+                      type="button"
+                      onClick={handleMfaSetup}
+                      disabled={isLoading}
+                      className="text-sm text-[#A8B5FF] hover:underline disabled:opacity-50"
+                    >
+                      Ещё не настроили 2FA? Настроить
+                    </button>
+                  </p>
+                )}
+                <button
+                  type="button"
+                  onClick={() => { clearPendingMfa(); setMfaSetupResult(null); }}
+                  className="block w-full text-sm text-[#718096] hover:text-[#A8B5FF] hover:underline"
+                >
+                  Назад к вводу пароля
+                </button>
+              </div>
+            </div>
+          ) : (
+          /* Card: логин */
           <div className="bg-white border border-gray-200 rounded-3xl p-6 sm:p-10 shadow-[0_8px_32px_-4px_rgba(168,181,255,0.15)]">
             {/* Icon */}
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#A8B5FF] to-[#C8F5E8] flex items-center justify-center mx-auto mb-6 shadow-[0_8px_24px_-4px_rgba(168,181,255,0.4)]">
@@ -151,7 +293,7 @@ export default function LoginPage({ onNavigateToRegister, onNavigateToCabinet, o
                 </div>
               </div>
 
-              {/* Remember Me & Forgot Password */}
+              {/* Remember Me & Forgot Password (восстановление пока недоступно) */}
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-2 cursor-pointer group">
                   <input
@@ -165,12 +307,12 @@ export default function LoginPage({ onNavigateToRegister, onNavigateToCabinet, o
                   </span>
                 </label>
 
-                <button
-                  type="button"
-                  className="text-sm font-medium text-[#A8B5FF] hover:underline"
+                <span
+                  className="text-sm text-[#718096] cursor-default"
+                  title="Восстановление пароля пока недоступно"
                 >
-                  Забыли пароль?
-                </button>
+                  Восстановление пароля пока недоступно
+                </span>
               </div>
 
               {/* Submit Button */}
@@ -193,7 +335,7 @@ export default function LoginPage({ onNavigateToRegister, onNavigateToCabinet, o
               </button>
             </form>
 
-            {/* Divider */}
+            {/* OAuth пока недоступен — кнопка disabled с подсказкой «Скоро» */}
             <div className="relative my-8">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-200" />
@@ -202,11 +344,11 @@ export default function LoginPage({ onNavigateToRegister, onNavigateToCabinet, o
                 <span className="px-4 bg-white text-[#718096]">или</span>
               </div>
             </div>
-
-            {/* Social Login (Optional) */}
             <button
               type="button"
-              className="w-full px-6 py-3.5 rounded-xl border-2 border-gray-200 text-[#2D3748] font-medium hover:border-[#A8B5FF]/30 hover:bg-gray-50 active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+              disabled
+              title="Вход через Google будет доступен позже"
+              className="w-full px-6 py-3.5 rounded-xl border-2 border-gray-200 text-[#718096] font-medium cursor-not-allowed opacity-70 flex items-center justify-center gap-3"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
@@ -227,6 +369,7 @@ export default function LoginPage({ onNavigateToRegister, onNavigateToCabinet, o
                 />
               </svg>
               <span>Войти через Google</span>
+              <span className="text-xs ml-1">(скоро)</span>
             </button>
 
             {/* Register Link */}
@@ -242,6 +385,7 @@ export default function LoginPage({ onNavigateToRegister, onNavigateToCabinet, o
               </p>
             </div>
           </div>
+          )}
 
           {/* Bottom Note */}
           <div className="mt-6 text-center">

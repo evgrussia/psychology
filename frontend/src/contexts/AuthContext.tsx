@@ -39,9 +39,12 @@ function saveUserToStorage(user: User | null): void {
 
 interface AuthContextValue {
   user: User | null;
+  pendingMfaUser: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (credentials: LoginRequest) => Promise<void>;
+  login: (credentials: LoginRequest) => Promise<{ mfaRequired?: boolean } | void>;
+  mfaVerify: (code: string) => Promise<void>;
+  clearPendingMfa: () => void;
   register: (payload: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -51,6 +54,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(loadUserFromStorage);
+  const [pendingMfaUser, setPendingMfaUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const refreshUser = useCallback(async () => {
@@ -74,12 +78,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refreshUser();
   }, [refreshUser]);
 
-  const login = useCallback(async (credentials: LoginRequest) => {
+  const login = useCallback(async (credentials: LoginRequest): Promise<{ mfaRequired?: boolean } | void> => {
     const res = await authApi.login(credentials);
+    const u = res?.data?.user ?? null;
+    if (res?.data?.mfa_required && u) {
+      setPendingMfaUser(u);
+      return { mfaRequired: true };
+    }
+    if (u) {
+      setUser(u);
+      saveUserToStorage(u);
+    }
+  }, []);
+
+  const mfaVerify = useCallback(async (code: string) => {
+    const res = await authApi.mfaVerify({ code });
     const u = res?.data?.user ?? null;
     if (u) {
       setUser(u);
       saveUserToStorage(u);
+      setPendingMfaUser(null);
     }
   }, []);
 
@@ -102,11 +120,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     saveUserToStorage(null);
   }, []);
 
+  const clearPendingMfa = useCallback(() => setPendingMfaUser(null), []);
+
   const value: AuthContextValue = {
     user,
+    pendingMfaUser,
     isLoading,
     isAuthenticated: !!user,
     login,
+    mfaVerify,
+    clearPendingMfa,
     register,
     logout,
     refreshUser,

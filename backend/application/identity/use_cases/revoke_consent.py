@@ -5,7 +5,9 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from domain.identity.repositories import IConsentRepository
-from domain.identity.domain_events import ConsentRevoked
+from domain.identity.domain_events import ConsentRevokedEvent
+from domain.identity.aggregates.user import UserId
+from domain.identity.value_objects.consent_type import ConsentType
 from application.interfaces.event_bus import IEventBus as IDomainEventBus
 
 
@@ -35,8 +37,8 @@ class RevokeConsentUseCase:
         )
         
         # Публиковать доменное событие
-        event = ConsentRevoked(
-            user_id=request.user_id,
-            consent_type=request.consent_type,
+        event = ConsentRevokedEvent(
+            user_id=UserId(request.user_id),
+            consent_type=ConsentType(request.consent_type),
         )
         self._event_bus.publish(event)

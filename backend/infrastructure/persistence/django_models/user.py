@@ -73,6 +73,10 @@ class UserModel(AbstractBaseUser, PermissionsMixin):
         verbose_name='active'
     )
     
+    # MFA (TOTP)
+    mfa_secret_encrypted = models.TextField(null=True, blank=True)
+    mfa_enabled = models.BooleanField(default=False)
+    
     # Переопределяем groups и user_permissions из PermissionsMixin с related_name
     # чтобы избежать конфликта с auth.User
     groups = models.ManyToManyField(

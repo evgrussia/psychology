@@ -53,3 +53,27 @@ export interface CreateDiaryEntryRequest {
 export interface CreateDiaryEntryResponse {
   data: DiaryEntry;
 }
+
+// --- Favorites (аптечка) ---
+
+export type FavoriteResourceType = 'article' | 'resource' | 'ritual';
+
+export interface FavoriteItem {
+  id: string;
+  resource_type: FavoriteResourceType;
+  resource_id: string;
+  created_at: string;
+}
+
+export interface FavoritesListResponse {
+  data: FavoriteItem[];
+}
+
+export interface AddFavoriteRequest {
+  resource_type: FavoriteResourceType;
+  resource_id: string;
+}
+
+export interface AddFavoriteResponse {
+  data: FavoriteItem;
+}

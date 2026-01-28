@@ -6,7 +6,29 @@ import type { Topic } from '@/api/types/content';
 import { ApiError } from '@/api/client';
 import { showApiError } from '@/lib/errorToast';
 
+/** Фильтры с Навигатора практик (NavigatorStartPage). */
+export interface NavigatorFilters {
+  emotions: string[];
+  time: string;
+  difficulty: string;
+  formats: string[];
+}
+
+/** Маппинг emotion id → topic slugs для фильтрации тем. */
+const EMOTION_TO_TOPIC_SLUGS: Record<string, string[]> = {
+  anxiety: ['anxiety'],
+  stress: ['stress'],
+  burnout: ['burnout'],
+  sadness: ['depression', 'grief'],
+  anger: ['relationships', 'trauma'],
+  emptiness: ['depression', 'purpose', 'personal-growth'],
+  overwhelm: ['stress', 'burnout', 'boundaries'],
+  other: [],
+};
+
 interface TopicsHubPageProps {
+  /** Фильтры с Навигатора — применяются к списку тем. */
+  navigatorFilters?: NavigatorFilters | null;
   onNavigateToTopic?: (slug: string) => void;
   onNavigateToQuiz?: () => void;
   onNavigateToNavigator?: () => void;
@@ -48,10 +70,24 @@ function TopicSkeleton() {
   );
 }
 
-export default function TopicsHubPage({ onNavigateToTopic, onNavigateToQuiz, onNavigateToNavigator }: TopicsHubPageProps) {
+export default function TopicsHubPage({ navigatorFilters, onNavigateToTopic, onNavigateToQuiz, onNavigateToNavigator }: TopicsHubPageProps) {
   const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const allowedSlugs = (() => {
+    if (!navigatorFilters?.emotions?.length) return null;
+    const set = new Set<string>();
+    for (const e of navigatorFilters.emotions) {
+      const slugs = EMOTION_TO_TOPIC_SLUGS[e];
+      if (slugs) slugs.forEach((s) => set.add(s));
+    }
+    return set.size ? set : null;
+  })();
+
+  const displayedTopics = allowedSlugs
+    ? topics.filter((t) => allowedSlugs.has(t.slug))
+    : topics;
 
   const fetchTopics = async () => {
     setLoading(true);
@@ -195,7 +231,12 @@ export default function TopicsHubPage({ onNavigateToTopic, onNavigateToQuiz, onN
           {/* Content State */}
           {!loading && !error && topics.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {topics.map((topic, index) => {
+              {navigatorFilters?.emotions?.length ? (
+                <p className="col-span-full text-sm text-[#718096] mb-2">
+                  Подобрано по выбранным фильтрам: {displayedTopics.length} тем(ы)
+                </p>
+              ) : null}
+              {displayedTopics.map((topic, index) => {
                 const metadata = getTopicMetadata(topic.slug);
                 const IconComponent = metadata.icon;
                 return (
@@ -241,8 +282,8 @@ export default function TopicsHubPage({ onNavigateToTopic, onNavigateToQuiz, onN
             </div>
           )}
 
-          {/* Empty State */}
-          {!loading && !error && topics.length === 0 && (
+          {/* Empty State: нет тем вообще или после фильтрации ничего не подошло */}
+          {!loading && !error && (topics.length === 0 || displayedTopics.length === 0) && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -251,7 +292,9 @@ export default function TopicsHubPage({ onNavigateToTopic, onNavigateToQuiz, onN
               <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
                 <Brain className="w-8 h-8 text-gray-400" />
               </div>
-              <p className="text-lg text-[#718096]">Темы пока не добавлены</p>
+              <p className="text-lg text-[#718096]">
+                {topics.length === 0 ? 'Темы пока не добавлены' : 'По выбранным фильтрам тем не найдено. Попробуйте другие критерии.'}
+              </p>
             </motion.div>
           )}
         </div>

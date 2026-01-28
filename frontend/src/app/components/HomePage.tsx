@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { useEffect } from 'react';
+import { motion } from 'motion/react';
 import { trackEvent } from '@/api/endpoints/tracking';
 import { 
   Heart, 
@@ -9,7 +9,6 @@ import {
   Sparkles, 
   BookOpen, 
   ChevronRight,
-  ChevronDown,
   Shield,
   Clock,
   Lock,
@@ -18,15 +17,33 @@ import {
   ClipboardList,
   Compass
 } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/app/components/ui/accordion';
 
 interface HomePageProps {
   onNavigateToQuiz?: () => void;
   onNavigateToNavigator?: () => void;
 }
 
-export default function HomePage({ onNavigateToQuiz, onNavigateToNavigator }: HomePageProps) {
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+const HOME_FAQ = [
+  {
+    question: 'Как понять, нужна ли мне консультация психолога?',
+    answer: 'Если вы чувствуете, что не справляетесь с эмоциями, испытываете постоянную тревогу, усталость или просто хотите разобраться в себе — это уже достаточный повод обратиться к психологу. Вам не нужно ждать кризиса.'
+  },
+  {
+    question: 'Сколько длится одна консультация?',
+    answer: 'Стандартная консультация длится 50-60 минут. Это оптимальное время для продуктивной работы. Первая встреча может быть короче (30 минут) и проходит бесплатно.'
+  },
+  {
+    question: 'Как проходят онлайн-консультации?',
+    answer: 'Мы используем защищенную видеосвязь. Вам понадобится только устройство с камерой и стабильный интернет. Все очень просто и конфиденциально.'
+  },
+  {
+    question: 'Конфиденциальны ли консультации?',
+    answer: 'Да, абсолютно. Все, что вы говорите психологу, остается между вами. Это профессиональная этика и законодательное требование. Ваши данные защищены.'
+  }
+];
 
+export default function HomePage({ onNavigateToQuiz, onNavigateToNavigator }: HomePageProps) {
   useEffect(() => {
     trackEvent('page_view', { page: 'home' });
   }, []);
@@ -384,8 +401,12 @@ export default function HomePage({ onNavigateToQuiz, onNavigateToNavigator }: Ho
         </div>
       </section>
 
-      {/* FAQ Accordion */}
-      <section className="px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-white to-[#C8F5E8]/5">
+      {/* FAQ Accordion — ui/accordion с aria-expanded и role="region" */}
+      <section
+        className="px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-white to-[#C8F5E8]/5"
+        role="region"
+        aria-labelledby="faq-heading"
+      >
         <div className="max-w-3xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -393,7 +414,7 @@ export default function HomePage({ onNavigateToQuiz, onNavigateToNavigator }: Ho
             viewport={{ once: true }}
             className="text-center mb-10 sm:mb-12"
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-[#2D3748] mb-3 sm:mb-4">
+            <h2 id="faq-heading" className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-[#2D3748] mb-3 sm:mb-4">
               Частые вопросы
             </h2>
             <p className="text-base sm:text-lg text-[#718096]">
@@ -401,66 +422,26 @@ export default function HomePage({ onNavigateToQuiz, onNavigateToNavigator }: Ho
             </p>
           </motion.div>
 
-          <div className="space-y-4">
-            {[
-              {
-                question: 'Как понять, нужна ли мне консультация психолога?',
-                answer: 'Если вы чувствуете, что не справляетесь с эмоциями, испытываете постоянную тревогу, усталость или просто хотите разобраться в себе — это уже достаточный повод обратиться к психологу. Вам не нужно ждать кризиса.'
-              },
-              {
-                question: 'Сколько длится одна консультация?',
-                answer: 'Стандартная консультация длится 50-60 минут. Это оптимальное время для продуктивной работы. Первая встреча может быть короче (30 минут) и проходит бесплатно.'
-              },
-              {
-                question: 'Как проходят онлайн-консультации?',
-                answer: 'Мы используем защищенную видеосвязь. Вам понадобится только устройство с камерой и стабильный интернет. Все очень просто и конфиденциально.'
-              },
-              {
-                question: 'Конфиденциальны ли консультации?',
-                answer: 'Да, абсолютно. Все, что вы говорите психологу, остается между вами. Это профессиональная этика и законодательное требование. Ваши данные защищены.'
-              }
-            ].map((faq, index) => (
-              <motion.div
+          <Accordion type="single" collapsible className="space-y-4">
+            {HOME_FAQ.map((faq, index) => (
+              <AccordionItem
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="backdrop-blur-xl bg-white/80 border border-white/60 rounded-[20px] overflow-hidden shadow-[0_4px_16px_-4px_rgba(168,181,255,0.2)]"
+                value={`home-faq-${index}`}
+                className="backdrop-blur-xl bg-white/80 border border-white/60 rounded-[20px] overflow-hidden shadow-[0_4px_16px_-4px_rgba(168,181,255,0.2)] px-6 border-b-0"
               >
-                <button
-                  onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                  className="w-full px-6 py-5 flex items-start justify-between gap-4 text-left hover:bg-[#A8B5FF]/5 transition-colors"
-                >
-                  <span className="text-base sm:text-lg font-medium text-[#2D3748] flex-1">
+                <AccordionTrigger className="hover:bg-[#A8B5FF]/5 hover:no-underline py-5 [&[data-state=open]>svg]:rotate-180">
+                  <span className="text-base sm:text-lg font-medium text-[#2D3748] flex-1 text-left pr-2">
                     {faq.question}
                   </span>
-                  <ChevronDown
-                    className={`w-5 h-5 text-[#718096] flex-shrink-0 transition-transform ${
-                      openFaq === index ? 'rotate-180' : ''
-                    }`}
-                  />
-                </button>
-                <AnimatePresence>
-                  {openFaq === index && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="px-6 pb-5 pt-0">
-                        <p className="text-sm sm:text-base text-[#718096] leading-relaxed">
-                          {faq.answer}
-                        </p>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <p className="text-sm sm:text-base text-[#718096] leading-relaxed pb-5">
+                    {faq.answer}
+                  </p>
+                </AccordionContent>
+              </AccordionItem>
             ))}
-          </div>
+          </Accordion>
         </div>
       </section>
 

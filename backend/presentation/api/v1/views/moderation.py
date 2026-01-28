@@ -36,7 +36,8 @@ class QuestionViewSet(viewsets.ViewSet):
         content = re.sub(r'[\w\.-]+@[\w\.-]+\.\w+', '[email hidden]', content)
         content = re.sub(r'\+?\d{10,12}', '[phone hidden]', content)
         
-        if self._has_crisis_indicators(content):
+        from shared.crisis_detection import detect_crisis_indicators
+        if detect_crisis_indicators(content):
             return Response(
                 {
                     'error': {
@@ -69,8 +70,3 @@ class QuestionViewSet(viewsets.ViewSet):
             status=status.HTTP_201_CREATED
         )
     
-    def _has_crisis_indicators(self, content):
-        """Простая проверка кризисных слов."""
-        crisis_keywords = ['суицид', 'самоубийство', 'убить себя', 'покончить с собой', 'самоповреждение']
-        content_lower = content.lower()
-        return any(keyword in content_lower for keyword in crisis_keywords)

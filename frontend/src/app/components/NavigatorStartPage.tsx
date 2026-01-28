@@ -2,8 +2,15 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Compass, Clock, Target, Layers, CheckCircle2 } from 'lucide-react';
 
+export interface NavigatorFilters {
+  emotions: string[];
+  time: string;
+  difficulty: string;
+  formats: string[];
+}
+
 interface NavigatorStartPageProps {
-  onFindPractices?: () => void;
+  onFindPractices?: (filters: NavigatorFilters) => void;
 }
 
 export default function NavigatorStartPage({ onFindPractices }: NavigatorStartPageProps) {
@@ -292,7 +299,12 @@ export default function NavigatorStartPage({ onFindPractices }: NavigatorStartPa
         <div className="max-w-5xl mx-auto">
           <div className="sticky bottom-0 sm:static bg-white sm:bg-transparent py-4 sm:py-0 -mx-4 px-4 sm:mx-0 sm:px-0 border-t sm:border-0 border-gray-100">
             <button
-              onClick={onFindPractices}
+              onClick={() => onFindPractices?.({
+                emotions: selectedEmotion,
+                time: selectedTime,
+                difficulty: selectedDifficulty,
+                formats: selectedFormat,
+              })}
               disabled={!hasSelections}
               className={`w-full px-8 py-4 rounded-xl text-base sm:text-lg font-medium transition-all ${
                 hasSelections

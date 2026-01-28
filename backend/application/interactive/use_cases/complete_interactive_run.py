@@ -14,6 +14,7 @@ from datetime import datetime
 import pytz
 
 from application.interactive.dto import CompleteInteractiveRunDto, InteractiveResultResponseDto
+from shared.crisis_detection import detect_crisis_indicators, extract_text_from_answers
 
 
 class CompleteInteractiveRunUseCase:
@@ -151,7 +152,9 @@ class CompleteInteractiveRunUseCase:
             else:
                 level = ResultLevel('low')
         
-        crisis_detected = dto.crisis_triggered or False
+        # Детекция кризиса: единая логика из shared (как в модерации)
+        text_from_answers = extract_text_from_answers(dto.answers or [])
+        crisis_detected = bool(dto.crisis_triggered) or detect_crisis_indicators(text_from_answers)
         
         # Создаем InteractiveResult
         # InteractiveResult принимает только level, profile и crisis_detected

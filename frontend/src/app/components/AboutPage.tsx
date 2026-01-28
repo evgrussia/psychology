@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import {
   Heart,
   Shield,
@@ -10,16 +9,23 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
-  ChevronDown,
   Sparkles,
   Target,
   Lightbulb,
   Globe
 } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/app/components/ui/accordion';
+
+const ABOUT_FAQ = [
+  { question: 'В каком подходе вы работаете?', answer: 'Я работаю в интегративном подходе, используя методы КПТ (когнитивно-поведенческая терапия), гештальт-терапии и схема-терапии. Это позволяет подобрать наиболее эффективные инструменты под ваши задачи.' },
+  { question: 'Как быстро будет результат?', answer: 'Это зависит от вашего запроса. Некоторые техники работы с тревогой дают облегчение уже после 2-3 встреч. Глубинная работа с самооценкой или паттернами требует 20-30 сессий. На первой встрече мы обсудим примерные сроки.' },
+  { question: 'Вы даёте советы и рекомендации?', answer: 'Моя роль — не давать советы, а помогать вам найти свои решения. Я задаю вопросы, предлагаю посмотреть на ситуацию под другим углом, обучаю техникам работы с эмоциями. Решения принимаете вы сами.' },
+  { question: 'Нужно ли делать домашние задания?', answer: 'Да, в КПТ подходе практика между сессиями важна для закрепления навыков. Но задания всегда простые и занимают 10-15 минут в день. Если у вас нет времени или сил, мы адаптируем программу.' },
+  { question: 'Можно ли работать онлайн?', answer: 'Да, я работаю только онлайн. Исследования показывают, что онлайн-терапия так же эффективна, как очная. К тому же, это экономит ваше время и позволяет работать из комфортной обстановки.' },
+  { question: 'Что если мне не подойдёт?', answer: 'Это нормально. Важен контакт между психологом и клиентом. Если после первой встречи вы поймёте, что мы не подходим друг другу, я помогу найти другого специалиста и верну оплату за первую сессию.' }
+];
 
 export default function AboutPage() {
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section - Mobile First */}
@@ -600,17 +606,20 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-white to-[#A8B5FF]/5">
+      {/* FAQ Section — ui/accordion с aria-expanded и role="region" */}
+      <section
+        className="px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-white to-[#A8B5FF]/5"
+        role="region"
+        aria-labelledby="about-faq-heading"
+      >
         <div className="max-w-3xl mx-auto">
-          {/* Section Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-center mb-10 sm:mb-12"
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-[#2D3748] mb-4">
+            <h2 id="about-faq-heading" className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-[#2D3748] mb-4">
               Частые вопросы о работе
             </h2>
             <p className="text-base sm:text-lg text-[#718096]">
@@ -618,74 +627,26 @@ export default function AboutPage() {
             </p>
           </motion.div>
 
-          <div className="space-y-4">
-            {[
-              {
-                question: 'В каком подходе вы работаете?',
-                answer: 'Я работаю в интегративном подходе, используя методы КПТ (когнитивно-поведенческая терапия), гештальт-терапии и схема-терапии. Это позволяет подобрать наиболее эффективные инструменты под ваши задачи.'
-              },
-              {
-                question: 'Как быстро будет результат?',
-                answer: 'Это зависит от вашего запроса. Некоторые техники работы с тревогой дают облегчение уже после 2-3 встреч. Глубинная работа с самооценкой или паттернами требует 20-30 сессий. На первой встрече мы обсудим примерные сроки.'
-              },
-              {
-                question: 'Вы даёте советы и рекомендации?',
-                answer: 'Моя роль — не давать советы, а помогать вам найти свои решения. Я задаю вопросы, предлагаю посмотреть на ситуацию под другим углом, обучаю техникам работы с эмоциями. Решения принимаете вы сами.'
-              },
-              {
-                question: 'Нужно ли делать домашние задания?',
-                answer: 'Да, в КПТ подходе практика между сессиями важна для закрепления навыков. Но задания всегда простые и занимают 10-15 минут в день. Если у вас нет времени или сил, мы адаптируем программу.'
-              },
-              {
-                question: 'Можно ли работать онлайн?',
-                answer: 'Да, я работаю только онлайн. Исследования показывают, что онлайн-терапия так же эффективна, как очная. К тому же, это экономит ваше время и позволяет работать из комфортной обстановки.'
-              },
-              {
-                question: 'Что если мне не подойдёт?',
-                answer: 'Это нормально. Важен контакт между психологом и клиентом. Если после первой встречи вы поймёте, что мы не подходим друг другу, я помогу найти другого специалиста и верну оплату за первую сессию.'
-              }
-            ].map((faq, index) => (
-              <motion.div
+          <Accordion type="single" collapsible className="space-y-4">
+            {ABOUT_FAQ.map((faq, index) => (
+              <AccordionItem
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="backdrop-blur-xl bg-white/80 border border-white/60 rounded-[20px] overflow-hidden shadow-[0_4px_16px_-4px_rgba(168,181,255,0.2)]"
+                value={`about-faq-${index}`}
+                className="backdrop-blur-xl bg-white/80 border border-white/60 rounded-[20px] overflow-hidden shadow-[0_4px_16px_-4px_rgba(168,181,255,0.2)] px-6 border-b-0"
               >
-                <button
-                  onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                  className="w-full px-6 py-5 flex items-start justify-between gap-4 text-left hover:bg-[#A8B5FF]/5 transition-colors"
-                >
-                  <span className="text-base sm:text-lg font-medium text-[#2D3748] flex-1 pr-2">
+                <AccordionTrigger className="hover:bg-[#A8B5FF]/5 hover:no-underline py-5 [&[data-state=open]>svg]:rotate-180">
+                  <span className="text-base sm:text-lg font-medium text-[#2D3748] flex-1 pr-2 text-left">
                     {faq.question}
                   </span>
-                  <ChevronDown
-                    className={`w-5 h-5 text-[#718096] flex-shrink-0 transition-transform ${
-                      openFaq === index ? 'rotate-180' : ''
-                    }`}
-                  />
-                </button>
-                <AnimatePresence>
-                  {openFaq === index && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="px-6 pb-5 pt-0">
-                        <p className="text-sm sm:text-base text-[#718096] leading-relaxed">
-                          {faq.answer}
-                        </p>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <p className="text-sm sm:text-base text-[#718096] leading-relaxed pb-5">
+                    {faq.answer}
+                  </p>
+                </AccordionContent>
+              </AccordionItem>
             ))}
-          </div>
+          </Accordion>
         </div>
       </section>
 

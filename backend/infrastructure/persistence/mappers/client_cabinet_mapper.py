@@ -3,9 +3,11 @@ Mapper для преобразования Client Cabinet Domain Entities ↔ DB
 """
 from typing import Dict, Any
 from domain.client_cabinet.aggregates.diary_entry import DiaryEntry, DiaryEntryId
+from domain.client_cabinet.aggregates.favorite import Favorite, FavoriteId
 from domain.client_cabinet.value_objects.diary_type import DiaryType
+from domain.client_cabinet.value_objects.resource_type import ResourceType
 from domain.identity.aggregates.user import UserId
-from infrastructure.persistence.django_models.client_cabinet import DiaryEntryModel
+from infrastructure.persistence.django_models.client_cabinet import DiaryEntryModel, FavoriteModel
 from application.interfaces.encryption import IEncryptionService
 
 
@@ -45,4 +47,30 @@ class DiaryEntryMapper:
             'user_id': entry.user_id.value,
             'diary_type': entry.diary_type.value,
             'content_encrypted': encrypted_content,
+        }
+
+
+class FavoriteMapper:
+    """Mapper для Favorite Domain Entity ↔ DB Record."""
+
+    @staticmethod
+    def to_domain(record: FavoriteModel) -> Favorite:
+        """Преобразовать DB Record → Domain Entity."""
+        return Favorite(
+            id=FavoriteId(record.id),
+            user_id=UserId(record.user_id),
+            resource_type=ResourceType(record.resource_type),
+            resource_id=record.resource_id,
+            created_at=record.created_at,
+        )
+
+    @staticmethod
+    def to_persistence(favorite: Favorite) -> Dict[str, Any]:
+        """Преобразовать Domain Entity → DB Record."""
+        return {
+            'id': favorite.id.value,
+            'user_id': favorite.user_id.value,
+            'resource_type': favorite.resource_type.value,
+            'resource_id': favorite.resource_id,
+            'created_at': favorite.created_at,
         }

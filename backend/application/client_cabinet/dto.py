@@ -59,3 +59,35 @@ class DeleteUserDataDto:
     """DTO для удаления данных пользователя."""
     user_id: str
     confirmation: str  # "DELETE" для подтверждения
+
+
+# --- Favorites (аптечка) ---
+
+@dataclass
+class AddFavoriteDto:
+    """DTO для добавления в избранное."""
+    user_id: str
+    resource_type: str  # 'article' | 'resource' | 'ritual'
+    resource_id: str  # slug или uuid
+
+
+@dataclass
+class FavoriteItemDto:
+    """Один элемент избранного в ответе."""
+    id: str
+    resource_type: str
+    resource_id: str
+    created_at: str
+
+
+@dataclass
+class ListFavoritesResponseDto:
+    """Ответ со списком избранного."""
+    items: List[FavoriteItemDto]
+
+
+@dataclass
+class RemoveFavoriteDto:
+    """DTO для удаления из избранного."""
+    user_id: str
+    favorite_id: str

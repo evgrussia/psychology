@@ -8,7 +8,7 @@ class DiaryType(ValueObject):
     """Value Object для типа записи дневника."""
     
     def __init__(self, value: str):
-        valid_types = ['mood', 'emotion', 'event', 'note']
+        valid_types = ['mood', 'emotion', 'event', 'note', 'emotions', 'abc', 'gratitude', 'thoughts', 'reflection']
         if value not in valid_types:
             raise ValueError(f"Invalid diary type: {value}")
         self._value = value

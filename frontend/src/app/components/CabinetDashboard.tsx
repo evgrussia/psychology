@@ -1,53 +1,100 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { Calendar, BookOpen, FileText, ArrowRight, Clock, TrendingUp, Heart, Sparkles, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { trackEvent } from '@/api/endpoints/tracking';
+import * as cabinetApi from '@/api/endpoints/cabinet';
+import type { CabinetAppointment } from '@/api/types/cabinet';
 
 interface CabinetDashboardProps {
   onNavigate?: (page: string) => void;
+}
+
+function formatAppointmentDate(slot: { start_at: string; local_start_at?: string }): string {
+  const iso = slot.local_start_at ?? slot.start_at;
+  const d = new Date(iso);
+  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+}
+
+function formatRelative(from: Date, to: Date): string {
+  const days = Math.round((to.getTime() - from.getTime()) / (24 * 60 * 60 * 1000));
+  if (days <= 0) return 'Сегодня';
+  if (days === 1) return 'Завтра';
+  if (days < 5) return `Через ${days} дня`;
+  return `Через ${days} дн.`;
 }
 
 export default function CabinetDashboard({ onNavigate }: CabinetDashboardProps) {
   const { user } = useAuth();
   const userName = user?.display_name ?? user?.email ?? 'Пользователь';
 
+  const [appointments, setAppointments] = useState<CabinetAppointment[]>([]);
+  const [diaryCount, setDiaryCount] = useState<number | null>(null);
+  const [favoritesCount, setFavoritesCount] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     trackEvent('page_view', { page: 'cabinet', user_id: user?.id ?? undefined });
   }, [user?.id]);
 
-  const stats = [
-    {
-      id: 'appointments',
-      icon: Calendar,
-      label: 'Встречи',
-      value: '2',
-      description: 'Предстоящие',
-      gradient: 'from-[#A8B5FF] to-[#C8F5E8]',
-      bgGradient: 'from-[#A8B5FF]/5 to-[#C8F5E8]/5',
-      action: () => onNavigate?.('appointments')
-    },
-    {
-      id: 'diary',
-      icon: BookOpen,
-      label: 'Дневники',
-      value: '12',
-      description: 'Записей',
-      gradient: 'from-[#7FD99A] to-[#C8F5E8]',
-      bgGradient: 'from-[#7FD99A]/5 to-[#C8F5E8]/5',
-      action: () => onNavigate?.('diary')
-    },
-    {
-      id: 'materials',
-      icon: FileText,
-      label: 'Материалы',
-      value: '8',
-      description: 'Доступно',
-      gradient: 'from-[#FFD4B5] to-[#FFC97F]',
-      bgGradient: 'from-[#FFD4B5]/5 to-[#FFC97F]/5',
-      action: () => onNavigate?.('materials')
-    }
-  ];
+  useEffect(() => {
+    if (!user) return;
+    setLoading(true);
+    Promise.all([
+      cabinetApi.getAppointments({ status: 'upcoming', limit: 10 }).then((r) => setAppointments(r.data ?? [])),
+      cabinetApi.getDiaryEntries().then((r) => setDiaryCount((r.data ?? []).length)),
+      cabinetApi.getFavorites().then((r) => setFavoritesCount((r.data ?? []).length)),
+    ]).finally(() => setLoading(false));
+  }, [user]);
+
+  const upcomingCount = appointments.length;
+  const nextAppointment = useMemo(() => appointments[0] ?? null, [appointments]);
+
+  const stats = useMemo(
+    () => [
+      {
+        id: 'appointments',
+        icon: Calendar,
+        label: 'Встречи',
+        value: loading ? '—' : String(upcomingCount),
+        description: 'Предстоящие',
+        gradient: 'from-[#A8B5FF] to-[#C8F5E8]',
+        bgGradient: 'from-[#A8B5FF]/5 to-[#C8F5E8]/5',
+        action: () => onNavigate?.('appointments'),
+      },
+      {
+        id: 'diary',
+        icon: BookOpen,
+        label: 'Дневники',
+        value: loading ? '—' : String(diaryCount ?? 0),
+        description: 'Записей',
+        gradient: 'from-[#7FD99A] to-[#C8F5E8]',
+        bgGradient: 'from-[#7FD99A]/5 to-[#C8F5E8]/5',
+        action: () => onNavigate?.('diary'),
+      },
+      {
+        id: 'favorites',
+        icon: Heart,
+        label: 'Моя аптечка',
+        value: loading ? '' : String(favoritesCount ?? 0),
+        description: 'Избранное',
+        gradient: 'from-[#FFB5C5] to-[#FFD4B5]',
+        bgGradient: 'from-[#FFB5C5]/5 to-[#FFD4B5]/5',
+        action: () => onNavigate?.('favorites'),
+      },
+      {
+        id: 'materials',
+        icon: FileText,
+        label: 'Материалы',
+        value: '8',
+        description: 'Доступно',
+        gradient: 'from-[#FFD4B5] to-[#FFC97F]',
+        bgGradient: 'from-[#FFD4B5]/5 to-[#FFC97F]/5',
+        action: () => onNavigate?.('materials'),
+      },
+    ],
+    [loading, upcomingCount, diaryCount, favoritesCount, onNavigate]
+  );
 
   const quickActions = [
     {
@@ -70,32 +117,31 @@ export default function CabinetDashboard({ onNavigate }: CabinetDashboardProps) 
     }
   ];
 
-  const recentActivity = [
-    {
-      type: 'appointment',
-      title: 'Консультация с психологом',
-      description: 'Встреча прошла успешно',
-      date: '25 янв, 15:00',
-      icon: Calendar,
-      color: 'text-[#A8B5FF]'
-    },
-    {
-      type: 'diary',
-      title: 'Новая запись в дневнике',
-      description: 'ABC дневник',
-      date: '24 янв, 21:30',
-      icon: BookOpen,
-      color: 'text-[#7FD99A]'
-    },
-    {
-      type: 'material',
-      title: 'Добавлен новый материал',
-      description: 'Техники заземления',
-      date: '23 янв, 14:20',
-      icon: FileText,
-      color: 'text-[#FFD4B5]'
+  const recentActivity = useMemo(() => {
+    const items: Array<{ type: string; title: string; description: string; date: string; icon: typeof Calendar; color: string }> = [];
+    appointments.slice(0, 3).forEach((apt) => {
+      const slot = apt.slot;
+      items.push({
+        type: 'appointment',
+        title: apt.service?.title ?? 'Консультация',
+        description: apt.format === 'online' ? 'Онлайн' : 'Очная встреча',
+        date: formatAppointmentDate(slot),
+        icon: Calendar,
+        color: 'text-[#A8B5FF]',
+      });
+    });
+    if (items.length === 0 && !loading) {
+      items.push({
+        type: 'appointment',
+        title: 'Нет предстоящих встреч',
+        description: 'Запишитесь на консультацию',
+        date: '',
+        icon: Calendar,
+        color: 'text-[#A8B5FF]',
+      });
     }
-  ];
+    return items;
+  }, [appointments, loading]);
 
   return (
     <>
@@ -278,23 +324,41 @@ export default function CabinetDashboard({ onNavigate }: CabinetDashboardProps) 
                   Следующая встреча
                 </h3>
 
-                <div className="space-y-2 mb-6">
-                  <div className="flex items-center gap-2 text-sm text-[#718096]">
-                    <Calendar className="w-4 h-4" />
-                    <span>28 февраля, 15:00</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-[#718096]">
-                    <Clock className="w-4 h-4" />
-                    <span>Через 3 дня</span>
-                  </div>
-                </div>
+                {nextAppointment ? (
+                  <>
+                    <div className="space-y-2 mb-6">
+                      <div className="flex items-center gap-2 text-sm text-[#718096]">
+                        <Calendar className="w-4 h-4" />
+                        <span>{formatAppointmentDate(nextAppointment.slot)}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-[#718096]">
+                        <Clock className="w-4 h-4" />
+                        <span>
+                          {formatRelative(
+                            new Date(),
+                            new Date((nextAppointment.slot.local_start_at ?? nextAppointment.slot.start_at))
+                          )}
+                        </span>
+                      </div>
+                    </div>
 
-                <p className="text-sm text-[#718096] mb-6 leading-relaxed">
-                  Первичная консультация • Онлайн
-                </p>
+                    <p className="text-sm text-[#718096] mb-6 leading-relaxed">
+                      {nextAppointment.service?.title ?? 'Консультация'} •{' '}
+                      {nextAppointment.format === 'online' ? 'Онлайн' : 'Очно'}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-sm text-[#718096] mb-6 leading-relaxed">
+                    Нет предстоящих встреч. Запишитесь на консультацию.
+                  </p>
+                )}
 
-                <button className="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-[#A8B5FF] to-[#C8F5E8] text-white font-medium shadow-sm hover:shadow-md active:scale-[0.98] transition-all">
-                  Подробнее
+                <button
+                  type="button"
+                  onClick={() => onNavigate?.('appointments')}
+                  className="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-[#A8B5FF] to-[#C8F5E8] text-white font-medium shadow-sm hover:shadow-md active:scale-[0.98] transition-all"
+                >
+                  {nextAppointment ? 'Подробнее' : 'Записаться'}
                 </button>
               </div>
 

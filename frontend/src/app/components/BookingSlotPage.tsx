@@ -280,12 +280,15 @@ export default function BookingSlotPage({ serviceId, service, onContinue, onBack
                   <button
                     key={key}
                     type="button"
+                    role="button"
+                    aria-selected={isSelected}
+                    aria-label={`Дата ${day}${isSelected ? ', выбрана' : ''}`}
                     onClick={() => {
                       setSelectedDateKey(key);
                       setSelectedSlot(null);
                     }}
                     disabled={!isAvailable}
-                    className={`aspect-square rounded-xl text-sm sm:text-base font-medium transition-all ${
+                    className={`aspect-square rounded-xl text-sm sm:text-base font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7FD99A] focus-visible:ring-offset-2 ${
                       isSelected
                         ? 'bg-gradient-to-br from-[#7FD99A] to-[#C8F5E8] text-white shadow-sm'
                         : isAvailable
@@ -317,9 +320,12 @@ export default function BookingSlotPage({ serviceId, service, onContinue, onBack
                     <button
                       key={slot.id}
                       type="button"
+                      role="option"
+                      aria-selected={isSelected}
+                      aria-label={`Время ${slotToLocalTime(slot)}${isSelected ? ', выбрано' : ''}`}
                       onClick={() => available && setSelectedSlot(slot)}
                       disabled={!available}
-                      className={`p-4 rounded-xl border-2 transition-all ${
+                      className={`p-4 rounded-xl border-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7FD99A] focus-visible:ring-offset-2 ${
                         isSelected
                           ? 'border-[#7FD99A] bg-[#7FD99A]/5'
                           : available

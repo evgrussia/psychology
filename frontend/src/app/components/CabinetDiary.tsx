@@ -61,6 +61,13 @@ export default function CabinetDiary({ onBack }: CabinetDiaryProps) {
   const [newContent, setNewContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [editEntryId, setEditEntryId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState('');
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const [exportMessage, setExportMessage] = useState<string | null>(null);
 
   const loadEntries = useCallback(() => {
     setLoading(true);
@@ -90,6 +97,85 @@ export default function CabinetDiary({ onBack }: CabinetDiaryProps) {
       setCreateError(err instanceof Error ? err.message : 'Не удалось создать запись');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const openEdit = async (entry: DiaryEntry) => {
+    setEditEntryId(entry.id);
+    setEditError(null);
+    setEditLoading(true);
+    try {
+      const res = await cabinetApi.getDiaryEntry(entry.id);
+      const content = res.data?.content;
+      setEditContent(typeof content === 'string' ? content : content ? JSON.stringify(content) : '');
+    } catch (err) {
+      showApiError(err);
+      setEditError(err instanceof Error ? err.message : 'Не удалось загрузить запись');
+      setEditEntryId(null);
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  const handleEditSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editEntryId) return;
+    setEditError(null);
+    setSubmitting(true);
+    try {
+      await cabinetApi.updateDiaryEntry(editEntryId, { content: editContent });
+      setEditEntryId(null);
+      setEditContent('');
+      loadEntries();
+    } catch (err) {
+      showApiError(err);
+      setEditError(err instanceof Error ? err.message : 'Не удалось сохранить');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (entryId: string) => {
+    if (!window.confirm('Удалить эту запись? Это действие нельзя отменить.')) return;
+    setDeleteConfirmId(entryId);
+    try {
+      await cabinetApi.deleteDiaryEntry(entryId);
+      setDeleteConfirmId(null);
+      loadEntries();
+    } catch (err) {
+      showApiError(err);
+      setDeleteConfirmId(null);
+    }
+  };
+
+  const handleExportPdf = async () => {
+    const now = new Date();
+    const dateTo = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const dateFrom = new Date(dateTo);
+    dateFrom.setDate(dateFrom.getDate() - 30);
+    setExporting(true);
+    setExportMessage(null);
+    try {
+      const res = await cabinetApi.exportDiaries({
+        date_from: dateFrom.toISOString().slice(0, 10),
+        date_to: dateTo.toISOString().slice(0, 10),
+        format: 'pdf',
+      });
+      const { status, file_url } = res.data ?? {};
+      if (file_url) {
+        setExportMessage('Файл готов. Открываю ссылку для скачивания.');
+        window.open(file_url.startsWith('http') ? file_url : `${import.meta.env.VITE_API_BASE_URL || ''}/api/v1${file_url}`, '_blank');
+      } else {
+        setExportMessage('Экспорт запрошен. Файл будет доступен по ссылке после обработки.');
+      }
+      if (status === 'completed' && file_url) {
+        setTimeout(() => setExportMessage(null), 5000);
+      }
+    } catch (err) {
+      showApiError(err);
+      setExportMessage('Не удалось создать экспорт.');
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -151,7 +237,7 @@ export default function CabinetDiary({ onBack }: CabinetDiaryProps) {
               Вернуться в кабинет
             </button>
 
-            <div className="flex items-start justify-between mb-6">
+            <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
               <div>
                 <h1 className="text-[32px] sm:text-4xl lg:text-5xl font-bold text-[#2D3748] mb-2 leading-tight">
                   Мои дневники
@@ -161,15 +247,31 @@ export default function CabinetDiary({ onBack }: CabinetDiaryProps) {
                 </p>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setShowNewForm(true)}
-                className="hidden sm:flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#7FD99A] to-[#C8F5E8] text-white font-medium shadow-sm hover:shadow-md active:scale-[0.98] transition-all"
-              >
-                <Plus className="w-5 h-5" />
-                Новая запись
-              </button>
+              <div className="flex items-center gap-3 flex-wrap">
+                <button
+                  type="button"
+                  onClick={handleExportPdf}
+                  disabled={exporting}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-[#7FD99A]/30 text-[#2D3748] font-medium hover:border-[#7FD99A] hover:bg-[#7FD99A]/5 transition-all disabled:opacity-50"
+                >
+                  {exporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
+                  {exporting ? 'Экспорт…' : 'Экспорт в PDF'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowNewForm(true)}
+                  className="hidden sm:inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#7FD99A] to-[#C8F5E8] text-white font-medium shadow-sm hover:shadow-md active:scale-[0.98] transition-all"
+                >
+                  <Plus className="w-5 h-5" />
+                  Новая запись
+                </button>
+              </div>
             </div>
+            {exportMessage && (
+              <p className="mb-4 text-sm text-[#718096] bg-[#C8F5E8]/20 rounded-lg px-4 py-2">
+                {exportMessage}
+              </p>
+            )}
 
             {/* Privacy Notice */}
             <div className="bg-gradient-to-r from-[#C8F5E8]/10 to-[#7FD99A]/10 border border-[#C8F5E8]/30 rounded-xl p-4">
@@ -330,10 +432,22 @@ export default function CabinetDiary({ onBack }: CabinetDiaryProps) {
                             </div>
                           </div>
                           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button type="button" className="w-9 h-9 rounded-lg hover:bg-gray-50 flex items-center justify-center transition-colors">
+                            <button
+                              type="button"
+                              onClick={() => openEdit(entry)}
+                              disabled={editLoading}
+                              className="w-9 h-9 rounded-lg hover:bg-gray-50 flex items-center justify-center transition-colors"
+                              title="Редактировать"
+                            >
                               <Edit3 className="w-4 h-4 text-[#718096]" />
                             </button>
-                            <button type="button" className="w-9 h-9 rounded-lg hover:bg-red-50 flex items-center justify-center transition-colors">
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(entry.id)}
+                              disabled={deleteConfirmId === entry.id}
+                              className="w-9 h-9 rounded-lg hover:bg-red-50 flex items-center justify-center transition-colors"
+                              title="Удалить"
+                            >
                               <Trash2 className="w-4 h-4 text-[#718096] hover:text-red-500" />
                             </button>
                           </div>
@@ -377,6 +491,65 @@ export default function CabinetDiary({ onBack }: CabinetDiaryProps) {
           )}
         </div>
       </section>
+
+      {/* Edit modal */}
+      {editEntryId && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+          onClick={() => !submitting && setEditEntryId(null)}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-xl"
+          >
+            <h3 className="text-lg font-semibold text-[#2D3748] mb-4">Редактировать запись</h3>
+            {editLoading ? (
+              <div className="flex items-center gap-2 text-[#718096]">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Загрузка...
+              </div>
+            ) : (
+              <form onSubmit={handleEditSave} className="space-y-4">
+                {editError && (
+                  <div className="p-3 rounded-lg bg-red-50 text-red-700 text-sm">{editError}</div>
+                )}
+                <div>
+                  <label className="block text-sm font-medium text-[#2D3748] mb-2">Текст</label>
+                  <textarea
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    rows={4}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-200 text-[#2D3748] bg-white focus:outline-none focus:border-[#7FD99A]"
+                    placeholder="Текст записи..."
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#7FD99A] to-[#C8F5E8] text-white font-medium disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                    Сохранить
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setEditEntryId(null); setEditError(null); }}
+                    disabled={submitting}
+                    className="px-6 py-2.5 rounded-xl border border-gray-200 text-[#718096] font-medium hover:bg-gray-50"
+                  >
+                    Отмена
+                  </button>
+                </div>
+              </form>
+            )}
+          </motion.div>
+        </motion.div>
+      )}
 
       {/* Mobile FAB */}
       <button

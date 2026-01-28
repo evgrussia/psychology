@@ -381,3 +381,80 @@ class TestAuthLogoutEndpoint(TestCase):
         # Assert
         # Logout должен работать даже без refresh_token
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+
+@pytest.mark.django_db
+@pytest.mark.integration
+class TestMfaVerifyEndpoint(TestCase):
+    """Интеграционные тесты для POST /api/v1/auth/mfa/verify/."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.client.cookies.clear()
+        self.url = '/api/v1/auth/mfa/verify/'
+        from infrastructure.events.in_memory_event_bus import InMemoryEventBus
+        from infrastructure.encryption.fernet_encryption import FernetEncryptionService
+        from django.core.signing import TimestampSigner
+        self.user_repository = DjangoUserRepository(event_bus=InMemoryEventBus())
+        self.encryption_service = FernetEncryptionService()
+        self.signer = TimestampSigner()
+
+        # Создать пользователя с MFA
+        user = User.create(email=Email.create('mfauser@example.com'))
+        async_to_sync(self.user_repository.save)(user)
+        password_hash = PasswordService().hash_password('Password123!')
+        self.user_repository.set_password_hash(user.id.value, password_hash)
+
+        # MFA secret (plain) и зашифрованный
+        import pyotp
+        self.totp_secret = pyotp.random_base32()
+        encrypted = self.encryption_service.encrypt(self.totp_secret)
+        self.user_repository.set_mfa_secret(user.id.value, encrypted)
+        self.user_repository.set_mfa_enabled(user.id.value, True)
+
+        self.user_id = user.id.value
+        self.mfa_pending_value = self.signer.sign(str(self.user_id))
+
+    def test_mfa_verify_success(self):
+        """Успешная верификация MFA кода — выдаются access/refresh cookies и user."""
+        import pyotp
+        totp = pyotp.TOTP(self.totp_secret)
+        code = totp.now()
+
+        self.client.cookies['mfa_pending'] = self.mfa_pending_value
+        payload = {'code': code}
+
+        response = self.client.post(self.url, payload, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('data', response.data)
+        self.assertIn('user', response.data['data'])
+        self.assertEqual(response.data['data']['user']['email'], 'mfauser@example.com')
+        self.assertIn('access_token', response.cookies)
+        self.assertIn('refresh_token', response.cookies)
+        # mfa_pending при успехе удаляется (max_age=0 или пустое value)
+        if 'mfa_pending' in response.cookies:
+            self.assertTrue(
+                response.cookies['mfa_pending'].value == '' or
+                getattr(response.cookies['mfa_pending'], 'max_age', None) == 0
+            )
+
+    def test_mfa_verify_invalid_code(self):
+        """Неверный TOTP код — 401."""
+        self.client.cookies['mfa_pending'] = self.mfa_pending_value
+        payload = {'code': '000000'}
+
+        response = self.client.post(self.url, payload, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertIn('error', response.data)
+        self.assertNotIn('access_token', response.cookies)
+
+    def test_mfa_verify_missing_cookie(self):
+        """Без cookie mfa_pending — 401."""
+        payload = {'code': '123456'}
+
+        response = self.client.post(self.url, payload, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertIn('error', response.data)

@@ -1,9 +1,13 @@
 """
 Views для Admin endpoints.
+Аудит-логирование всех админских действий (NFR-SEC-6).
 """
+from uuid import UUID
+from typing import Optional
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.request import Request
 from drf_spectacular.utils import extend_schema
 
 from presentation.api.v1.serializers.admin import (
@@ -15,6 +19,51 @@ from presentation.api.v1.serializers.admin import (
 from presentation.api.v1.permissions import IsOwnerOrAssistant, IsOwnerOrEditor
 from presentation.api.v1.pagination import LargeResultsSetPagination
 from presentation.api.v1.throttling import AdminThrottle
+
+
+def _log_admin_action(
+    request: Request,
+    action: str,
+    entity_type: str,
+    entity_id: Optional[UUID] = None,
+    old_value: Optional[dict] = None,
+    new_value: Optional[dict] = None,
+) -> None:
+    """Записать действие админа в аудит-лог."""
+    if not getattr(request, 'user', None) or not request.user.is_authenticated:
+        return
+    try:
+        from presentation.api.v1.dependencies import (
+            get_log_audit_event_use_case,
+            get_sync_user_repository,
+        )
+        user_id = getattr(request.user, 'id', None) or getattr(request.user, 'pk', None)
+        actor_role = 'client'
+        if user_id:
+            user_repo = get_sync_user_repository()
+            roles = user_repo.get_user_roles(user_id)
+            if roles:
+                actor_role = roles[0]
+        ip_address = None
+        if request.META:
+            xff = request.META.get('HTTP_X_FORWARDED_FOR')
+            ip_address = (xff.split(',')[0].strip() if xff else request.META.get('REMOTE_ADDR'))
+        user_agent = request.META.get('HTTP_USER_AGENT') if request.META else None
+        log_use_case = get_log_audit_event_use_case()
+        log_use_case.execute(
+            actor_user_id=user_id,
+            actor_role=actor_role,
+            action=action,
+            entity_type=entity_type,
+            entity_id=entity_id,
+            old_value=old_value,
+            new_value=new_value,
+            ip_address=ip_address,
+            user_agent=user_agent,
+        )
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception("Failed to log admin audit event")
 
 
 class AdminAppointmentViewSet(viewsets.ViewSet):
@@ -30,6 +79,7 @@ class AdminAppointmentViewSet(viewsets.ViewSet):
         responses={200: AdminAppointmentListSerializer(many=True)},
     )
     def list(self, request):
+        _log_admin_action(request, 'admin_list_appointments', 'appointment')
         from asgiref.sync import async_to_sync
         from presentation.api.v1.dependencies import get_appointment_repository
         from django.utils import timezone
@@ -115,6 +165,7 @@ class LeadViewSet(viewsets.ViewSet):
         responses={200: LeadListSerializer(many=True)},
     )
     def list(self, request):
+        _log_admin_action(request, 'admin_list_leads', 'lead')
         from asgiref.sync import async_to_sync
         from application.admin.dto import GetLeadsListDto
         from presentation.api.v1.dependencies import get_leads_list_use_case
@@ -157,6 +208,7 @@ class AdminContentViewSet(viewsets.ViewSet):
         responses={200: AdminContentSerializer(many=True)},
     )
     def list(self, request):
+        _log_admin_action(request, 'admin_list_content', 'content')
         from asgiref.sync import async_to_sync
         from domain.content.value_objects.content_type import ContentType
         from presentation.api.v1.dependencies import get_content_item_repository
@@ -218,6 +270,7 @@ class AdminModerationViewSet(viewsets.ViewSet):
         responses={200: AdminModerationSerializer(many=True)},
     )
     def list(self, request):
+        _log_admin_action(request, 'admin_list_moderation', 'moderation_item')
         from asgiref.sync import async_to_sync
         from domain.ugc_moderation.value_objects.moderation_status import ModerationStatus
         from presentation.api.v1.dependencies import get_moderation_item_repository

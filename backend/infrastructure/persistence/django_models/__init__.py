@@ -20,6 +20,7 @@ from .content import ContentItemModel
 from .client_cabinet import (
     DiaryEntryModel,
     DataExportRequestModel,
+    FavoriteModel,
 )
 from .telegram import DeepLinkModel
 from .moderation import ModerationItemModel
@@ -48,6 +49,7 @@ __all__ = [
     # Client Cabinet
     'DiaryEntryModel',
     'DataExportRequestModel',
+    'FavoriteModel',
     # Telegram
     'DeepLinkModel',
     # Moderation

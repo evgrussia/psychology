@@ -65,6 +65,10 @@ class DiaryEntry(AggregateRoot):
         
         return entry
     
+    def update_content(self, new_content: str) -> None:
+        """Обновляет текст записи."""
+        self._content = new_content
+
     def delete(self) -> None:
         """Удаляет запись дневника."""
         self.add_domain_event(

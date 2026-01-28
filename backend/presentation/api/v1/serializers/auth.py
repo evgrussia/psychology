@@ -38,10 +38,18 @@ class RegisterSerializer(serializers.Serializer):
     )
     
     def validate_password(self, value):
-        """Дополнительная валидация пароля."""
+        """Валидация длины и сложности пароля."""
         if len(value) < 12:
-            raise serializers.ValidationError("Password must be at least 12 characters long")
-        # Проверка сложности (опционально)
+            raise serializers.ValidationError("Пароль должен быть не короче 12 символов.")
+        has_upper = any(c.isupper() for c in value)
+        has_lower = any(c.islower() for c in value)
+        has_digit = any(c.isdigit() for c in value)
+        special = set("!@#$%^&*()_+-=[]{}|;:',.<>?/`~\"\\")
+        has_special = any(c in special for c in value)
+        if not (has_upper and has_lower and has_digit and has_special):
+            raise serializers.ValidationError(
+                "Пароль должен содержать заглавную и строчную буквы, цифру и спецсимвол."
+            )
         return value
 
 
@@ -65,6 +73,17 @@ class AuthResponseSerializer(serializers.Serializer):
 class RefreshTokenSerializer(serializers.Serializer):
     """Serializer для обновления токена."""
     refresh_token = serializers.CharField(required=True)
+
+
+class MfaVerifySerializer(serializers.Serializer):
+    """Serializer для верификации MFA кода."""
+    code = serializers.CharField(required=True, min_length=6, max_length=6)
+
+
+class MfaSetupResponseSerializer(serializers.Serializer):
+    """Serializer ответа настройки MFA."""
+    provisioning_uri = serializers.URLField()
+    secret = serializers.CharField()
 
 
 class LogoutSerializer(serializers.Serializer):

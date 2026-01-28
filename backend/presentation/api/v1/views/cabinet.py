@@ -30,8 +30,20 @@ from presentation.api.v1.dependencies import (
     get_diary_entry_repository,
     get_export_diary_to_pdf_use_case,
     get_delete_user_data_use_case,
+    get_update_diary_entry_use_case,
+    get_delete_diary_entry_use_case,
+    get_list_favorites_use_case,
+    get_add_favorite_use_case,
+    get_remove_favorite_use_case,
 )
+from presentation.api.v1.serializers.cabinet import (
+    AddFavoriteSerializer,
+    FavoriteItemSerializer,
+)
+from application.client_cabinet.dto import AddFavoriteDto, RemoveFavoriteDto
 from domain.identity.aggregates.user import UserId
+from domain.client_cabinet.aggregates.diary_entry import DiaryEntryId
+from application.exceptions import NotFoundError, ValidationError as AppValidationError, ForbiddenError
 
 
 class CabinetAppointmentViewSet(viewsets.ViewSet):
@@ -88,6 +100,78 @@ class CabinetDiaryViewSet(viewsets.ViewSet):
         
         serializer = DiaryListSerializer(entries_data, many=True)
         return Response({'data': serializer.data})
+
+    @extend_schema(
+        summary="Одна запись дневника (с контентом для редактирования)",
+        responses={200: DiaryListSerializer, 404: None},
+    )
+    def retrieve(self, request, pk=None):
+        user_id = UserId(request.user.id)
+        repository = get_diary_entry_repository()
+        entry_id = DiaryEntryId(pk)
+        entry = async_to_sync(repository.find_by_id)(entry_id)
+        if not entry:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        if str(entry.user_id.value) != str(request.user.id):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        try:
+            import json
+            content_display = json.loads(entry.content) if isinstance(entry.content, str) else entry.content
+        except (TypeError, ValueError):
+            content_display = entry.content or ''
+        if isinstance(content_display, (dict, list)):
+            import json
+            content_str = json.dumps(content_display, ensure_ascii=False)
+        else:
+            content_str = str(content_display) if content_display else ''
+        data = {
+            'id': str(entry.id.value),
+            'type': entry.diary_type.value,
+            'content': content_str,
+        }
+        if hasattr(entry, 'created_at') and entry.created_at:
+            data['created_at'] = entry.created_at.isoformat()
+        serializer = DiaryListSerializer(data)
+        return Response({'data': serializer.data})
+
+    @extend_schema(
+        summary="Обновить запись дневника (PATCH)",
+        request={'type': 'object', 'properties': {'content': {'type': 'string'}}, 'required': ['content']},
+        responses={200: DiaryListSerializer, 400: None, 403: None, 404: None},
+    )
+    def partial_update(self, request, pk=None):
+        content = request.data.get('content')
+        if content is None:
+            return Response(
+                {'error': {'code': 'VALIDATION_ERROR', 'message': 'content is required'}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        use_case = get_update_diary_entry_use_case()
+        try:
+            result = async_to_sync(use_case.execute)(
+                entry_id=str(pk),
+                user_id=str(request.user.id),
+                content=content,
+            )
+        except NotFoundError:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        except ForbiddenError:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        return Response({'data': result}, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="Удалить запись дневника",
+        responses={204: None, 403: None, 404: None},
+    )
+    def destroy(self, request, pk=None):
+        use_case = get_delete_diary_entry_use_case()
+        try:
+            async_to_sync(use_case.execute)(entry_id=str(pk), user_id=str(request.user.id))
+        except NotFoundError:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        except ForbiddenError:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ExportViewSet(viewsets.ViewSet):
@@ -207,4 +291,68 @@ class DeleteDataView(APIView):
         
         use_case = get_delete_user_data_use_case()
         async_to_sync(use_case.execute)(dto)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CabinetFavoritesViewSet(viewsets.ViewSet):
+    """
+    Личный кабинет: избранное (аптечка).
+    GET /cabinet/favorites/ — список.
+    POST /cabinet/favorites/ — добавить { resource_type, resource_id }.
+    DELETE /cabinet/favorites/<id>/ — удалить.
+    """
+    permission_classes = [IsAuthenticated, HasConsent]
+
+    @extend_schema(
+        summary="Список избранного (аптечка)",
+        responses={200: FavoriteItemSerializer(many=True)},
+    )
+    def list(self, request):
+        use_case = get_list_favorites_use_case()
+        result = async_to_sync(use_case.execute)(str(request.user.id))
+        serializer = FavoriteItemSerializer(
+            [{'id': i.id, 'resource_type': i.resource_type, 'resource_id': i.resource_id, 'created_at': i.created_at} for i in result.items],
+            many=True,
+        )
+        return Response({'data': serializer.data})
+
+    @extend_schema(
+        summary="Добавить в избранное",
+        request=AddFavoriteSerializer,
+        responses={201: FavoriteItemSerializer},
+    )
+    def create(self, request):
+        ser = AddFavoriteSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        dto = AddFavoriteDto(
+            user_id=str(request.user.id),
+            resource_type=ser.validated_data['resource_type'],
+            resource_id=ser.validated_data['resource_id'],
+        )
+        use_case = get_add_favorite_use_case()
+        try:
+            item = async_to_sync(use_case.execute)(dto)
+        except AppValidationError as e:
+            return Response({'error': {'code': 'VALIDATION_ERROR', 'message': str(e)}}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = FavoriteItemSerializer({
+            'id': item.id,
+            'resource_type': item.resource_type,
+            'resource_id': item.resource_id,
+            'created_at': item.created_at,
+        })
+        return Response({'data': serializer.data}, status=status.HTTP_201_CREATED)
+
+    @extend_schema(
+        summary="Удалить из избранного",
+        responses={204: None, 404: None},
+    )
+    def destroy(self, request, pk=None):
+        use_case = get_remove_favorite_use_case()
+        dto = RemoveFavoriteDto(user_id=str(request.user.id), favorite_id=str(pk))
+        try:
+            async_to_sync(use_case.execute)(dto)
+        except NotFoundError:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        except Exception:
+            return Response(status=status.HTTP_403_FORBIDDEN)
         return Response(status=status.HTTP_204_NO_CONTENT)

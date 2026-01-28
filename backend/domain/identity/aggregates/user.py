@@ -46,7 +46,8 @@ class User(AggregateRoot):
         status: UserStatus,
         roles: List[Role],
         consents: List[Consent],
-        created_at: datetime
+        created_at: datetime,
+        mfa_enabled: bool = False
     ):
         super().__init__()
         self._id = id
@@ -58,6 +59,7 @@ class User(AggregateRoot):
         self._roles = roles
         self._consents = consents
         self._created_at = created_at
+        self._mfa_enabled = mfa_enabled
     
     @classmethod
     def create(
@@ -91,7 +93,8 @@ class User(AggregateRoot):
             status=UserStatus.ACTIVE,
             roles=[Role.CLIENT],  # По умолчанию роль Client
             consents=[],
-            created_at=datetime.now(timezone.utc)
+            created_at=datetime.now(timezone.utc),
+            mfa_enabled=False
         )
         
         user.add_domain_event(
@@ -272,6 +275,10 @@ class User(AggregateRoot):
     @property
     def consents(self) -> List[Consent]:
         return list(self._consents)
+    
+    @property
+    def mfa_enabled(self) -> bool:
+        return self._mfa_enabled
     
     def delete(self) -> None:
         """Удаляет пользователя (GDPR/152-ФЗ).

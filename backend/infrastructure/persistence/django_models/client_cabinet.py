@@ -19,6 +19,8 @@ class DiaryEntryModel(models.Model):
             ('thoughts', 'Thoughts'),
             ('gratitude', 'Gratitude'),
             ('reflection', 'Reflection'),
+            ('emotions', 'Emotions'),
+            ('abc', 'ABC'),
         ]
     )
     
@@ -37,9 +39,39 @@ class DiaryEntryModel(models.Model):
         ]
 
 
+class FavoriteModel(models.Model):
+    """Django ORM модель для Favorite (избранное / аптечка)."""
+
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    user_id = models.UUIDField(db_index=True)
+    resource_type = models.CharField(
+        max_length=50,
+        choices=[
+            ('article', 'Article'),
+            ('resource', 'Resource'),
+            ('ritual', 'Ritual'),
+        ]
+    )
+    resource_id = models.CharField(max_length=255, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        db_table = 'favorites'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user_id', 'resource_type', 'resource_id'],
+                name='unique_user_resource_favorite',
+            )
+        ]
+        indexes = [
+            models.Index(fields=['user_id', 'created_at']),
+        ]
+        ordering = ['-created_at']
+
+
 class DataExportRequestModel(models.Model):
     """Django ORM модель для DataExportRequest."""
-    
+
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     user_id = models.UUIDField(db_index=True)
     

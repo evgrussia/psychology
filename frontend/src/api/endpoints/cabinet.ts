@@ -1,6 +1,6 @@
 /**
- * Cabinet endpoints: встречи, дневники.
- * Бэкенд: GET cabinet/appointments/, GET cabinet/diaries/, POST interactive/diaries/
+ * Cabinet endpoints: встречи, дневники, избранное (аптечка).
+ * Бэкенд: GET cabinet/appointments/, GET cabinet/diaries/, cabinet/favorites/
  */
 
 import { request } from '../client';
@@ -9,6 +9,9 @@ import type {
   CabinetDiaryResponse,
   CreateDiaryEntryRequest,
   CreateDiaryEntryResponse,
+  FavoritesListResponse,
+  AddFavoriteRequest,
+  AddFavoriteResponse,
 } from '../types/cabinet';
 
 const CABINET = 'cabinet';
@@ -34,8 +37,57 @@ export async function getDiaryEntries(): Promise<CabinetDiaryResponse> {
   return request<CabinetDiaryResponse>('GET', `${CABINET}/diaries/`);
 }
 
+export async function getDiaryEntry(entryId: string): Promise<{ data: DiaryEntry }> {
+  return request<{ data: DiaryEntry }>('GET', `${CABINET}/diaries/${entryId}/`);
+}
+
 export async function createDiaryEntry(
   payload: CreateDiaryEntryRequest
 ): Promise<CreateDiaryEntryResponse> {
   return request<CreateDiaryEntryResponse>('POST', `${INTERACTIVE}/diaries/`, payload);
+}
+
+export async function updateDiaryEntry(
+  entryId: string,
+  payload: { content: string }
+): Promise<{ data: DiaryEntry }> {
+  return request<{ data: DiaryEntry }>('PATCH', `${CABINET}/diaries/${entryId}/`, payload);
+}
+
+export async function deleteDiaryEntry(entryId: string): Promise<void> {
+  return request<void>('DELETE', `${CABINET}/diaries/${entryId}/`);
+}
+
+// --- Favorites (аптечка) ---
+
+export async function getFavorites(): Promise<FavoritesListResponse> {
+  return request<FavoritesListResponse>('GET', `${CABINET}/favorites/`);
+}
+
+export async function addFavorite(payload: AddFavoriteRequest): Promise<AddFavoriteResponse> {
+  return request<AddFavoriteResponse>('POST', `${CABINET}/favorites/`, payload);
+}
+
+export async function removeFavorite(favoriteId: string): Promise<void> {
+  return request<void>('DELETE', `${CABINET}/favorites/${favoriteId}/`);
+}
+
+// --- Export diaries to PDF ---
+
+export interface ExportDiariesRequest {
+  date_from: string; // ISO date
+  date_to: string;
+  format?: 'pdf';
+}
+
+export interface ExportDiariesResponse {
+  data: {
+    export_id: string;
+    status: 'pending' | 'processing' | 'completed' | 'failed';
+    file_url?: string | null;
+  };
+}
+
+export async function exportDiaries(payload: ExportDiariesRequest): Promise<ExportDiariesResponse> {
+  return request<ExportDiariesResponse>('POST', `${CABINET}/exports/diaries/export/`, payload);
 }

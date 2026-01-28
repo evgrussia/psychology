@@ -23,6 +23,7 @@ import BookingFormPage from '@/app/components/BookingFormPage';
 import CabinetDashboard from '@/app/components/CabinetDashboard';
 import CabinetAppointments from '@/app/components/CabinetAppointments';
 import CabinetDiary from '@/app/components/CabinetDiary';
+import CabinetFavoritesPage from '@/app/components/CabinetFavoritesPage';
 import CabinetMaterials from '@/app/components/CabinetMaterials';
 import LoginPage from '@/app/components/LoginPage';
 import RegisterPage from '@/app/components/RegisterPage';
@@ -31,14 +32,15 @@ import QuizProgressPage from '@/app/components/QuizProgressPage';
 import QuizResultPage from '@/app/components/QuizResultPage';
 import QuizCrisisPage from '@/app/components/QuizCrisisPage';
 import NavigatorStartPage from '@/app/components/NavigatorStartPage';
+import type { NavigatorFilters } from '@/app/components/NavigatorStartPage';
 
 import { Toaster } from 'sonner';
 import type { Service, Slot } from '@/api/types/booking';
 import type { QuizQuestion, QuizResultData } from '@/api/types/interactive';
 
-type Page = 'home' | 'about' | 'how-it-works' | 'privacy-policy' | 'consent' | 'terms' | 'disclaimer' | '404' | 'consultations' | 'resources' | 'help' | 'cookies' | 'topics' | 'topic-detail' | 'blog' | 'blog-article' | 'resources-list' | 'emergency' | 'booking' | 'booking-slot' | 'booking-form' | 'cabinet' | 'cabinet-appointments' | 'cabinet-diary' | 'cabinet-materials' | 'login' | 'register' | 'quiz-start' | 'quiz-progress' | 'quiz-result' | 'quiz-crisis' | 'navigator';
+type Page = 'home' | 'about' | 'how-it-works' | 'privacy-policy' | 'consent' | 'terms' | 'disclaimer' | '404' | 'consultations' | 'resources' | 'help' | 'cookies' | 'topics' | 'topic-detail' | 'blog' | 'blog-article' | 'resources-list' | 'emergency' | 'booking' | 'booking-slot' | 'booking-form' | 'cabinet' | 'cabinet-appointments' | 'cabinet-diary' | 'cabinet-favorites' | 'cabinet-materials' | 'login' | 'register' | 'quiz-start' | 'quiz-progress' | 'quiz-result' | 'quiz-crisis' | 'navigator';
 
-const CABINET_PAGES: Page[] = ['cabinet', 'cabinet-appointments', 'cabinet-diary', 'cabinet-materials'];
+const CABINET_PAGES: Page[] = ['cabinet', 'cabinet-appointments', 'cabinet-diary', 'cabinet-favorites', 'cabinet-materials'];
 
 export default function App() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -57,6 +59,7 @@ export default function App() {
     slug: string;
   } | null>(null);
   const [quizResultData, setQuizResultData] = useState<QuizResultData | null>(null);
+  const [navigatorFilters, setNavigatorFilters] = useState<NavigatorFilters | null>(null);
 
   const navigateTo = (page: Page) => {
     setCurrentPage(page);
@@ -381,6 +384,7 @@ export default function App() {
               transition={{ duration: 0.3 }}
             >
               <TopicsHubPage
+                navigatorFilters={navigatorFilters}
                 onNavigateToTopic={(slug) => {
                   setSelectedTopicSlug(slug);
                   navigateTo('topic-detail');
@@ -557,6 +561,24 @@ export default function App() {
               <CabinetDiary onBack={() => navigateTo('cabinet')} />
             </motion.div>
           )}
+          {currentPage === 'cabinet-favorites' && (
+            <motion.div
+              key="cabinet-favorites"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <CabinetFavoritesPage
+                onBack={() => navigateTo('cabinet')}
+                onNavigateToArticle={(slug) => {
+                  setSelectedArticleSlug(slug);
+                  navigateTo('blog-article');
+                }}
+                onNavigateToResource={() => navigateTo('resources-list')}
+              />
+            </motion.div>
+          )}
           {currentPage === 'cabinet-materials' && (
             <motion.div
               key="cabinet-materials"
@@ -682,7 +704,12 @@ export default function App() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <NavigatorStartPage onFindPractices={() => navigateTo('topics')} />
+              <NavigatorStartPage
+                onFindPractices={(filters) => {
+                  setNavigatorFilters(filters);
+                  navigateTo('topics');
+                }}
+              />
             </motion.div>
           )}
         </AnimatePresence>
