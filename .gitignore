@@ -16,13 +16,21 @@ build
 .env.production.local
 .env.prod
 *.env.prod
+.env.servers
+
+# SSH Keys (NEVER commit!)
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+ssh_config_*
 
 # IDE
-.vscode
-.idea
+.vscode/
+.idea/
 *.swp
 *.swo
-.cursor
+.cursor/
 # OS
 .DS_Store
 Thumbs.db
