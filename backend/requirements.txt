@@ -26,4 +26,5 @@ opentelemetry-instrumentation-django==0.41b0
 opentelemetry-exporter-jaeger==1.20.0
 django-redis>=5.4.0
 gunicorn>=21.2.0
+whitenoise>=6.6.0
 requests>=2.31.0

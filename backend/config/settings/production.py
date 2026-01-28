@@ -56,11 +56,15 @@ CACHES = {
     }
 }
 
-# Static & Media
-STATIC_ROOT = '/var/www/static/'
-MEDIA_ROOT = '/var/www/media/'
+# Static & Media (в Docker: volume смонтирован в /app/staticfiles и /app/media)
+STATIC_ROOT = os.environ.get('STATIC_ROOT', '/app/staticfiles')
+MEDIA_ROOT = os.environ.get('MEDIA_ROOT', '/app/media')
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
+STORAGES = {
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage', 'OPTIONS': {'location': MEDIA_ROOT}},
+    'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'},
+}
 
 # Logging (default /tmp in Docker; on host set DJANGO_LOG_FILE=/var/log/django/app.log)
 LOGGING = {

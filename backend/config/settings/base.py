@@ -43,6 +43,7 @@ AUTH_USER_MODEL = 'persistence.UserModel'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'presentation.api.middleware.request_id.RequestIDMiddleware',
