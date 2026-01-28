@@ -31,7 +31,7 @@ DATABASES = {
         'HOST': os.environ.get('DB_HOST', 'localhost'),
         'PORT': os.environ.get('DB_PORT', '5432'),
         'OPTIONS': {
-            'sslmode': 'require',
+            'sslmode': os.environ.get('DB_SSLMODE', 'require'),
         },
         'CONN_MAX_AGE': 600,
     }
@@ -56,7 +56,7 @@ MEDIA_ROOT = '/var/www/media/'
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 
-# Logging
+# Logging (default /tmp in Docker; on host set DJANGO_LOG_FILE=/var/log/django/app.log)
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -70,7 +70,7 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': '/var/log/django/app.log',
+            'filename': os.environ.get('DJANGO_LOG_FILE', '/tmp/django-app.log'),
             'maxBytes': 1024 * 1024 * 10,  # 10MB
             'backupCount': 10,
             'formatter': 'json',

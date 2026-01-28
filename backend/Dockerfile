@@ -1,6 +1,17 @@
+# Multi-stage: frontend (Vite) + backend (Django).
+# Build context MUST be repo root (docker-compose: context: ., dockerfile: backend/Dockerfile).
+
+# Stage 1: build frontend
+FROM node:20-alpine AS frontend
+WORKDIR /app
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
+
+# Stage 2: backend
 FROM python:3.11-slim
 
-# Установка системных зависимостей
 RUN apt-get update && apt-get install -y \
     postgresql-client \
     gcc \
@@ -8,22 +19,18 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Рабочая директория
 WORKDIR /app
 
-# Копирование requirements и установка зависимостей
-COPY requirements.txt requirements-dev.txt ./
+COPY backend/requirements.txt backend/requirements-dev.txt ./
 RUN pip install --no-cache-dir -r requirements.txt -r requirements-dev.txt
 
-# Копирование кода проекта
-COPY . .
+COPY backend/ ./
+COPY --from=frontend /app/dist /app/staticfiles/frontend
 
-# Создание директорий для статики и медиа
-RUN mkdir -p /app/staticfiles /app/media
+RUN mkdir -p /app/staticfiles /app/media \
+    && chmod +x /app/entrypoint.sh
 
-# Порт для Django
 EXPOSE 8000
 
-# По умолчанию — разработка. Для production переопределить:
-# CMD ["gunicorn", "--config", "gunicorn_config.py", "config.wsgi:application"]
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+ENTRYPOINT ["/app/entrypoint.sh"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--access-logfile", "-", "--error-logfile", "-", "config.wsgi:application"]
