@@ -48,6 +48,10 @@ class ContentItemModel(models.Model):
         blank=True
     )
     
+    # Краткое описание (для статей), категория (например anxiety, burnout)
+    excerpt = models.CharField(max_length=500, blank=True, default='')
+    category = models.CharField(max_length=50, blank=True, default='')
+    
     # Content body (markdown или JSON)
     content_body = models.TextField()
     

@@ -52,7 +52,7 @@ project_brief:
   # Технологический стек (из документации)
   tech_stack:
     backend: "Django (требование зафиксировано)"
-    frontend: "TBD (рекомендуется React/Next.js)"
+    frontend: "удалён (backend-only)"
     database: "PostgreSQL"
     ai_framework: "LangChain/LangGraph для AI‑агентов"
     messaging: "Telegram Bot API"
@@ -183,7 +183,6 @@ project_brief:
   # Открытые вопросы (не блокирующие старт)
   open_questions:
     - "Точные формулировки вопросов QZ-01/02 (валидация психологом) — не блокирует технологический старт"
-    - "Выбор frontend-фреймворка (рекомендуется React/Next.js)"
     - "Выбор инструмента аналитики (event-based, без PII)"
   
   # Следующие шаги
@@ -198,7 +197,6 @@ project_brief:
       - "Реализация Infrastructure Layer (Django ORM, внешние интеграции)"
       - "Реализация Application Layer (Use Cases)"
       - "Реализация Presentation Layer (Django REST Framework API)"
-      - "Интеграция Design System в frontend проект"
       - "Интеграция с Telegram Bot API"
       - "Настройка аналитики и tracking"
       - "Разработка LangChain‑агентов"

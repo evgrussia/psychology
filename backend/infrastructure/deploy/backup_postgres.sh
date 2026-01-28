@@ -27,7 +27,3 @@ find $BACKUP_DIR -name "backup_*.sql.gz.enc" -mtime +$RETENTION_DAYS -delete
 
 # Логирование
 echo "$(date): Backup completed: $ENCRYPTED_FILE" >> /var/log/backup.log
-
----
-*Документ создан: DevOps Agent*
----

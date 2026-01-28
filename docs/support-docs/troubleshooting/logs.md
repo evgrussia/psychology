@@ -7,9 +7,7 @@
 1.  **Backend (Django)**: 
     *   Файлы на сервере: `/var/log/django/app.log`
     *   Система сбора: ELK Stack / Loki (рекомендуется для поиска).
-2.  **Frontend**:
-    *   Ошибки клиента логируются в Sentry.
-3.  **Инфраструктура**:
+2.  **Инфраструктура**:
     *   Nginx: `/var/log/nginx/access.log` и `error.log`
     *   Gunicorn: `/var/log/gunicorn/error.log`
 

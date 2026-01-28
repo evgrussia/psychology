@@ -8,7 +8,7 @@ Accepted
 
 ## Context
 Требуется выбор backend-фреймворка для проекта «Эмоциональный баланс». Проект должен поддерживать:
-- REST API для frontend
+- REST API для клиентов (frontend удалён)
 - Интеграции с внешними сервисами (Telegram, ЮKassa, Google Calendar)
 - Админ-панель для управления контентом и CRM
 - AI-агенты на LangChain/LangGraph

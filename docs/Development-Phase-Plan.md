@@ -43,9 +43,7 @@
 - **Testing:** pytest + pytest-django
 
 ### Frontend
-- **Framework:** TBD (рекомендуется React/Next.js)
-- **Design System:** готовые компоненты из `design_system/`
-- **Styling:** Tailwind CSS v4 + CSS Custom Properties
+- **Статус:** удалён. Проект backend-only.
 
 ### Интеграции
 - **Payments:** ЮKassa
@@ -116,12 +114,7 @@ backend/
     ├── validators.py
     └── utils.py
 
-frontend/                       # TBD (React/Next.js)
-├── src/
-│   ├── app/                    # Next.js app directory
-│   ├── components/             # Интеграция design_system
-│   └── lib/
-└── public/
+# frontend/ удалён (backend-only)
 ```
 
 ---
@@ -242,27 +235,8 @@ frontend/                       # TBD (React/Next.js)
 
 ---
 
-### Phase 6: Frontend Integration
-**Цель:** Интегрировать Design System и реализовать frontend
-
-**Задачи:**
-1. ✅ Выбор и настройка frontend-фреймворка (React/Next.js)
-2. ✅ Интеграция Design System компонентов
-3. ✅ Реализация экранов на основе готовых компонентов
-4. ✅ Интеграция с Backend API
-5. ✅ Роутинг и навигация
-6. ✅ Обработка состояний (loading/error/success)
-7. ✅ Аналитика (интеграция Tracking Plan)
-
-**Выходные артефакты:**
-- Работающий frontend
-- Интегрированный Design System
-- Все экраны Release 1
-
-**Детальная техническая спецификация:**
-- 📄 `docs/tech-specs/Phase-6-Frontend-Integration.md` — полная техническая спецификация (архитектура, структура проекта, интеграции, примеры кода, чеклисты)
-
-**Оценка:** XL (1+ месяц)
+### Phase 6: Frontend Integration **(удалена)**
+**Статус:** Frontend удалён. Проект backend-only. Спека `Phase-6-Frontend-Integration.md` удалена.
 
 ---
 
@@ -334,10 +308,8 @@ frontend/                       # TBD (React/Next.js)
 - Application: Telegram, UGC Use Cases
 - Presentation: Telegram, UGC API
 
-### Sprint 11-12: Frontend
-- Frontend Integration
-- Все экраны Release 1
-- Интеграция с API
+### Sprint 11-12: ~~Frontend~~ (удалена)
+- Frontend удалён; backend-only.
 
 ### Sprint 13-14: Testing & Polish
 - Integration Testing

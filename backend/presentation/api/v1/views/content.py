@@ -137,3 +137,51 @@ class ResourceViewSet(viewsets.ViewSet):
         result = async_to_sync(use_case.execute)(dto)
         serializer = ResourceSerializer(result)
         return Response({'data': serializer.data})
+
+
+class TopicsViewSet(viewsets.ViewSet):
+    """
+    ViewSet для получения списка тем (topics).
+    """
+    permission_classes = [IsPublicOrAuthenticated]
+    
+    @extend_schema(
+        summary="Список тем",
+        description="Возвращает список доступных тем для контента",
+        responses={200: {'description': 'List of topics'}},
+    )
+    def list(self, request):
+        """
+        Возвращает список тем.
+        
+        Темы определены статически на основе бизнес-требований.
+        В будущем можно сделать динамический список из БД.
+        """
+        topics = [
+            {
+                'id': 'anxiety',
+                'slug': 'anxiety',
+                'title': 'Тревога',
+                'description': 'Помощь в преодолении тревожных состояний и панических атак',
+            },
+            {
+                'id': 'burnout',
+                'slug': 'burnout',
+                'title': 'Выгорание',
+                'description': 'Восстановление сил и поиск баланса при профессиональном выгорании',
+            },
+            {
+                'id': 'relationships',
+                'slug': 'relationships',
+                'title': 'Отношения',
+                'description': 'Разрешение конфликтов и построение гармоничных отношений',
+            },
+            {
+                'id': 'self-esteem',
+                'slug': 'self-esteem',
+                'title': 'Самооценка',
+                'description': 'Работа над уверенностью в себе и принятием себя',
+            },
+        ]
+        
+        return Response({'data': topics})

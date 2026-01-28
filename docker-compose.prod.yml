@@ -1,0 +1,50 @@
+# Референс для production-подобного запуска (PostgreSQL + Redis + backend).
+# Не заменяет полноценный прод по Phase-8 (Nginx, systemd, SSL на VPS).
+# Использование: docker compose -f docker-compose.prod.yml up -d
+# Переменные: задать в .env (DB_NAME, DB_USER, DB_PASSWORD, REDIS_HOST, SECRET_KEY, ALLOWED_HOSTS).
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: gunicorn --bind 0.0.0.0:8000 --workers 2 --access-logfile - --error-logfile - config.wsgi:application
+    env_file: .env.production
+    environment:
+      - DB_HOST=postgres
+      - REDIS_HOST=redis
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - static:/app/staticfiles
+      - media:/app/media
+
+  postgres:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME:-psychology_prod}
+      POSTGRES_USER: ${DB_USER:-psychology_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-psychology_user} -d ${DB_NAME:-psychology_prod}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
+  static:
+  media:

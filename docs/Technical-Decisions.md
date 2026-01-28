@@ -145,18 +145,10 @@ backend/
 
 ---
 
-## 2) Frontend Framework: TBD
+## 2) Frontend
 
 ### Статус
-**TBD** (рекомендуется React/Next.js)
-
-### Рекомендации
-- **Next.js** — для SSR/SSG (SEO важно для контента)
-- **React** — для интерактивных компонентов
-- **TypeScript** — для типобезопасности
-
-### Решение ожидается
-Требуется финальное согласование выбора frontend-фреймворка.
+**Удалён.** Проект backend-only (Django REST API).
 
 ---
 
@@ -304,7 +296,7 @@ backend/
 ## Открытые вопросы
 
 1. ✅ **Backend framework** — решено: Django
-2. ⏳ **Frontend framework** — ожидается решение (рекомендуется React/Next.js)
+2. ✅ **Frontend** — удалён (backend-only)
 3. ✅ **Database** — решено: PostgreSQL
 4. ✅ **AI framework** — решено: LangChain/LangGraph
 5. ✅ **Payment provider** — решено: ЮKassa

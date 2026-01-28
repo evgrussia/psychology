@@ -44,15 +44,14 @@
 ┌─────────────────────────────────────────────────────────┐
 │                    Trust Boundary                        │
 │                                                          │
-│  ┌──────────┐    ┌──────────┐    ┌──────────┐           │
-│  │ Frontend │───►│ API GW   │───►│ Backend  │           │
-│  │ (React)  │    │ (Django) │    │ (Django) │           │
-│  └──────────┘    └──────────┘    └──────────┘           │
-│                                        │                 │
-│                                        ▼                 │
-│                                  ┌──────────┐           │
-│                                  │PostgreSQL│           │
-│                                  └──────────┘           │
+│  ┌──────────┐    ┌──────────┐    ┌──────────────────┐   │
+│  │ Clients  │───►│ API GW   │───►│ Backend (Django) │   │
+│  │ (API)    │    │ (Django) │    └────────┬─────────┘   │
+│  └──────────┘    └──────────┘             │             │
+│                                             ▼            │
+│                                       ┌──────────┐      │
+│                                       │PostgreSQL│      │
+│                                       └──────────┘      │
 └─────────────────────────────────────────────────────────┘
                             │
                             ▼
@@ -64,16 +63,6 @@
 ```
 
 ## STRIDE Analysis
-
-### Frontend (Web Application)
-
-| Threat | STRIDE | Risk | Mitigation |
-|--------|--------|------|------------|
-| XSS attacks | Tampering | High | CSP headers, input sanitization, output encoding, React автоматически экранирует |
-| Session hijacking | Spoofing | High | Secure cookies (HttpOnly, Secure, SameSite), HTTPS only, короткий TTL токенов |
-| Clickjacking | Tampering | Medium | X-Frame-Options: DENY, CSP frame-ancestors |
-| CSRF | Tampering | High | CSRF tokens (Django встроенный), SameSite cookies |
-| Sensitive data exposure | Info Disclosure | High | Не хранить чувствительные данные в localStorage, минимизация данных в ответах API |
 
 ### API Gateway / Backend
 

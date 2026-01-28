@@ -1,107 +1,71 @@
-# Frontend — Эмоциональный баланс
+# Фронтенд «Эмоциональный баланс»
 
-Frontend приложение на Next.js 14+ (App Router) для платформы психологической помощи.
+Фронтенд платформы психологической поддержки — свёрстан по промптам из `FIGMA_MAKE_PROMPTS.md` и `FIGMA_CONCEPT_PROMPT.md`.
 
-## Технологический стек
+## Стек
 
-- **Framework:** Next.js 14+ (App Router)
-- **Language:** TypeScript 5+
-- **Styling:** Tailwind CSS v4
-- **UI Components:** Radix UI
-- **State Management:** Zustand (client state), React Query (server state)
-- **Forms:** React Hook Form + Zod
-- **HTTP Client:** Axios
+- **React 18** + TypeScript
+- **Vite** — сборка и dev-сервер
+- **Tailwind CSS 4** — стили
+- **Motion** — анимации
+- **Radix UI** (через shadcn/ui-компоненты) — доступность
+- **Lucide React** — иконки
 
-## Структура проекта
-
-```
-frontend/
-├── src/
-│   ├── app/                    # Next.js App Router
-│   │   ├── (marketing)/       # Marketing pages
-│   │   ├── (content)/         # Content pages
-│   │   ├── booking/           # Booking flow
-│   │   ├── cabinet/           # Client cabinet
-│   │   └── legal/             # Legal pages
-│   ├── components/
-│   │   ├── ui/                # UI components
-│   │   ├── domain/            # Domain components
-│   │   ├── layout/            # Layout components
-│   │   ├── features/          # Feature components
-│   │   └── shared/            # Shared components
-│   ├── hooks/                 # Custom hooks
-│   ├── services/              # API services
-│   ├── store/                 # Zustand stores
-│   ├── lib/                   # Utilities
-│   └── styles/                # Global styles
-├── tests/                     # Tests
-└── docs/                      # Documentation
-```
-
-## Установка
+## Запуск
 
 ```bash
 # Установка зависимостей
+npm install
+# или
 pnpm install
 
-# Запуск dev сервера
-pnpm dev
+# Режим разработки (http://localhost:3010)
+npm run dev
 
-# Сборка
-pnpm build
+# Сборка для production
+npm run build
 
-# Запуск production
-pnpm start
+# Просмотр production-сборки
+npm run preview
 ```
 
-## Переменные окружения
+Фронтенд по умолчанию запускается на порту **3010** (соответствует `FRONTEND_PORT` в корневом `.env`).
 
-Создайте `.env.local` на основе `.env.example`:
+## Интеграция с бэкендом
 
-```bash
-NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
-NEXT_PUBLIC_TRACKING_ENABLED=true
+- Бэкенд (Django): по умолчанию `http://127.0.0.1:8000`.
+- В режиме разработки Vite проксирует запросы:
+  - `/api` → `http://127.0.0.1:8000/api`
+  - `/admin` → `http://127.0.0.1:8000/admin`
+
+Чтобы бэкенд принимал запросы с фронтенда, в настройках Django (development) должны быть разрешены CORS для `http://localhost:3010` и `http://127.0.0.1:3010`.
+
+Переменные окружения (опционально):
+
+- `VITE_API_BASE_URL` — базовый URL API (если не через proxy).
+
+## Структура
+
+```
+frontend/
+├── index.html          # Точка входа Vite
+├── public/             # Статика (favicon и т.д.)
+├── src/
+│   ├── main.tsx        # Точка входа React
+│   ├── app/
+│   │   ├── App.tsx     # Корневой компонент, роутинг по состоянию
+│   │   └── components/ # Страницы и UI
+│   │       ├── ui/     # Базовые компоненты (shadcn/ui)
+│   │       └── ...     # Страницы (HomePage, AboutPage, и т.д.)
+│   └── styles/         # Глобальные стили, тема, Tailwind
+├── package.json
+├── vite.config.ts
+└── README.md
 ```
 
-## Разработка
+Навигация сейчас реализована через состояние в `App.tsx` (без URL). Подключение React Router и привязка к URL — следующий шаг при интеграции с бэкендом.
 
-### Добавление нового экрана
+## Документация по дизайну
 
-1. Создайте файл `src/app/[route]/page.tsx`
-2. Добавьте layout если нужен
-3. Интегрируйте с API через hooks
-4. Добавьте tracking события
-
-### Добавление компонента
-
-1. UI компоненты → `src/components/ui/`
-2. Domain компоненты → `src/components/domain/`
-3. Feature компоненты → `src/components/features/[feature]/`
-
-## Тестирование
-
-```bash
-# Unit тесты
-pnpm test
-
-# E2E тесты
-pnpm test:e2e
-
-# Coverage
-pnpm test:coverage
-```
-
-## Accessibility
-
-Проект соответствует WCAG 2.2 Level AA. Все компоненты должны:
-- Поддерживать клавиатурную навигацию
-- Иметь правильные ARIA атрибуты
-- Иметь достаточный контраст
-- Работать со screen readers
-
-## Лицензия
-
-Proprietary
-
----
-*Документ создан: Coder Agent*
+- `FIGMA_CONCEPT_PROMPT.md` — общая концепция дизайна
+- `FIGMA_MAKE_PROMPTS.md` — промпты по экранам (в корне репозитория)

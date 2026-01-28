@@ -364,7 +364,7 @@ Phase 5 реализована на **67%**. Базовая функционал
 
 1. **Критично:** Создать базовые тесты для критичных endpoints (auth, booking, payments)
 2. **Высокий приоритет:** Убрать прямое обращение к ORM для соблюдения Clean Architecture
-3. После этого можно переходить к Phase 6 (Frontend Integration)
+3. Phase 6 (Frontend Integration) удалена; проект backend-only.
 
 ---
 

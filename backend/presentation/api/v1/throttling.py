@@ -12,7 +12,7 @@ class PublicEndpointThrottle(AnonRateThrottle):
     rate = '100/minute'
 
     def allow_request(self, request, view):
-        if settings.TESTING:
+        if getattr(settings, 'TESTING', False):
             return True
         return super().allow_request(request, view)
 

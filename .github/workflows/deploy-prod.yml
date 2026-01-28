@@ -1,0 +1,57 @@
+# Deploy backend в Production по push в main или вручную.
+# Секреты в Settings → Secrets and variables → Actions:
+#   PROD_SSH_HOST, PROD_SSH_USER, PROD_SSH_PRIVATE_KEY (приватный ключ целиком)
+# Опционально: PROD_SSH_KEY_PASSPHRASE если ключ с паролем
+
+name: Deploy Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PROD_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.PROD_SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Deploy on server
+        env:
+          PROD_SSH_HOST: ${{ secrets.PROD_SSH_HOST }}
+          PROD_SSH_USER: ${{ secrets.PROD_SSH_USER }}
+          PROD_SSH_KEY_PATH: ~/.ssh/deploy_key
+          PROD_PROJECT_PATH: ${{ vars.PROD_PROJECT_PATH || '/var/www/psychology' }}
+          PROD_DB_NAME: ${{ vars.PROD_DB_NAME || 'psychology_prod' }}
+          SKIP_CONFIRM: 1
+        run: |
+          # Переменные для SSH внутри шага (runner уже имеет checkout)
+          export PROD_SSH_HOST PROD_SSH_USER PROD_PROJECT_PATH PROD_DB_NAME
+          export PROD_SSH_KEY_PATH="$HOME/.ssh/deploy_key"
+          ssh -i "$PROD_SSH_KEY_PATH" -o StrictHostKeyChecking=no \
+            "$PROD_SSH_USER@$PROD_SSH_HOST" \
+            "mkdir -p $PROD_PROJECT_PATH/backups && \
+             sudo -u postgres pg_dump $PROD_DB_NAME | gzip > $PROD_PROJECT_PATH/backups/pre_deploy_$(date +%Y%m%d_%H%M%S).sql.gz && \
+             cd $PROD_PROJECT_PATH/backend && git fetch origin && git checkout main && git pull origin main && \
+             cd $PROD_PROJECT_PATH && . venv/bin/activate && cd backend && \
+             pip install -r requirements.txt -q && python manage.py migrate --no-input && python manage.py collectstatic --no-input && \
+             sudo systemctl restart psychology-api"
+        continue-on-error: false
+
+      - name: Health check
+        env:
+          PROD_SSH_HOST: ${{ secrets.PROD_SSH_HOST }}
+          PROD_SSH_USER: ${{ secrets.PROD_SSH_USER }}
+          PROD_SSH_KEY_PATH: ~/.ssh/deploy_key
+        run: |
+          sleep 5
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "$PROD_SSH_USER@$PROD_SSH_HOST" \
+            "curl -sf http://127.0.0.1:8000/api/v1/health/" || exit 1

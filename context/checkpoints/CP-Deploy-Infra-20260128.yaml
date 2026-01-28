@@ -1,0 +1,42 @@
+checkpoint:
+  version: "1.0"
+  date: "2026-01-28"
+  status: "DEPLOY-INFRA-READY"
+  summary: |
+    Создана инфраструктура для деплоя проекта в production: корневая папка deploy/ со скриптами
+    и шаблонами env, bootstrap сервера Ubuntu, health endpoints в API, опциональный OpenTelemetry,
+    GitHub Actions workflow для деплоя по push в main, docker-compose.prod.yml для референса.
+    Документация в deploy/README.md и связь с Phase-8 spec сохранены.
+
+  artifacts_created:
+    - "deploy/.env.production.example"
+    - "deploy/.env.servers.example"
+    - "deploy/deploy-dev.sh"
+    - "deploy/deploy-prod.sh"
+    - "deploy/bootstrap-server.sh"
+    - "deploy/README.md"
+    - "backend/config/views.py"
+    - "backend/presentation/api/v1/views/health.py"
+    - "backend/config/urls.py" (health routes)
+    - "backend/presentation/api/v1/urls.py" (api/v1/health/)
+    - ".github/workflows/deploy-prod.yml"
+    - "docker-compose.prod.yml"
+    - "backend/config/settings/production.py" (optional OpenTelemetry)
+    - "backend/gunicorn_config.py" (footer removed)
+    - "backend/infrastructure/deploy/*" (footers removed)
+
+  key_decisions:
+    - "Деплой на VPS по Phase-8: Nginx + Gunicorn + systemd; скрипты поддерживают и .env.servers, и переменные CI."
+    - "Health: /health/ и /api/v1/health/ для LB и smoke tests; OpenTelemetry в production опционален."
+    - "GitHub Actions: секреты PROD_SSH_*; бэкап БД и health check после деплоя."
+
+  next_actions:
+    - "Заполнить .env.servers и .env.production на целевом сервере; выполнить bootstrap-server.sh на новом VPS."
+    - "Настроить Nginx и certbot (SSL), скопировать systemd unit и включить psychology-api."
+    - "При первом деплое: миграции, collectstatic; при необходимости — настроить Prometheus/Alertmanager по Phase-8."
+
+  blockers: []
+
+---
+*Чекпоинт создан: Orchestrator Agent*
+---

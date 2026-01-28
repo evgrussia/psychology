@@ -1,9 +1,35 @@
 """
 Django ORM модель для User (из Domain Layer: domain.identity.entities.User)
 """
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 import uuid
+
+
+class UserModelManager(BaseUserManager):
+    """Менеджер для UserModel. Нужен для createsuperuser и get_by_natural_key."""
+
+    def _create_user(self, email, password, **extra_fields):
+        if not email:
+            raise ValueError("Email обязателен.")
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_user(self, email, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", False)
+        extra_fields.setdefault("is_superuser", False)
+        return self._create_user(email, password, **extra_fields)
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        return self._create_user(email, password, **extra_fields)
+
+    def get_by_natural_key(self, username):
+        return self.get(**{self.model.USERNAME_FIELD: username})
 
 
 class UserModel(AbstractBaseUser, PermissionsMixin):
@@ -68,7 +94,9 @@ class UserModel(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
-    
+
+    objects = UserModelManager()
+
     def has_active_consent(self, consent_type: str) -> bool:
         """Проверяет наличие активного согласия (для permissions)."""
         from infrastructure.persistence.django_models.consent import ConsentModel

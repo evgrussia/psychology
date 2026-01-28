@@ -18,7 +18,3 @@ RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
-
----
-*Документ создан: DevOps Agent*
----

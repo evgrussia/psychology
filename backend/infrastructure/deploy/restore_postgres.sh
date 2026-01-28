@@ -13,7 +13,3 @@ gunzip < $DECRYPTED_FILE | psql -h localhost -U psychology_user -d psychology_pr
 
 # Очистка
 rm $DECRYPTED_FILE
-
----
-*Документ создан: DevOps Agent*
----

@@ -112,20 +112,22 @@ MIDDLEWARE = (
     ['django_prometheus.middleware.PrometheusAfterMiddleware']
 )
 
-# OpenTelemetry Tracing
-from opentelemetry import trace
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.jaeger.thrift import JaegerExporter
-from opentelemetry.instrumentation.django import DjangoInstrumentor
+# OpenTelemetry Tracing (опционально; при недоступности Jaeger приложение стартует без трейсинга)
+try:
+    from opentelemetry import trace
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor
+    from opentelemetry.exporter.jaeger.thrift import JaegerExporter
+    from opentelemetry.instrumentation.django import DjangoInstrumentor
 
-trace.set_tracer_provider(TracerProvider())
-jaeger_exporter = JaegerExporter(
-    agent_host_name=os.environ.get('JAEGER_HOST', 'jaeger.internal'),
-    agent_port=int(os.environ.get('JAEGER_PORT', 6831)),
-)
-trace.get_tracer_provider().add_span_processor(
-    BatchSpanProcessor(jaeger_exporter)
-)
-
-DjangoInstrumentor().instrument()
+    trace.set_tracer_provider(TracerProvider())
+    jaeger_exporter = JaegerExporter(
+        agent_host_name=os.environ.get('JAEGER_HOST', 'jaeger.internal'),
+        agent_port=int(os.environ.get('JAEGER_PORT', 6831)),
+    )
+    trace.get_tracer_provider().add_span_processor(
+        BatchSpanProcessor(jaeger_exporter)
+    )
+    DjangoInstrumentor().instrument()
+except Exception:  # noqa: BLE001
+    pass

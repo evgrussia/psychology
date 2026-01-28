@@ -50,7 +50,7 @@ class ListArticlesUseCase:
                 'title': article.title,
                 'excerpt': article.excerpt,
                 'published_at': article.published_at.isoformat() if article.published_at else None,
-                'category': article.category.value if hasattr(article.category, 'value') else str(article.category),
+                'category': article.category,
                 'tags': [tag.value if hasattr(tag, 'value') else str(tag) for tag in article.tags] if hasattr(article, 'tags') else []
             })
         

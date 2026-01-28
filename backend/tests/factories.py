@@ -178,6 +178,8 @@ class ContentItemModelFactory(factory.django.DjangoModelFactory):
     topics = factory.LazyFunction(list)
     tags = factory.LazyFunction(list)
     time_to_benefit = 'short_term'
+    excerpt = ''
+    category = ''
     content_body = factory.Faker('text', max_nb_chars=1000)
     published_at = factory.LazyFunction(lambda: datetime.now(timezone.utc))
 

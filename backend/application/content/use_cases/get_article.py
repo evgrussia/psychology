@@ -49,10 +49,10 @@ class GetArticleUseCase:
             id=str(article.id.value),
             slug=article.slug,
             title=article.title,
-            content=getattr(article, 'content_body', ''),  # Используем content_body из модели
-            excerpt=getattr(article, 'excerpt', ''),
+            content=article.content_body,
+            excerpt=article.excerpt,
             published_at=article.published_at.isoformat() if article.published_at else '',
-            category=getattr(article, 'category', ''),
+            category=article.category,
             tags=[tag if isinstance(tag, str) else str(tag) for tag in article.tags],
             related_resources=[self._to_resource_dto(r) for r in related],
             cta_blocks=getattr(article, 'cta_blocks', None)

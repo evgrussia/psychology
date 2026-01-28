@@ -21,6 +21,8 @@ class ContentItemMapper:
         
         time_to_benefit = TimeToBenefit(record.time_to_benefit) if record.time_to_benefit else None
         
+        excerpt = getattr(record, 'excerpt', None) or ''
+        category = getattr(record, 'category', None) or ''
         return ContentItem(
             id=ContentItemId(record.id),
             slug=record.slug,
@@ -32,7 +34,9 @@ class ContentItemMapper:
             time_to_benefit=time_to_benefit,
             content_body=record.content_body,
             created_at=record.created_at,
-            published_at=record.published_at
+            published_at=record.published_at,
+            excerpt=excerpt,
+            category=category,
         )
     
     @staticmethod
@@ -49,4 +53,6 @@ class ContentItemMapper:
             'time_to_benefit': content.time_to_benefit.value if content.time_to_benefit else None,
             'content_body': content.content_body,
             'published_at': content.published_at,
+            'excerpt': content.excerpt or '',
+            'category': content.category or '',
         }

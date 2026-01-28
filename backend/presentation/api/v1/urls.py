@@ -13,6 +13,8 @@ from .views import (
     moderation,
     admin,
     webhooks,
+    tracking,
+    health as health_views,
 )
 
 router = DefaultRouter()
@@ -34,6 +36,7 @@ router.register(r'interactive/diaries', interactive.DiaryViewSet, basename='diar
 # Content
 router.register(r'content/articles', content.ArticleViewSet, basename='article')
 router.register(r'content/resources', content.ResourceViewSet, basename='resource')
+router.register(r'content/topics', content.TopicsViewSet, basename='topic')
 
 # Client Cabinet
 router.register(r'cabinet/appointments', cabinet.CabinetAppointmentViewSet, basename='cabinet-appointment')
@@ -54,7 +57,7 @@ router.register(r'admin/moderation', admin.AdminModerationViewSet, basename='adm
 
 urlpatterns = [
     path('', include(router.urls)),
-    
+    path('health/', health_views.health),
     # Auth endpoints (non-viewset)
     path('auth/refresh/', auth.RefreshTokenView.as_view(), name='token-refresh'),
     path('auth/logout/', auth.LogoutView.as_view(), name='token-logout'),
@@ -69,4 +72,7 @@ urlpatterns = [
     path('interactive/quizzes/<slug:slug>/submit/', interactive.SubmitQuizView.as_view(), name='quiz-submit'),
     path('cabinet/data/export/', cabinet.ExportDataView.as_view(), name='export-data'),
     path('cabinet/data/delete/', cabinet.DeleteDataView.as_view(), name='delete-data'),
+    
+    # Tracking
+    path('tracking/events', tracking.tracking_events, name='tracking-events'),
 ]

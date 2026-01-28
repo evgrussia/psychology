@@ -41,7 +41,9 @@ class ContentItem(AggregateRoot):
         time_to_benefit: Optional[TimeToBenefit],
         created_at: datetime,
         content_body: str = "",
-        published_at: Optional[datetime] = None
+        published_at: Optional[datetime] = None,
+        excerpt: str = "",
+        category: str = "",
     ):
         super().__init__()
         self._id = id
@@ -55,6 +57,8 @@ class ContentItem(AggregateRoot):
         self._content_body = content_body
         self._created_at = created_at
         self._published_at = published_at
+        self._excerpt = excerpt or ""
+        self._category = category or ""
     
     def publish(self) -> None:
         """Публикует контент."""
@@ -125,3 +129,11 @@ class ContentItem(AggregateRoot):
     @property
     def content_body(self) -> str:
         return self._content_body
+
+    @property
+    def excerpt(self) -> str:
+        return self._excerpt
+
+    @property
+    def category(self) -> str:
+        return self._category

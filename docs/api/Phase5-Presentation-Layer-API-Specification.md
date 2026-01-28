@@ -16,7 +16,7 @@
 - Соответствие Clean Architecture принципам
 - Безопасность и валидацию на уровне API
 - Документацию (OpenAPI/Swagger)
-- Готовность к интеграции с Frontend
+- Готовность к интеграции с клиентами API (frontend удалён)
 
 **Входные артефакты:**
 - ✅ Application Layer (Use Cases) — Phase 4
@@ -2092,8 +2092,8 @@ def create(self, request):
 
 После завершения Phase 5:
 
-1. **Phase 6: Frontend Integration** — интеграция API с Frontend
-2. **Phase 7: Integration & Testing** — интеграционное тестирование
+1. **Phase 6: Frontend Integration** — удалена (backend-only).
+2. **Phase 7: Integration & Testing** — интеграционное тестирование (backend)
 3. **Phase 8: Deployment & Go Live** — деплой в production
 
 ---
