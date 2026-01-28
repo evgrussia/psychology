@@ -49,9 +49,12 @@ ssh user@your-server 'sudo bash /tmp/bootstrap-server.sh'
 ./deploy/deploy-prod.sh
 ```
 
-### 4. balance-space.ru: Docker (SPA + API в одном backend)
+### 4. balance-space.ru: Docker (frontend + backend)
 
-После `docker compose -f docker-compose.prod.yml up -d --build` backend слушает порт **8001** (если 8000 занят — в `docker-compose.prod.yml` на сервере задать `8001:8000`). Чтобы сайт отдавался новой версией:
+- **frontend** (SPA): порт 8082, раздача Vite-сборки через nginx в контейнере.
+- **backend** (Django API): порт 8001 (на сервере при занятом 8000 — в compose задать `8001:8000`).
+
+После `docker compose -f docker-compose.prod.yml up -d --build` применить nginx:
 
 **На сервере (с sudo):**
 ```bash
@@ -59,6 +62,8 @@ sudo cp /var/www/psychology/backend/infrastructure/deploy/nginx-balance-space.ru
 sudo nginx -t && sudo systemctl reload nginx
 ```
 Или: `sudo bash /var/www/psychology/deploy/apply-nginx-balance.sh`
+
+Nginx: `/` и статика SPA → 127.0.0.1:8082 (frontend), `/api/`, `/admin/`, `/health/`, `/static/`, `/media/` → 127.0.0.1:8001 (backend).
 
 Перед деплоем создаётся бэкап БД в `$PROJECT_PATH/backups/`. Откат: см. [.cursor/skills/vps-deploy/SKILL.md](../.cursor/skills/vps-deploy/SKILL.md) и `backend/infrastructure/deploy/restore_postgres.sh`.
 

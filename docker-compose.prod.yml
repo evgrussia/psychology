@@ -1,9 +1,16 @@
-# Референс для production-подобного запуска (PostgreSQL + Redis + backend).
-# Не заменяет полноценный прод по Phase-8 (Nginx, systemd, SSL на VPS).
+# Референс для production-подобного запуска (frontend + backend + PostgreSQL + Redis).
 # Использование: docker compose -f docker-compose.prod.yml up -d
-# Переменные: задать в .env (DB_NAME, DB_USER, DB_PASSWORD, REDIS_HOST, SECRET_KEY, ALLOWED_HOSTS).
+# Переменные: .env.production (DB_NAME, DB_USER, DB_PASSWORD, REDIS_HOST, SECRET_KEY, ALLOWED_HOSTS).
+# Host nginx: / и /assets/ → frontend:8082, /api/ /admin/ /health/ /static/ /media/ → backend:8001.
 
 services:
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "8082:80"
+
   backend:
     build:
       context: .
