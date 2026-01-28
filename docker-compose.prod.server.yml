@@ -1,0 +1,10 @@
+# Override портов для сервера, где 8082 и 8000 заняты другими проектами.
+# Использование: docker compose --env-file .env -f docker-compose.prod.yml -f docker-compose.prod.server.yml up -d
+
+services:
+  frontend:
+    ports:
+      - "8084:80"
+  backend:
+    ports:
+      - "8001:8000"
