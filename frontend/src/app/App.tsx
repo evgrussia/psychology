@@ -33,14 +33,22 @@ import QuizResultPage from '@/app/components/QuizResultPage';
 import QuizCrisisPage from '@/app/components/QuizCrisisPage';
 import NavigatorStartPage from '@/app/components/NavigatorStartPage';
 import type { NavigatorFilters } from '@/app/components/NavigatorStartPage';
+import AdminLayout from '@/app/components/admin/AdminLayout';
+import AdminDashboard from '@/app/components/admin/AdminDashboard';
+import AdminAppointments from '@/app/components/admin/AdminAppointments';
+import AdminLeads from '@/app/components/admin/AdminLeads';
+import AdminContent from '@/app/components/admin/AdminContent';
+import AdminModeration from '@/app/components/admin/AdminModeration';
+import type { AdminSubPage } from '@/app/components/admin/AdminLayout';
 
 import { Toaster } from 'sonner';
 import type { Service, Slot } from '@/api/types/booking';
 import type { QuizQuestion, QuizResultData } from '@/api/types/interactive';
 
-type Page = 'home' | 'about' | 'how-it-works' | 'privacy-policy' | 'consent' | 'terms' | 'disclaimer' | '404' | 'consultations' | 'resources' | 'help' | 'cookies' | 'topics' | 'topic-detail' | 'blog' | 'blog-article' | 'resources-list' | 'emergency' | 'booking' | 'booking-slot' | 'booking-form' | 'cabinet' | 'cabinet-appointments' | 'cabinet-diary' | 'cabinet-favorites' | 'cabinet-materials' | 'login' | 'register' | 'quiz-start' | 'quiz-progress' | 'quiz-result' | 'quiz-crisis' | 'navigator';
+type Page = 'home' | 'about' | 'how-it-works' | 'privacy-policy' | 'consent' | 'terms' | 'disclaimer' | '404' | 'consultations' | 'resources' | 'help' | 'cookies' | 'topics' | 'topic-detail' | 'blog' | 'blog-article' | 'resources-list' | 'emergency' | 'booking' | 'booking-slot' | 'booking-form' | 'cabinet' | 'cabinet-appointments' | 'cabinet-diary' | 'cabinet-favorites' | 'cabinet-materials' | 'admin' | 'admin-dashboard' | 'admin-appointments' | 'admin-leads' | 'admin-content' | 'admin-moderation' | 'login' | 'register' | 'quiz-start' | 'quiz-progress' | 'quiz-result' | 'quiz-crisis' | 'navigator';
 
 const CABINET_PAGES: Page[] = ['cabinet', 'cabinet-appointments', 'cabinet-diary', 'cabinet-favorites', 'cabinet-materials'];
+const ADMIN_PAGES: Page[] = ['admin', 'admin-dashboard', 'admin-appointments', 'admin-leads', 'admin-content', 'admin-moderation'];
 
 export default function App() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -72,13 +80,48 @@ export default function App() {
     if (!isAuthenticated && CABINET_PAGES.includes(currentPage)) {
       setCurrentPage('login');
     }
+    if (!isAuthenticated && ADMIN_PAGES.includes(currentPage)) {
+      setCurrentPage('login');
+    }
   }, [isAuthenticated, isLoading, currentPage]);
+
+  const adminSubPage: AdminSubPage =
+    currentPage === 'admin' || currentPage === 'admin-dashboard' ? 'dashboard'
+    : currentPage === 'admin-appointments' ? 'appointments'
+    : currentPage === 'admin-leads' ? 'leads'
+    : currentPage === 'admin-content' ? 'content'
+    : currentPage === 'admin-moderation' ? 'moderation'
+    : 'dashboard';
+
+  const navigateAdmin = (sub: AdminSubPage) => {
+    setCurrentPage(sub === 'dashboard' ? 'admin' : (`admin-${sub}` as Page));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   useEffect(() => {
     if (currentPage === 'quiz-progress' && !quizRunData) {
       setCurrentPage('quiz-start');
     }
   }, [currentPage, quizRunData]);
+
+  if (ADMIN_PAGES.includes(currentPage)) {
+    return (
+      <div className="min-h-screen bg-white">
+        <AdminLayout
+          subPage={adminSubPage}
+          onNavigate={navigateAdmin}
+          onExitAdmin={() => navigateTo(isAuthenticated ? 'cabinet' : 'home')}
+        >
+          {adminSubPage === 'dashboard' && <AdminDashboard />}
+          {adminSubPage === 'appointments' && <AdminAppointments />}
+          {adminSubPage === 'leads' && <AdminLeads />}
+          {adminSubPage === 'content' && <AdminContent />}
+          {adminSubPage === 'moderation' && <AdminModeration />}
+        </AdminLayout>
+        <Toaster theme="light" position="top-center" richColors />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -934,6 +977,10 @@ export default function App() {
               <span>•</span>
               <button onClick={() => navigateTo('navigator')} className="hover:text-[#A8B5FF] transition-colors">
                 Демо: Навигатор
+              </button>
+              <span>•</span>
+              <button onClick={() => navigateTo('admin')} className="hover:text-[#A8B5FF] transition-colors">
+                Демо: Админка
               </button>
             </div>
           </div>

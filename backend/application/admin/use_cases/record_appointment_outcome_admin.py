@@ -47,10 +47,10 @@ class RecordAppointmentOutcomeAdminUseCase:
         if not admin:
             raise NotFoundError("Admin user not found")
         
-        # Проверка, что пользователь имеет роль администратора
-        is_admin = any(role.code == 'admin' for role in admin.roles)
+        # Проверка, что пользователь имеет роль owner или assistant (админка расписания/встреч)
+        is_admin = any(role.code in ('owner', 'assistant') for role in admin.roles)
         if not is_admin:
-            raise ForbiddenError("Only administrators can record appointment outcomes")
+            raise ForbiddenError("Only owner or assistant can record appointment outcomes")
         
         # 2. Получение агрегата
         appointment_id = AppointmentId(dto.appointment_id)

@@ -25,10 +25,9 @@ def mock_user_repository():
     """Мок репозитория пользователей."""
     admin_user = MagicMock(spec=User)
     admin_user.id = UserId.generate()
-    # OWNER имеет admin scope, но в коде проверяется role.code == 'admin'
-    # Для теста создаем роль с code='admin' через мок
+    # Для админки встреч допускаются роли owner или assistant
     admin_role = MagicMock()
-    admin_role.code = 'admin'
+    admin_role.code = 'owner'
     admin_user.roles = [admin_role]
     
     repo = AsyncMock()
@@ -103,7 +102,7 @@ async def test_record_appointment_outcome_admin_not_admin(use_case, mock_user_re
     )
     
     # Act & Assert
-    with pytest.raises(ForbiddenError, match="Only administrators can record"):
+    with pytest.raises(ForbiddenError, match="Only owner or assistant can record"):
         await use_case.execute(dto, str(user.id.value))
 
 

@@ -52,6 +52,7 @@ router.register(r'payments', payments.PaymentViewSet, basename='payment')
 router.register(r'moderation/questions', moderation.QuestionViewSet, basename='question')
 
 # Admin
+router.register(r'admin/me', admin.AdminMeViewSet, basename='admin-me')
 router.register(r'admin/appointments', admin.AdminAppointmentViewSet, basename='admin-appointment')
 router.register(r'admin/leads', admin.LeadViewSet, basename='admin-lead')
 router.register(r'admin/content', admin.AdminContentViewSet, basename='admin-content')

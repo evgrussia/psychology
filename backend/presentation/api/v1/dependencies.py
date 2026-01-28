@@ -69,6 +69,10 @@ from application.booking.use_cases.confirm_payment import ConfirmPaymentUseCase
 from application.telegram.use_cases.handle_telegram_webhook import HandleTelegramWebhookUseCase
 
 from application.admin.use_cases.get_leads_list import GetLeadsListUseCase
+from application.admin.use_cases.record_appointment_outcome_admin import RecordAppointmentOutcomeAdminUseCase
+from application.admin.use_cases.moderate_ugc_item import ModerateUGCItemUseCase
+from application.admin.use_cases.answer_ugc_question import AnswerUGCQuestionUseCase
+from application.admin.use_cases.publish_content_item import PublishContentItemUseCase
 from application.ugc_moderation.use_cases.submit_question import SubmitQuestionUseCase
 from application.audit.use_cases.log_audit_event import LogAuditEventUseCase
 from infrastructure.persistence.repositories.audit_log_repository import DjangoAuditLogRepository
@@ -553,6 +557,37 @@ def get_submit_question_use_case() -> SubmitQuestionUseCase:
 def get_log_audit_event_use_case() -> LogAuditEventUseCase:
     """Получить экземпляр LogAuditEventUseCase для аудит-логирования админских действий."""
     return LogAuditEventUseCase(audit_repository=DjangoAuditLogRepository())
+
+
+def get_record_appointment_outcome_admin_use_case() -> RecordAppointmentOutcomeAdminUseCase:
+    """Получить экземпляр RecordAppointmentOutcomeAdminUseCase."""
+    return RecordAppointmentOutcomeAdminUseCase(
+        appointment_repository=get_appointment_repository(),
+        user_repository=get_user_repository(),
+        event_bus=get_event_bus(),
+    )
+
+
+def get_moderate_ugc_item_use_case() -> ModerateUGCItemUseCase:
+    """Получить экземпляр ModerateUGCItemUseCase."""
+    return ModerateUGCItemUseCase(
+        moderation_repository=get_moderation_item_repository(),
+        event_bus=get_event_bus(),
+    )
+
+
+def get_answer_ugc_question_use_case() -> AnswerUGCQuestionUseCase:
+    """Получить экземпляр AnswerUGCQuestionUseCase."""
+    return AnswerUGCQuestionUseCase(
+        moderation_repository=get_moderation_item_repository(),
+        encryption_service=get_encryption_service(),
+        event_bus=get_event_bus(),
+    )
+
+
+def get_publish_content_item_use_case() -> PublishContentItemUseCase:
+    """Получить экземпляр PublishContentItemUseCase."""
+    return PublishContentItemUseCase(content_repository=get_content_item_repository())
 
 
 class SyncUserRepositoryWrapper:

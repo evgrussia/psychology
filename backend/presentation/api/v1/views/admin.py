@@ -16,7 +16,7 @@ from presentation.api.v1.serializers.admin import (
     AdminContentSerializer,
     AdminModerationSerializer,
 )
-from presentation.api.v1.permissions import IsOwnerOrAssistant, IsOwnerOrEditor
+from presentation.api.v1.permissions import IsOwnerOrAssistant, IsOwnerOrEditor, IsOwnerOrAssistantOrEditor
 from presentation.api.v1.pagination import LargeResultsSetPagination
 from presentation.api.v1.throttling import AdminThrottle
 
@@ -152,6 +152,41 @@ class AdminAppointmentViewSet(viewsets.ViewSet):
             }
         })
 
+    @action(detail=True, methods=['post'], url_path='record_outcome')
+    @extend_schema(
+        summary="Записать исход встречи",
+        request=dict,
+        responses={200: dict, 400: None, 403: None, 404: None},
+    )
+    def record_outcome(self, request, pk=None):
+        """POST admin/appointments/<id>/record_outcome/ body: { outcome: attended|no_show|canceled }."""
+        from asgiref.sync import async_to_sync
+        from application.booking.dto import RecordAppointmentOutcomeDto
+        from application.exceptions import NotFoundError, ValidationError, ForbiddenError
+        from presentation.api.v1.dependencies import get_record_appointment_outcome_admin_use_case
+
+        outcome = (request.data or {}).get('outcome')
+        if not outcome or outcome not in ('attended', 'no_show', 'canceled'):
+            return Response(
+                {'error': {'code': 'VALIDATION_ERROR', 'message': 'outcome must be attended, no_show or canceled'}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        user_id = getattr(request.user, 'id', None) or getattr(request.user, 'pk', None)
+        if not user_id:
+            return Response({'error': {'code': 'UNAUTHORIZED', 'message': 'User not found'}}, status=status.HTTP_401_UNAUTHORIZED)
+        dto = RecordAppointmentOutcomeDto(appointment_id=str(pk), outcome=outcome)
+        use_case = get_record_appointment_outcome_admin_use_case()
+        try:
+            result = async_to_sync(use_case.execute)(dto, str(user_id))
+            _log_admin_action(request, 'admin_record_appointment_outcome', 'appointment', entity_id=UUID(pk))
+            return Response(result, status=status.HTTP_200_OK)
+        except NotFoundError as e:
+            return Response({'error': {'code': 'NOT_FOUND', 'message': str(e)}}, status=status.HTTP_404_NOT_FOUND)
+        except ForbiddenError as e:
+            return Response({'error': {'code': 'FORBIDDEN', 'message': str(e)}}, status=status.HTTP_403_FORBIDDEN)
+        except ValidationError as e:
+            return Response({'error': {'code': 'VALIDATION_ERROR', 'message': str(e)}}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class LeadViewSet(viewsets.ViewSet):
     """
@@ -257,6 +292,31 @@ class AdminContentViewSet(viewsets.ViewSet):
             }
         })
 
+    @action(detail=True, methods=['post'], url_path='publish')
+    @extend_schema(
+        summary="Опубликовать контент",
+        request=dict,
+        responses={200: dict, 400: None, 404: None},
+    )
+    def publish(self, request, pk=None):
+        """POST admin/content/<id>/publish/ body: { checklist: { hasDisclaimers, toneChecked, hasCta, hasInternalLinks } }."""
+        from asgiref.sync import async_to_sync
+        from application.admin.dto import PublishContentItemDto
+        from application.exceptions import NotFoundError, ValidationError
+        from presentation.api.v1.dependencies import get_publish_content_item_use_case
+
+        checklist = (request.data or {}).get('checklist') or {}
+        dto = PublishContentItemDto(content_id=str(pk), checklist=checklist)
+        use_case = get_publish_content_item_use_case()
+        try:
+            result = async_to_sync(use_case.execute)(dto)
+            _log_admin_action(request, 'admin_publish_content', 'content', entity_id=UUID(pk))
+            return Response(result, status=status.HTTP_200_OK)
+        except NotFoundError as e:
+            return Response({'error': {'code': 'NOT_FOUND', 'message': str(e)}}, status=status.HTTP_404_NOT_FOUND)
+        except ValidationError as e:
+            return Response({'error': {'code': 'VALIDATION_ERROR', 'message': str(e)}}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class AdminModerationViewSet(viewsets.ViewSet):
     """
@@ -303,4 +363,97 @@ class AdminModerationViewSet(viewsets.ViewSet):
                 'has_next': False,
                 'has_previous': False,
             }
+        })
+
+    @action(detail=True, methods=['post'], url_path='moderate')
+    @extend_schema(
+        summary="Модерировать UGC",
+        request=dict,
+        responses={200: dict, 400: None, 404: None},
+    )
+    def moderate(self, request, pk=None):
+        """POST admin/moderation/<id>/moderate/ body: { status: approved|rejected, comment?: string }."""
+        from asgiref.sync import async_to_sync
+        from application.admin.dto import ModerateUGCItemDto
+        from application.exceptions import NotFoundError, ValidationError
+        from presentation.api.v1.dependencies import get_moderate_ugc_item_use_case
+
+        status_val = (request.data or {}).get('status')
+        if not status_val or status_val not in ('approved', 'rejected'):
+            return Response(
+                {'error': {'code': 'VALIDATION_ERROR', 'message': 'status must be approved or rejected'}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        decision = 'approve' if status_val == 'approved' else 'reject'
+        user_id = getattr(request.user, 'id', None) or getattr(request.user, 'pk', None)
+        if not user_id:
+            return Response({'error': {'code': 'UNAUTHORIZED', 'message': 'User not found'}}, status=status.HTTP_401_UNAUTHORIZED)
+        comment = (request.data or {}).get('comment')
+        dto = ModerateUGCItemDto(item_id=str(pk), decision=decision, moderator_id=str(user_id), reason=comment)
+        use_case = get_moderate_ugc_item_use_case()
+        try:
+            result = async_to_sync(use_case.execute)(dto)
+            _log_admin_action(request, 'admin_moderate_ugc', 'moderation_item', entity_id=UUID(pk))
+            return Response(result, status=status.HTTP_200_OK)
+        except NotFoundError as e:
+            return Response({'error': {'code': 'NOT_FOUND', 'message': str(e)}}, status=status.HTTP_404_NOT_FOUND)
+        except ValidationError as e:
+            return Response({'error': {'code': 'VALIDATION_ERROR', 'message': str(e)}}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['post'], url_path='answer')
+    @extend_schema(
+        summary="Ответить на UGC вопрос",
+        request=dict,
+        responses={200: dict, 400: None, 404: None},
+    )
+    def answer(self, request, pk=None):
+        """POST admin/moderation/<id>/answer/ body: { text: string }."""
+        from asgiref.sync import async_to_sync
+        from application.admin.dto import AnswerUGCQuestionDto
+        from application.exceptions import NotFoundError, ValidationError
+        from presentation.api.v1.dependencies import get_answer_ugc_question_use_case
+
+        text = (request.data or {}).get('text')
+        if not text or not str(text).strip():
+            return Response(
+                {'error': {'code': 'VALIDATION_ERROR', 'message': 'text is required'}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        user_id = getattr(request.user, 'id', None) or getattr(request.user, 'pk', None)
+        if not user_id:
+            return Response({'error': {'code': 'UNAUTHORIZED', 'message': 'User not found'}}, status=status.HTTP_401_UNAUTHORIZED)
+        dto = AnswerUGCQuestionDto(item_id=str(pk), answer_text=str(text).strip(), owner_id=str(user_id))
+        use_case = get_answer_ugc_question_use_case()
+        try:
+            result = async_to_sync(use_case.execute)(dto)
+            _log_admin_action(request, 'admin_answer_ugc', 'moderation_item', entity_id=UUID(pk))
+            return Response(result, status=status.HTTP_200_OK)
+        except NotFoundError as e:
+            return Response({'error': {'code': 'NOT_FOUND', 'message': str(e)}}, status=status.HTTP_404_NOT_FOUND)
+        except ValidationError as e:
+            return Response({'error': {'code': 'VALIDATION_ERROR', 'message': str(e)}}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AdminMeViewSet(viewsets.ViewSet):
+    """
+    GET admin/me/ — текущий пользователь и роли для входа в админку.
+    Только для owner / assistant / editor.
+    """
+    permission_classes = [IsOwnerOrAssistantOrEditor]
+    throttle_classes = [AdminThrottle]
+
+    def list(self, request):
+        from presentation.api.v1.dependencies import get_sync_user_repository
+
+        user_id = getattr(request.user, 'id', None) or getattr(request.user, 'pk', None)
+        if not user_id:
+            return Response({'error': {'code': 'UNAUTHORIZED', 'message': 'User not found'}}, status=status.HTTP_401_UNAUTHORIZED)
+        repo = get_sync_user_repository()
+        roles = repo.get_user_roles(user_id) or []
+        email = getattr(request.user, 'email', None) or ''
+        if hasattr(request.user, 'email') and callable(getattr(request.user, 'email', None)):
+            email = str(request.user.email) if request.user.email else ''
+        return Response({
+            'user': {'id': str(user_id), 'email': email},
+            'roles': list(roles),
         })

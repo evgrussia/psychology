@@ -55,6 +55,24 @@ class IsOwnerOrEditor(permissions.BasePermission):
         return request.user.groups.filter(name__in=['Owner', 'Editor']).exists()
 
 
+class IsOwnerOrAssistantOrEditor(permissions.BasePermission):
+    """
+    Разрешение для входа в админку: Owner, Assistant или Editor.
+    """
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        
+        if hasattr(request.user, 'has_role'):
+            return (
+                request.user.has_role(Role.OWNER) or
+                request.user.has_role(Role.ASSISTANT) or
+                request.user.has_role(Role.EDITOR)
+            )
+        
+        return request.user.groups.filter(name__in=['Owner', 'Assistant', 'Editor']).exists()
+
+
 class IsClientOrOwner(permissions.BasePermission):
     """
     Разрешение для Client (собственные данные) или Owner.
