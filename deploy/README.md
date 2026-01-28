@@ -49,6 +49,17 @@ ssh user@your-server 'sudo bash /tmp/bootstrap-server.sh'
 ./deploy/deploy-prod.sh
 ```
 
+### 4. balance-space.ru: Docker (SPA + API в одном backend)
+
+После `docker compose -f docker-compose.prod.yml up -d --build` backend слушает порт **8001** (если 8000 занят — в `docker-compose.prod.yml` на сервере задать `8001:8000`). Чтобы сайт отдавался новой версией:
+
+**На сервере (с sudo):**
+```bash
+sudo cp /var/www/psychology/backend/infrastructure/deploy/nginx-balance-space.ru.conf /etc/nginx/sites-available/balance-space.ru
+sudo nginx -t && sudo systemctl reload nginx
+```
+Или: `sudo bash /var/www/psychology/deploy/apply-nginx-balance.sh`
+
 Перед деплоем создаётся бэкап БД в `$PROJECT_PATH/backups/`. Откат: см. [.cursor/skills/vps-deploy/SKILL.md](../.cursor/skills/vps-deploy/SKILL.md) и `backend/infrastructure/deploy/restore_postgres.sh`.
 
 ## Бэкапы
