@@ -1,0 +1,16 @@
+{
+  "consultation": {
+    "id": "consultation-60",
+    "name": "Консультация 60 минут",
+    "duration": 60,
+    "format": "online",
+    "price": 5000
+  },
+  "consultation90": {
+    "id": "consultation-90",
+    "name": "Консультация 90 минут",
+    "duration": 90,
+    "format": "online",
+    "price": 7000
+  }
+}

@@ -3,6 +3,9 @@ Django settings for development environment.
 """
 from .base import *
 
+# Development secret key
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-dev-key-for-local-use-only')
+
 DEBUG = True
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 

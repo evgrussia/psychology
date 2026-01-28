@@ -1,52 +1,103 @@
 """
-Identity & Access domain events.
+Identity & Access Domain Events.
 """
-from dataclasses import dataclass, field
-from datetime import datetime
-from uuid import UUID, uuid4
+from __future__ import annotations
+from dataclasses import dataclass
+from typing import Optional
+from domain.shared.domain_event import DomainEvent
+from domain.identity.value_objects.email import Email
+from domain.identity.value_objects.phone_number import PhoneNumber
+from domain.identity.value_objects.consent_type import ConsentType
+from domain.identity.value_objects.role import Role
 
-from domain.shared.domain_event_base import DomainEvent
 
-
-@dataclass
-class UserCreated(DomainEvent):
-    """Событие: пользователь создан."""
-    user_id: UUID = None
-    email: str = None
-    telegram_user_id: str = None
+@dataclass(frozen=True, kw_only=True)
+class UserCreatedEvent(DomainEvent):
+    """Событие создания пользователя."""
+    user_id: "UserId"
+    email: Optional[Email] = None
+    phone: Optional[PhoneNumber] = None
+    telegram_user_id: Optional[str] = None
     
-    def __post_init__(self):
-        if self.user_id is None:
-            raise ValueError("user_id is required")
-
-
-@dataclass
-class ConsentGranted(DomainEvent):
-    """Событие: согласие предоставлено."""
-    user_id: UUID = None
-    consent_type: str = None
-    version: str = None
-    source: str = None
+    @property
+    def aggregate_id(self) -> str:
+        return self.user_id.value
     
-    def __post_init__(self):
-        if self.user_id is None:
-            raise ValueError("user_id is required")
-        if self.consent_type is None:
-            raise ValueError("consent_type is required")
-        if self.version is None:
-            raise ValueError("version is required")
-        if self.source is None:
-            raise ValueError("source is required")
+    @property
+    def event_name(self) -> str:
+        return "UserCreated"
 
 
-@dataclass
-class ConsentRevoked(DomainEvent):
-    """Событие: согласие отозвано."""
-    user_id: UUID = None
-    consent_type: str = None
+@dataclass(frozen=True, kw_only=True)
+class ConsentGrantedEvent(DomainEvent):
+    """Событие выдачи согласия."""
+    user_id: "UserId"
+    consent_type: ConsentType
+    version: str
     
-    def __post_init__(self):
-        if self.user_id is None:
-            raise ValueError("user_id is required")
-        if self.consent_type is None:
-            raise ValueError("consent_type is required")
+    @property
+    def aggregate_id(self) -> str:
+        return self.user_id.value
+    
+    @property
+    def event_name(self) -> str:
+        return "ConsentGranted"
+
+
+@dataclass(frozen=True, kw_only=True)
+class ConsentRevokedEvent(DomainEvent):
+    """Событие отзыва согласия."""
+    user_id: "UserId"
+    consent_type: ConsentType
+    
+    @property
+    def aggregate_id(self) -> str:
+        return self.user_id.value
+    
+    @property
+    def event_name(self) -> str:
+        return "ConsentRevoked"
+
+
+@dataclass(frozen=True, kw_only=True)
+class RoleAssignedEvent(DomainEvent):
+    """Событие назначения роли."""
+    user_id: "UserId"
+    role: Role
+    
+    @property
+    def aggregate_id(self) -> str:
+        return self.user_id.value
+    
+    @property
+    def event_name(self) -> str:
+        return "RoleAssigned"
+
+
+@dataclass(frozen=True, kw_only=True)
+class UserBlockedEvent(DomainEvent):
+    """Событие блокировки пользователя."""
+    user_id: "UserId"
+    reason: str
+    
+    @property
+    def aggregate_id(self) -> str:
+        return self.user_id.value
+    
+    @property
+    def event_name(self) -> str:
+        return "UserBlocked"
+
+
+@dataclass(frozen=True, kw_only=True)
+class UserDataDeletedEvent(DomainEvent):
+    """Событие удаления данных пользователя (GDPR/152-ФЗ)."""
+    user_id: "UserId"
+    
+    @property
+    def aggregate_id(self) -> str:
+        return self.user_id.value
+    
+    @property
+    def event_name(self) -> str:
+        return "UserDataDeleted"

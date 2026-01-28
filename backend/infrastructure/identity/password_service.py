@@ -3,17 +3,16 @@
 Использует passlib с Argon2id для хеширования паролей.
 """
 from passlib.context import CryptContext
-from domain.identity.value_objects import PasswordHash
+from application.interfaces.password_service import IPasswordService
 
 # Настройка passlib для использования Argon2id
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 
-class PasswordService:
+class PasswordService(IPasswordService):
     """Сервис для хеширования и проверки паролей."""
     
-    @staticmethod
-    def hash_password(password: str) -> PasswordHash:
+    def hash_password(self, password: str) -> str:
         """
         Создать hash из пароля.
         
@@ -21,13 +20,11 @@ class PasswordService:
             password: Пароль в открытом виде
             
         Returns:
-            PasswordHash value object
+            Хеш пароля (строка)
         """
-        hashed = pwd_context.hash(password)
-        return PasswordHash(value=hashed)
+        return pwd_context.hash(password)
     
-    @staticmethod
-    def verify_password(password: str, password_hash: str) -> bool:
+    def verify_password(self, password: str, password_hash: str) -> bool:
         """
         Проверить пароль против hash.
         

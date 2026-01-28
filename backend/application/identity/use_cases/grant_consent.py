@@ -5,9 +5,9 @@ from dataclasses import dataclass
 from uuid import UUID
 from datetime import datetime
 
+from domain.identity.domain_events import ConsentGrantedEvent
 from domain.identity.repositories import IConsentRepository
-from domain.identity.domain_events import ConsentGranted
-from infrastructure.events.event_bus import IDomainEventBus
+from application.interfaces.event_bus import IEventBus
 
 
 @dataclass
@@ -25,7 +25,7 @@ class GrantConsentUseCase:
     def __init__(
         self,
         consent_repository: IConsentRepository,
-        event_bus: IDomainEventBus
+        event_bus: IEventBus
     ):
         self._consent_repository = consent_repository
         self._event_bus = event_bus
@@ -40,10 +40,20 @@ class GrantConsentUseCase:
         )
         
         # Публиковать доменное событие
-        event = ConsentGranted(
-            user_id=request.user_id,
-            consent_type=request.consent_type,
+        from domain.identity.value_objects.consent_type import ConsentType
+        from domain.identity.aggregates.user import UserId
+        
+        event = ConsentGrantedEvent(
+            user_id=UserId(request.user_id),
+            consent_type=ConsentType(request.consent_type),
             version=request.version,
-            source=request.source,
         )
-        self._event_bus.publish(event)
+        # Публикация события (синхронно для InMemoryEventBus)
+        if hasattr(self._event_bus, 'publish'):
+            import asyncio
+            if asyncio.iscoroutinefunction(self._event_bus.publish):
+                # Если async, нужно использовать async_to_sync или await
+                from asgiref.sync import async_to_sync
+                async_to_sync(self._event_bus.publish)(event)
+            else:
+                self._event_bus.publish(event)

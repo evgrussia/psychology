@@ -1,0 +1,12 @@
+{
+  "article": {
+    "slug": "test-article",
+    "title": "Тестовая статья",
+    "topic": "anxiety"
+  },
+  "resource": {
+    "slug": "test-resource",
+    "title": "Тестовый ресурс",
+    "type": "guide"
+  }
+}

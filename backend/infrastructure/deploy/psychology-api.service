@@ -1,0 +1,24 @@
+[Unit]
+Description=Psychology API (Django)
+After=network.target postgresql.service redis.service
+
+[Service]
+Type=notify
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/psychology/backend
+Environment="PATH=/var/www/psychology/venv/bin"
+EnvironmentFile=/var/www/psychology/.env.production
+ExecStart=/var/www/psychology/venv/bin/gunicorn \
+    --config /var/www/psychology/backend/gunicorn_config.py \
+    config.wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+
+---
+*Документ создан: DevOps Agent*
+---

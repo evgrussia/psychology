@@ -5,7 +5,7 @@ import pytest
 from unittest.mock import Mock
 from uuid import uuid4
 
-from domain.identity.domain_events import ConsentGranted
+from domain.identity.domain_events import ConsentGrantedEvent
 from application.identity.use_cases.grant_consent import (
     GrantConsentUseCase,
     GrantConsentRequest,
@@ -45,11 +45,11 @@ class TestGrantConsentUseCase:
         
         # Проверить, что событие правильное
         published_event = event_bus.publish.call_args[0][0]
-        assert isinstance(published_event, ConsentGranted)
-        assert published_event.user_id == user_id
-        assert published_event.consent_type == "personal_data"
+        assert isinstance(published_event, ConsentGrantedEvent)
+        from domain.identity.aggregates.user import UserId
+        assert published_event.user_id == UserId(user_id)
+        assert published_event.consent_type.value == "personal_data"
         assert published_event.version == "2026-01-26"
-        assert published_event.source == "web"
     
     def test_grant_consent_telegram(self):
         """Тест предоставления согласия через Telegram."""

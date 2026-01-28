@@ -67,8 +67,8 @@ class TestRBACPermission(TestCase):
         # Assert
         assert result is False
     
-    @patch('presentation.api.middleware.DjangoUserRepository')
-    def test_user_with_required_role_allowed(self, mock_repository_class):
+    @patch('presentation.api.middleware.rbac.get_sync_user_repository')
+    def test_user_with_required_role_allowed(self, mock_get_repo):
         """Тест, что пользователь с требуемой ролью имеет доступ."""
         # Arrange
         user_id = uuid4()
@@ -79,7 +79,7 @@ class TestRBACPermission(TestCase):
         
         mock_repository = Mock()
         mock_repository.get_user_roles.return_value = ['owner', 'editor']
-        mock_repository_class.return_value = mock_repository
+        mock_get_repo.return_value = mock_repository
         
         self.permission.required_roles = ['owner']
         
@@ -90,8 +90,8 @@ class TestRBACPermission(TestCase):
         assert result is True
         mock_repository.get_user_roles.assert_called_once_with(user_id)
     
-    @patch('presentation.api.middleware.DjangoUserRepository')
-    def test_user_without_required_role_denied(self, mock_repository_class):
+    @patch('presentation.api.middleware.rbac.get_sync_user_repository')
+    def test_user_without_required_role_denied(self, mock_get_repo):
         """Тест, что пользователь без требуемой роли не имеет доступа."""
         # Arrange
         user_id = uuid4()
@@ -102,7 +102,7 @@ class TestRBACPermission(TestCase):
         
         mock_repository = Mock()
         mock_repository.get_user_roles.return_value = ['client']
-        mock_repository_class.return_value = mock_repository
+        mock_get_repo.return_value = mock_repository
         
         self.permission.required_roles = ['owner']
         
@@ -113,8 +113,8 @@ class TestRBACPermission(TestCase):
         assert result is False
         mock_repository.get_user_roles.assert_called_once_with(user_id)
     
-    @patch('presentation.api.middleware.DjangoUserRepository')
-    def test_user_with_pk_instead_of_id(self, mock_repository_class):
+    @patch('presentation.api.middleware.rbac.get_sync_user_repository')
+    def test_user_with_pk_instead_of_id(self, mock_get_repo):
         """Тест, что работает с pk вместо id."""
         # Arrange
         user_id = uuid4()
@@ -126,7 +126,7 @@ class TestRBACPermission(TestCase):
         
         mock_repository = Mock()
         mock_repository.get_user_roles.return_value = ['owner']
-        mock_repository_class.return_value = mock_repository
+        mock_get_repo.return_value = mock_repository
         
         self.permission.required_roles = ['owner']
         
@@ -137,14 +137,17 @@ class TestRBACPermission(TestCase):
         assert result is True
         mock_repository.get_user_roles.assert_called_once_with(user_id)
     
-    @patch('presentation.api.middleware.DjangoUserRepository')
-    def test_user_without_id_or_pk_denied(self, mock_repository_class):
+    @patch('presentation.api.middleware.rbac.get_sync_user_repository')
+    def test_user_without_id_or_pk_denied(self, mock_get_repo):
         """Тест, что пользователь без id или pk не имеет доступа."""
         # Arrange
         request = Mock()
         request.user = Mock()
         request.user.is_authenticated = True
         # Нет ни id, ни pk
+        
+        mock_repository = Mock()
+        mock_get_repo.return_value = mock_repository
         
         self.permission.required_roles = ['owner']
         

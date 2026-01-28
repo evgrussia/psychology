@@ -141,7 +141,8 @@ A: You can...
 3. Apply appropriate template
 4. Fill in content
 5. Format and validate
-6. Save to appropriate location
+6. Add agent signature at the end (format: `---\n*Документ создан: [Agent Name] Agent*\n---`)
+7. Save to appropriate location
 ```
 
 ## Output Locations
@@ -163,3 +164,4 @@ A: You can...
 - [ ] Screenshots are current
 - [ ] Table of contents for long docs
 - [ ] Proper markdown formatting
+- [ ] Document signed by creating agent at the end (format: `---\n*Документ создан: [Agent Name] Agent*\n---`)

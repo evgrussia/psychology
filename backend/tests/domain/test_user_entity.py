@@ -5,7 +5,9 @@ import pytest
 from datetime import datetime
 from uuid import uuid4
 
-from domain.identity.entities import User, UserStatus
+from domain.identity.aggregates.user import User, UserId
+from domain.identity.value_objects.user_status import UserStatus
+from domain.identity.value_objects.email import Email
 
 
 class TestUserEntity:
@@ -13,34 +15,17 @@ class TestUserEntity:
     
     def test_create_user(self):
         """Тест создания пользователя."""
-        user = User(
-            id=uuid4(),
-            email="test@example.com",
-            status=UserStatus.ACTIVE,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
-        )
+        user = User.create(email=Email.create("test@example.com"))
         
-        assert user.email == "test@example.com"
+        assert user.email.value == "test@example.com"
         assert user.status == UserStatus.ACTIVE
-        assert user.is_active() is True
+        assert user.status.is_active() is True
     
     def test_user_is_active(self):
         """Тест проверки активности пользователя."""
-        user = User(
-            id=uuid4(),
-            email="test@example.com",
-            status=UserStatus.ACTIVE,
-            deleted_at=None,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
-        )
+        user = User.create(email=Email.create("test@example.com"))
         
-        assert user.is_active() is True
+        assert user.status.is_active() is True
         
-        user.status = UserStatus.BLOCKED
-        assert user.is_active() is False
-        
-        user.status = UserStatus.ACTIVE
-        user.deleted_at = datetime.utcnow()
-        assert user.is_active() is False
+        user.block("Test block")
+        assert user.status.is_active() is False

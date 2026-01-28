@@ -3,21 +3,27 @@
 """
 
 
-class DomainException(Exception):
-    """Базовое исключение домена."""
-    user_message: str = "Произошла ошибка. Пожалуйста, попробуйте позже."
-    
-    def __init__(self, message: str = None, user_message: str = None):
-        super().__init__(message or self.user_message)
-        if user_message:
-            self.user_message = user_message
+class DomainError(Exception):
+    """Базовое исключение для доменных ошибок."""
+    pass
 
 
-class ValidationError(DomainException):
-    """Ошибка валидации."""
-    user_message = "Некорректные данные."
+class ConflictError(DomainError):
+    """Ошибка конфликта (например, слот уже занят)."""
+    pass
 
 
-class EntityNotFoundError(DomainException):
-    """Сущность не найдена."""
-    user_message = "Запрашиваемый объект не найден."
+class BusinessRuleViolationError(DomainError):
+    """Нарушение бизнес-правила."""
+    pass
+
+
+class InvalidStateError(DomainError):
+    """Некорректное состояние агрегата для операции."""
+    pass
+
+
+# Обратная совместимость
+DomainException = DomainError
+ValidationError = DomainError
+EntityNotFoundError = DomainError

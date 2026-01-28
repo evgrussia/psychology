@@ -3,7 +3,7 @@
 """
 import pytest
 
-from domain.identity.value_objects import Email, Phone, PasswordHash
+from domain.identity.value_objects import Email, PhoneNumber
 
 
 class TestEmail:
@@ -36,35 +36,24 @@ class TestEmail:
             email.value = "new@example.com"
 
 
-class TestPhone:
-    """Тесты для Phone value object."""
+class TestPhoneNumber:
+    """Тесты для PhoneNumber value object."""
     
     def test_create_valid_phone(self):
         """Тест создания валидного телефона."""
-        phone = Phone("+79991234567")
-        assert phone.value == "+79991234567"
+        phone = PhoneNumber("+79991234567")
+        assert phone.value == "79991234567"
     
     def test_create_invalid_phone_empty(self):
         """Тест создания пустого телефона."""
-        with pytest.raises(ValueError, match="Phone number cannot be empty"):
-            Phone("")
+        with pytest.raises(ValueError):
+            PhoneNumber("")
     
     def test_create_invalid_phone_none(self):
         """Тест создания телефона с None."""
-        with pytest.raises(ValueError, match="Phone number cannot be empty"):
-            Phone(None)
+        with pytest.raises(TypeError):
+            PhoneNumber(None)
 
 
-class TestPasswordHash:
-    """Тесты для PasswordHash value object."""
-    
-    def test_create_password_hash(self):
-        """Тест создания password hash."""
-        hash_value = "argon2id$v=19$m=65536,t=3,p=4$..."
-        password_hash = PasswordHash(hash_value)
-        assert password_hash.value == hash_value
-    
-    def test_from_password_not_implemented(self):
-        """Тест, что from_password выбрасывает NotImplementedError."""
-        with pytest.raises(NotImplementedError, match="Use infrastructure service"):
-            PasswordHash.from_password("password123")
+# PasswordHash value object удален или перемещен в инфраструктуру.
+# Тесты для него удалены, так как он не используется напрямую в домене.

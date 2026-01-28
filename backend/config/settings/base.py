@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 load_dotenv(BASE_DIR.parent / '.env')
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-me-in-production')
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # Application definition
 INSTALLED_APPS = [
@@ -28,19 +28,25 @@ INSTALLED_APPS = [
     
     # Third-party apps
     'rest_framework',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
+    'drf_spectacular',
+    'django_filters',
     
     # Local apps (Infrastructure layer - Django models)
     'infrastructure.persistence',
 ]
 
-# Custom User Model (если нужен)
-# AUTH_USER_MODEL = 'persistence.UserModel'
+# Custom User Model
+AUTH_USER_MODEL = 'persistence.UserModel'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'presentation.api.middleware.request_id.RequestIDMiddleware',
+    'presentation.api.middleware.logging.APILoggingMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -132,27 +138,82 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # REST Framework configuration
 REST_FRAMEWORK = {
+    # Default settings
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'presentation.api.v1.authentication.CustomJWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    
+    # Pagination
+    'DEFAULT_PAGINATION_CLASS': 'presentation.api.v1.pagination.StandardResultsSetPagination',
     'PAGE_SIZE': 20,
+    
+    # Filtering
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
+    
+    # Rendering/Parsing
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser',
+    ],
+    
+    # Exception handling
+    'EXCEPTION_HANDLER': 'presentation.api.v1.exceptions.custom_exception_handler',
+    
+    # Throttling
+    'DEFAULT_THROTTLE_CLASSES': [
+        'presentation.api.v1.throttling.PublicEndpointThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'public': '100/minute',
+        'auth': '10/minute',
+        'authenticated': '1000/minute',
+        'admin': '5000/minute',
+    },
+    
+    # OpenAPI/Swagger
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 # JWT Configuration
 from datetime import timedelta
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=int(os.getenv('JWT_ACCESS_TOKEN_LIFETIME', 15))),
-    'REFRESH_TOKEN_LIFETIME': timedelta(seconds=int(os.getenv('JWT_REFRESH_TOKEN_LIFETIME', 604800))),  # 7 days
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
+    
     'ALGORITHM': os.getenv('JWT_ALGORITHM', 'HS256'),
     'SIGNING_KEY': os.getenv('JWT_SECRET_KEY', SECRET_KEY),
+    'VERIFYING_KEY': None,
+    'AUDIENCE': None,
+    'ISSUER': 'emotional-balance-api',
+    
     'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+    
+    'JTI_CLAIM': 'jti',
+    
+    'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
+    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
 
 # Session Configuration
@@ -194,6 +255,43 @@ LOGGING = {
             'propagate': False,
         },
     },
+}
+
+# Payment Configuration
+PAYMENT_RETURN_URL = os.getenv('PAYMENT_RETURN_URL', 'https://example.com/payment/return')
+
+# Admin Email Configuration
+ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', 'admin@example.com')
+
+# CORS Settings
+CORS_ALLOWED_ORIGINS = [
+    "https://emotional-balance.ru",
+    "https://www.emotional-balance.ru",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'x-request-id',
+]
+
+# OpenAPI/Swagger
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Эмоциональный баланс API',
+    'DESCRIPTION': 'REST API для платформы психологической поддержки',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SCHEMA_PATH_PREFIX': '/api/v1',
+    'COMPONENT_SPLIT_REQUEST': True,
+    'COMPONENT_NO_READ_ONLY_REQUIRED': True,
 }
 
 # Clean Architecture: Domain Layer should not import Django

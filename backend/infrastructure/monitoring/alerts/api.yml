@@ -1,0 +1,93 @@
+# /etc/prometheus/alerts/api.yml
+groups:
+  - name: api_alerts
+    interval: 30s
+    rules:
+      # Доступность API
+      - alert: APIHighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.01
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Высокий процент ошибок API"
+          description: "Error rate > 1% за последние 5 минут"
+
+      # Латентность API
+      - alert: APIHighLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 0.8
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Высокая латентность API (p95)"
+          description: "p95 latency > 800ms за последние 10 минут"
+
+      # Доступность (SLO)
+      - alert: APIAvailabilityBelowSLO
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"2..|3.."}[5m])) /
+            sum(rate(http_requests_total[5m]))
+          ) < 0.999
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Доступность API ниже SLO (99.9%)"
+          description: "Availability < 99.9% за последние 10 минут"
+
+  - name: database_alerts
+    interval: 30s
+    rules:
+      # Соединения с БД
+      - alert: DatabaseHighConnections
+        expr: pg_stat_database_numbackends > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Высокое количество соединений с БД"
+          description: "Active connections > 80"
+
+      # Размер БД
+      - alert: DatabaseSizeHigh
+        expr: pg_database_size_bytes > 50 * 1024 * 1024 * 1024  # 50GB
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Размер БД превышает 50GB"
+
+  - name: infrastructure_alerts
+    interval: 30s
+    rules:
+      # CPU
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Высокая загрузка CPU"
+          description: "CPU usage > 80% за последние 10 минут"
+
+      # RAM
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Высокая загрузка памяти"
+          description: "Memory usage > 85% за последние 10 минут"
+
+      # Disk
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 15
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Мало места на диске"
+          description: "Disk space < 15%"

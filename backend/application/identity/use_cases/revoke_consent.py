@@ -6,7 +6,7 @@ from uuid import UUID
 
 from domain.identity.repositories import IConsentRepository
 from domain.identity.domain_events import ConsentRevoked
-from infrastructure.events.event_bus import IDomainEventBus
+from application.interfaces.event_bus import IEventBus as IDomainEventBus
 
 
 @dataclass

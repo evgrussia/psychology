@@ -3,6 +3,9 @@ Django settings for testing environment.
 """
 from .base import *
 
+# Testing secret key
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-test-key-for-unit-tests-only')
+
 DEBUG = True
 
 # Use in-memory database for faster tests
@@ -37,3 +40,14 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
 }
+
+# Disable throttling during tests
+REST_FRAMEWORK = {**REST_FRAMEWORK, 'DEFAULT_THROTTLE_CLASSES': []}
+
+# Ensure SIMPLE_JWT uses the testing SECRET_KEY
+SIMPLE_JWT = {**SIMPLE_JWT, 'SIGNING_KEY': SECRET_KEY}
+
+# Encryption key for tests
+ENCRYPTION_KEY = 'vO_k_p8v1J_1Z6e9V2-L9XvB8Z1Z6e9V2-L9XvB8Z1U=' # Example valid Fernet key
+
+TESTING = True

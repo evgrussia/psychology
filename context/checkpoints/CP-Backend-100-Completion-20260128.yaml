@@ -1,0 +1,30 @@
+checkpoint:
+  version: "1.1"
+  date: "2026-01-28"
+  status: "BACKEND-IMPLEMENTATION-100%"
+  summary: |
+    Реализация бэкенда доведена до 100% соответствия аудиту. Исправлены критические нарушения 
+    Dependency Inversion, усилена безопасность настроек, внедрена типизация Money через Decimal, 
+    добавлены тесты мапперов и улучшена структура внедрения зависимостей (DI).
+  
+  artifacts_created:
+    - "backend/application/interfaces/email_service.py"
+    - "backend/application/interfaces/telegram_service.py"
+    - "backend/application/interfaces/password_service.py"
+    - "backend/application/interfaces/pdf_generator.py"
+    - "backend/infrastructure/persistence/repositories/content/boundary_script_repository.py"
+    - "backend/infrastructure/persistence/repositories/payments/webhook_repository.py"
+    - "backend/tests/infrastructure/persistence/mappers/test_additional_mappers.py"
+  
+  key_decisions:
+    - "Перенос интерфейсов из Infrastructure в Application Layer для соблюдения Clean Architecture."
+    - "Использование Decimal вместо float для всех денежных расчетов (Money VO)."
+    - "Рефакторинг TimeToBenefit VO для соответствия строковому хранению в БД с сохранением логики минут."
+    - "Централизация управления зависимостями через dependencies.py (Service Locator / manual DI)."
+  
+  next_actions:
+    - "Провести нагрузочное тестирование API."
+    - "Интеграция с фронтендом (Phase 6)."
+    - "Настройка production-окружения и CI/CD пайплайнов."
+  
+  blockers: []

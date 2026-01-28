@@ -46,9 +46,49 @@ class UserModel(AbstractBaseUser, PermissionsMixin):
         help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.',
         verbose_name='active'
     )
+    
+    # Переопределяем groups и user_permissions из PermissionsMixin с related_name
+    # чтобы избежать конфликта с auth.User
+    groups = models.ManyToManyField(
+        'auth.Group',
+        verbose_name='groups',
+        blank=True,
+        help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.',
+        related_name='persistence_user_set',
+        related_query_name='persistence_user',
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        verbose_name='user permissions',
+        blank=True,
+        help_text='Specific permissions for this user.',
+        related_name='persistence_user_set',
+        related_query_name='persistence_user',
+    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
+    
+    def has_active_consent(self, consent_type: str) -> bool:
+        """Проверяет наличие активного согласия (для permissions)."""
+        from infrastructure.persistence.django_models.consent import ConsentModel
+        return ConsentModel.objects.filter(
+            user=self,
+            consent_type=consent_type,
+            granted=True,
+            revoked_at__isnull=True
+        ).exists()
+    
+    def has_role(self, role_code) -> bool:
+        """Проверяет наличие роли (для permissions)."""
+        if hasattr(role_code, 'code'):
+            role_code = role_code.code
+            
+        from infrastructure.persistence.django_models.role import UserRoleModel
+        return UserRoleModel.objects.filter(
+            user=self,
+            role__code=role_code
+        ).exists()
 
     class Meta:
         db_table = 'users'
@@ -58,3 +98,6 @@ class UserModel(AbstractBaseUser, PermissionsMixin):
             models.Index(fields=['telegram_user_id']),
             models.Index(fields=['status']),
         ]
+        # Исправляем конфликт с auth.User
+        # PermissionsMixin добавляет groups и user_permissions, но мы не используем их
+        # Если нужно использовать, нужно установить AUTH_USER_MODEL = 'persistence.UserModel'

@@ -22,7 +22,7 @@ build
 .idea
 *.swp
 *.swo
-
+.cursor
 # OS
 .DS_Store
 Thumbs.db
@@ -62,3 +62,10 @@ apps/web/public/assets
 
 # Test environment variables
 test_vars.env
+
+# Python/Coverage
+.coverage
+coverage.xml
+htmlcov/
+*.cover
+.pytest_cache/

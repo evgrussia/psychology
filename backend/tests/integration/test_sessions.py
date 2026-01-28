@@ -2,13 +2,14 @@
 Integration тесты для сессий.
 """
 import pytest
-from django.test import TestCase, Client
+from rest_framework.test import APIClient, APITestCase as TestCase
+# from django.test import TestCase, Client
 from django.contrib.sessions.models import Session
-from uuid import uuid4
-from datetime import datetime
 
 from infrastructure.persistence.django_models.user import UserModel
-from domain.identity.entities import User, UserStatus
+from domain.identity.aggregates.user import User, UserId
+from domain.identity.value_objects.user_status import UserStatus
+from domain.identity.value_objects.email import Email
 from infrastructure.persistence.repositories.user_repository import DjangoUserRepository
 
 
@@ -17,23 +18,21 @@ class TestSessions(TestCase):
     """Integration тесты для сессий Django."""
     
     def setUp(self):
-        self.client = Client()
-        self.repository = DjangoUserRepository()
+        self.client = APIClient()
+        self.client.cookies.clear()
+        from infrastructure.events.in_memory_event_bus import InMemoryEventBus
+        from asgiref.sync import async_to_sync
+        self.repository = DjangoUserRepository(event_bus=InMemoryEventBus())
+        self.async_to_sync = async_to_sync
     
     def test_session_creation_on_login(self):
         """Тест создания сессии при логине."""
         # Arrange
-        user = User(
-            id=uuid4(),
-            email="test@example.com",
-            status=UserStatus.ACTIVE,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
-        )
-        saved_user = self.repository.save(user)
+        user = User.create(email=Email.create("test@example.com"))
+        self.async_to_sync(self.repository.save)(user)
         
         # Создать Django User для аутентификации
-        django_user = UserModel.objects.get(id=saved_user.id)
+        django_user = UserModel.objects.get(id=user.id.value)
         
         # Act - логин через Django
         self.client.force_login(django_user)
@@ -49,15 +48,9 @@ class TestSessions(TestCase):
     def test_session_persistence(self):
         """Тест сохранения данных в сессии."""
         # Arrange
-        user = User(
-            id=uuid4(),
-            email="test@example.com",
-            status=UserStatus.ACTIVE,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
-        )
-        saved_user = self.repository.save(user)
-        django_user = UserModel.objects.get(id=saved_user.id)
+        user = User.create(email=Email.create("test@example.com"))
+        self.async_to_sync(self.repository.save)(user)
+        django_user = UserModel.objects.get(id=user.id.value)
         
         # Act
         self.client.force_login(django_user)
@@ -76,15 +69,9 @@ class TestSessions(TestCase):
     def test_session_logout(self):
         """Тест удаления сессии при логауте."""
         # Arrange
-        user = User(
-            id=uuid4(),
-            email="test@example.com",
-            status=UserStatus.ACTIVE,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
-        )
-        saved_user = self.repository.save(user)
-        django_user = UserModel.objects.get(id=saved_user.id)
+        user = User.create(email=Email.create("test@example.com"))
+        self.async_to_sync(self.repository.save)(user)
+        django_user = UserModel.objects.get(id=user.id.value)
         
         self.client.force_login(django_user)
         session_key = self.client.session.session_key

@@ -1,0 +1,3 @@
+"""
+Booking Domain Use Cases.
+"""

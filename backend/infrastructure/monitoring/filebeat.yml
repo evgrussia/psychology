@@ -1,0 +1,19 @@
+# /etc/filebeat/filebeat.yml
+filebeat.inputs:
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/django/*.log
+    json.keys_under_root: true
+    json.add_error_key: true
+    fields:
+      environment: production
+      service: psychology-api
+
+output.elasticsearch:
+  hosts: ["elasticsearch.internal:9200"]
+  index: "psychology-logs-%{+yyyy.MM.dd}"
+
+processors:
+  - drop_fields:
+      fields: ["agent", "ecs", "host", "log"]

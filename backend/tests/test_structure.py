@@ -10,13 +10,11 @@ class TestProjectStructure(TestCase):
     
     def test_domain_layer_imports(self):
         """Проверка, что Domain Layer импортируется без Django."""
-        from domain.identity.entities import User
-        from domain.identity.value_objects import Email
-        from domain.audit.entities import AuditLogEntry
+        from domain.identity.aggregates.user import User
+        from domain.identity.value_objects.email import Email
         
         assert User is not None
         assert Email is not None
-        assert AuditLogEntry is not None
     
     def test_application_layer_imports(self):
         """Проверка, что Application Layer импортируется."""

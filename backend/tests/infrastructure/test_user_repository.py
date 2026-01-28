@@ -2,55 +2,70 @@
 Тесты для DjangoUserRepository.
 """
 import pytest
-from django.test import TestCase
 from uuid import uuid4
-from datetime import datetime
+from datetime import datetime, timezone
 
-from domain.identity.entities import User, UserStatus
+from domain.identity.aggregates.user import User, UserId
+from domain.identity.value_objects.user_status import UserStatus
+from domain.identity.value_objects.email import Email
 from infrastructure.persistence.repositories.user_repository import DjangoUserRepository
-from infrastructure.persistence.django_models.user import UserModel
+from infrastructure.events.in_memory_event_bus import InMemoryEventBus
 
 
 @pytest.mark.django_db
-class TestDjangoUserRepository(TestCase):
+class TestDjangoUserRepository:
     """Тесты для DjangoUserRepository."""
     
-    def setUp(self):
-        self.repository = DjangoUserRepository()
+    @pytest.fixture
+    def event_bus(self):
+        return InMemoryEventBus()
     
-    def test_save_and_get_user(self):
+    @pytest.fixture
+    def repository(self, event_bus):
+        return DjangoUserRepository(event_bus)
+    
+    @pytest.mark.asyncio
+    async def test_save_and_find_by_id(self, repository):
         """Тест сохранения и получения пользователя."""
         user = User(
-            id=uuid4(),
-            email="test@example.com",
+            id=UserId(uuid4()),
+            email=Email("test@example.com"),
+            phone=None,
+            telegram_user_id=None,
+            display_name=None,
             status=UserStatus.ACTIVE,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            roles=[],
+            consents=[],
+            created_at=datetime.now(timezone.utc),
         )
         
-        saved_user = self.repository.save(user)
-        assert saved_user.id == user.id
-        assert saved_user.email == user.email
+        await repository.save(user)
         
-        retrieved_user = self.repository.get_by_id(user.id)
+        retrieved_user = await repository.find_by_id(user.id)
         assert retrieved_user is not None
-        assert retrieved_user.email == user.email
+        assert retrieved_user.id.value == user.id.value
+        assert retrieved_user.email.value == user.email.value
     
-    def test_get_by_email(self):
+    @pytest.mark.asyncio
+    async def test_find_by_email(self, repository):
         """Тест получения пользователя по email."""
         user = User(
-            id=uuid4(),
-            email="test@example.com",
+            id=UserId(uuid4()),
+            email=Email("test-email@example.com"),
+            phone=None,
+            telegram_user_id=None,
+            display_name=None,
             status=UserStatus.ACTIVE,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            roles=[],
+            consents=[],
+            created_at=datetime.now(timezone.utc),
         )
         
-        self.repository.save(user)
+        await repository.save(user)
         
-        retrieved_user = self.repository.get_by_email("test@example.com")
+        retrieved_user = await repository.find_by_email(Email("test-email@example.com"))
         assert retrieved_user is not None
-        assert retrieved_user.email == "test@example.com"
+        assert retrieved_user.email.value == "test-email@example.com"
         
-        non_existent = self.repository.get_by_email("nonexistent@example.com")
+        non_existent = await repository.find_by_email(Email("nonexistent@example.com"))
         assert non_existent is None
