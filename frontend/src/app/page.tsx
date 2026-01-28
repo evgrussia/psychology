@@ -69,6 +69,35 @@ export default function HomePage() {
             </CardContent>
           </Card>
         </div>
+
+        <div className="mt-20">
+          <h2 className="text-3xl font-bold mb-8 text-center">С чем я помогаю</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { title: 'Тревога', description: 'Помощь в преодолении тревожных состояний и панических атак', slug: 'anxiety' },
+              { title: 'Выгорание', description: 'Восстановление сил и поиск баланса при профессиональном выгорании', slug: 'burnout' },
+              { title: 'Отношения', description: 'Разрешение конфликтов и построение гармоничных отношений', slug: 'relationships' },
+              { title: 'Самооценка', description: 'Работа над уверенностью в себе и принятием себя', slug: 'self-esteem' },
+            ].map((problem) => (
+              <Card key={problem.slug} className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <CardTitle className="text-xl">{problem.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4">{problem.description}</p>
+                  <Button asChild variant="ghost" size="sm" className="p-0 hover:bg-transparent text-primary">
+                    <Link href={`/topics/${problem.slug}`}>Узнать больше →</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <div className="text-center mt-10">
+            <Button asChild variant="outline">
+              <Link href="/topics">Все темы</Link>
+            </Button>
+          </div>
+        </div>
       </div>
     </main>
   );

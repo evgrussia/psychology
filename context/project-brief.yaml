@@ -71,7 +71,7 @@ project_brief:
       - "no-show rate"
   
   # Текущая фаза проекта
-  current_phase: "development_in_progress"
+  current_phase: "deployment"
   
   phase_status:
     discovery: "completed"
@@ -79,7 +79,8 @@ project_brief:
     architecture: "completed"
     specifications: "completed"
     design: "completed"
-    development: "in_progress"
+    development: "completed"
+    deployment: "in_progress"
   
   # Полный реестр артефактов (61 документ)
   key_artifacts:

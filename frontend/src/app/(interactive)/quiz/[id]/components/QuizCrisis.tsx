@@ -21,10 +21,7 @@ export function QuizCrisis() {
           <li>Экстренная служба: 112</li>
         </ul>
         <div className="flex gap-4 mt-4">
-          <Button onClick={() => router.push('/booking')}>
-            Записаться на консультацию
-          </Button>
-          <Button variant="outline" onClick={() => router.push('/')}>
+          <Button variant="outline" className="w-full" onClick={() => router.push('/')}>
             На главную
           </Button>
         </div>
