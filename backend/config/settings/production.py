@@ -43,15 +43,14 @@ DATABASES = {
     }
 }
 
-# Cache
+# Cache (встроенный Redis backend Django; OPTIONS передаются в redis-py ConnectionPool)
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
         'LOCATION': f"redis://{os.environ.get('REDIS_HOST', 'localhost')}:6379/1",
         'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            'SOCKET_CONNECT_TIMEOUT': 5,
-            'SOCKET_TIMEOUT': 5,
+            'socket_connect_timeout': 5,
+            'socket_timeout': 5,
         }
     }
 }
@@ -122,22 +121,24 @@ MIDDLEWARE = (
     ['django_prometheus.middleware.PrometheusAfterMiddleware']
 )
 
-# OpenTelemetry Tracing (опционально; при недоступности Jaeger приложение стартует без трейсинга)
-try:
-    from opentelemetry import trace
-    from opentelemetry.sdk.trace import TracerProvider
-    from opentelemetry.sdk.trace.export import BatchSpanProcessor
-    from opentelemetry.exporter.jaeger.thrift import JaegerExporter
-    from opentelemetry.instrumentation.django import DjangoInstrumentor
+# OpenTelemetry Tracing — включаем только если JAEGER_HOST задан (иначе экспорт падает по "Name or service not known")
+_jaeger_host = os.environ.get('JAEGER_HOST', '').strip()
+if _jaeger_host:
+    try:
+        from opentelemetry import trace
+        from opentelemetry.sdk.trace import TracerProvider
+        from opentelemetry.sdk.trace.export import BatchSpanProcessor
+        from opentelemetry.exporter.jaeger.thrift import JaegerExporter
+        from opentelemetry.instrumentation.django import DjangoInstrumentor
 
-    trace.set_tracer_provider(TracerProvider())
-    jaeger_exporter = JaegerExporter(
-        agent_host_name=os.environ.get('JAEGER_HOST', 'jaeger.internal'),
-        agent_port=int(os.environ.get('JAEGER_PORT', 6831)),
-    )
-    trace.get_tracer_provider().add_span_processor(
-        BatchSpanProcessor(jaeger_exporter)
-    )
-    DjangoInstrumentor().instrument()
-except Exception:  # noqa: BLE001
-    pass
+        trace.set_tracer_provider(TracerProvider())
+        jaeger_exporter = JaegerExporter(
+            agent_host_name=_jaeger_host,
+            agent_port=int(os.environ.get('JAEGER_PORT', 6831)),
+        )
+        trace.get_tracer_provider().add_span_processor(
+            BatchSpanProcessor(jaeger_exporter)
+        )
+        DjangoInstrumentor().instrument()
+    except Exception:  # noqa: BLE001
+        pass

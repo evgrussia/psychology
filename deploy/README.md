@@ -69,6 +69,8 @@ docker compose --env-file .env -f docker-compose.prod.ports.yml up -d --build
 
 Либо задайте в `.env`: `FRONTEND_PORT=8084`, `BACKEND_PORT=8001` и используйте обновлённый `docker-compose.prod.yml` (после git pull).
 
+**Миграции при Docker-деплое:** при старте контейнера backend выполняется `python manage.py migrate --no-input` (см. `backend/entrypoint.sh`). После обновления кода пересоберите образ и перезапустите: `docker compose --env-file .env -f docker-compose.prod.yml up -d --build`. Ошибка «column users.mfa_secret_encrypted does not exist» означает, что миграции не были применены — перезапуск с новым entrypoint применит их.
+
 После запуска контейнеров применить nginx:
 
 **На сервере (с sudo):**
